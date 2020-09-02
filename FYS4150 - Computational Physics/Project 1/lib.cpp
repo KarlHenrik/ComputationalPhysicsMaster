@@ -7,17 +7,17 @@
 void rk4(double *y, double *dydx, int n, double x, double h, double  *yout,
 	                void (*derivs)(double, double *, double *))
     ** takes a set of variables y[1:n] for the function y(x) together with the
-    ** reserves dynamic memory for a two-dimensional matrix 
-    ** using the C++ command new . No initialization of the elements. 
-    ** Input data:                      
-    **  int row      - number of  rows          
-    **  int col      - number of columns        
-    Æ*  int num_bytes- number of bytes for each 
-    **                 element                  
-    ** Returns a void  **pointer to the reserved memory location.                                
+    ** reserves dynamic memory for a two-dimensional matrix
+    ** using the C++ command new . No initialization of the elements.
+    ** Input data:
+    **  int row      - number of  rows
+    **  int col      - number of columns
+    ï¿½*  int num_bytes- number of bytes for each
+    **                 element
+    ** Returns a void  **pointer to the reserved memory location.
 
 void free_matrix(void **matr)
-    ** releases the memory reserved by the function matrix() for t    
+    ** releases the memory reserved by the function matrix() for t
     ** derivatives dydx[1:n] and uses the fourth-order Runge-Kutta method to
     ** advance the solution over an interval h and return incremented variables
     ** as yout[1:n], which not need to be a disstinct arra from y[1:n]. The
@@ -27,7 +27,7 @@ void free_matrix(void **matr)
 void ludcmp(double **a, int n, int *indx, double *d)
     ** takes as input a two-dimensional matrix a[][] of dimension n and
     ** replaces it by the LU decomposition of a rowwise permutation of
-    ** itself. The results is stored in a[][] in the form given by 
+    ** itself. The results is stored in a[][] in the form given by
     ** eq. (2.3.14) in "Numerical Recipe", sect. 2.3, page 45. The vector
     ** indx[] records the row permutation effected by the partial pivoting;
     ** d is output as +1 or -1 depending on whether the number of row
@@ -39,16 +39,16 @@ void ludcmp(double **a, int n, int *indx, double *d)
 
 void lubksb(double **a, int n, int *indx, double *b)
     ** solves the set of linear equations A X = B of dimension n.
-    ** a[][] is input, not as the matrix A[][] but rather as 
+    ** a[][] is input, not as the matrix A[][] but rather as
     ** its LU decomposition, determined by the function ludcmp(),
-    ** indx[] is input as the permutation vector returned by 
+    ** indx[] is input as the permutation vector returned by
     ** ludcmp(). b[] is input as the right-hand side vector B,
     ** The solution X is returned in B. The input data a[][],
-    ** n and indx[] are not modified. This routine take into 
+    ** n and indx[] are not modified. This routine take into
     ** account the possibility that b[] will begin with many
     ** zero elements, so it is efficient for use in matrix
     ** inversion.
-    ** The function is slightly modified from the version in 
+    ** The function is slightly modified from the version in
     ** in Numerical recipe.
 
 void tqli(double d[], double e[], int n, double **z)
@@ -62,14 +62,14 @@ void tqli(double d[], double e[], int n, double **z)
     ** eigenvectors of a matrix reduced by tred2() are required,
     ** then z[][] on input is the matrix output from tred2().
     ** On output, the k'th column returns the normalized eigenvector
-    ** corresponding to d[k]. 
+    ** corresponding to d[k].
     ** The function is modified from the version in Numerical recipe.
 
 void tred2(double **a, int n, double d[], double e[])
     ** perform a Housholder reduction of a real symmetric matrix
-    ** a[][]. On output a[][] is replaced by the orthogonal matrix 
+    ** a[][]. On output a[][] is replaced by the orthogonal matrix
     ** effecting the transformation. d[] returns the diagonal elements
-    ** of the tri-diagonal matrix, and e[] the off-diagonal elements, 
+    ** of the tri-diagonal matrix, and e[] the off-diagonal elements,
     ** with e[0] = 0.
     ** The function is modified from the version in Numerical recipe.
 
@@ -112,16 +112,16 @@ void spline(double x[], double y[], int n, double yp1, double yp2, double y2[])
     ** INFINITY the function will put corresponding second derivatives to zero.
 
 void splint(double xa[], double ya[], double y2a[], int n, double x, double *y)
-    ** takes xa[0,..,n - 1] and y[0,..,n - 1] which tabulates a function 
+    ** takes xa[0,..,n - 1] and y[0,..,n - 1] which tabulates a function
     ** (with the xa[i]'s in order) and given ya[0,..,n - 1], which is the
-    ** output from function spline() and with given value of x returns a 
+    ** output from function spline() and with given value of x returns a
     ** cubic--spline interpolation value y.
 
 void polint(double xa[], double ya[], int n, double x, double *y, double *dy)
     ** takes as input xa[0,..,n-1] and ya[0,..,n-1] together with a given value
     ** of x and returns a value y and an error estimate dy. If P(x) is a polynomial
-    ** of degree N - 1 such that P(xa_i) = ya_i, i = 0,..,n-1, then the returned 
-    ** value is y = P(x). 
+    ** of degree N - 1 such that P(xa_i) = ya_i, i = 0,..,n-1, then the returned
+    ** value is y = P(x).
 
 double ran0(long *idum)
     ** is an "Minimal" random number generator of Park and Miller
@@ -142,7 +142,7 @@ double ran1(long *idum)
     ** (exclusive of end-point values).
 
 double ran2(long *idum)
-    ** is a long periode (> 2 x 10^18) random number generator of 
+    ** is a long periode (> 2 x 10^18) random number generator of
     ** L'Ecuyer and Bays-Durham shuffle and added safeguards.
     ** Call with idum a negative integer to initialize; thereafter,
     ** do not alter idum between sucessive deviates in a
@@ -150,28 +150,28 @@ double ran2(long *idum)
     ** that is less than 1.
     ** The function returns a uniform deviate between 0.0 and 1.0
     ** (exclusive of end-point values).
-   
+
 double ran3(long *idum)
     ** returns a uniform random number deviate between 0.0 and 1.0. Set
     ** the idum to any negative value to initialize or reinitialize the
     ** sequence. Any large MBIG, and any small (but still large) MSEED
-    ** can be substituted for the present values. 
+    ** can be substituted for the present values.
     */
 
 #include "lib.h"
 
 
   /*
-   * The function                             
-   *      void  **matrix()                    
-   * reserves dynamic memory for a two-dimensional matrix 
-   * using the C++ command new . No initialization of the elements. 
-   * Input data:                      
-   *  int row      - number of  rows          
-   *  int col      - number of columns        
-   *  int num_bytes- number of bytes for each 
-   *                 element                  
-   * Returns a void  **pointer to the reserved memory location.                                
+   * The function
+   *      void  **matrix()
+   * reserves dynamic memory for a two-dimensional matrix
+   * using the C++ command new . No initialization of the elements.
+   * Input data:
+   *  int row      - number of  rows
+   *  int col      - number of columns
+   *  int num_bytes- number of bytes for each
+   *                 element
+   * Returns a void  **pointer to the reserved memory location.
    */
 
 void **matrix(int row, int col, int num_bytes)
@@ -195,7 +195,7 @@ void **matrix(int row, int col, int num_bytes)
   ptr = pointer[0];
   num = col * num_bytes;
   for(i = 0; i < row; i++, ptr += num )   {
-    pointer[i] = ptr; 
+    pointer[i] = ptr;
   }
 
   return  (void **)pointer;
@@ -203,11 +203,11 @@ void **matrix(int row, int col, int num_bytes)
   } // end: function void **matrix()
 
     /*
-     * The function                         
-     *      void free_matrix()              
-     * releases the memory reserved by the function matrix() 
-     *for the two-dimensional matrix[][] 
-     * Input data:                          
+     * The function
+     *      void free_matrix()
+     * releases the memory reserved by the function matrix()
+     *for the two-dimensional matrix[][]
+     * Input data:
      *  void far **matr - pointer to the matrix
      */
 
@@ -217,7 +217,7 @@ void free_matrix(void **matr)
   delete [] (char *) matr[0];
   delete [] matr;
 
-}  // End:  function free_matrix() 
+}  // End:  function free_matrix()
 
       /*
       ** The function
@@ -228,7 +228,7 @@ void free_matrix(void **matr)
       ** as yout[1:n], which not need to be a disstinct arra from y[1:n]. The
       ** users supply the routine derivs(x,y,dydx), which returns the derivatives
       ** dydx at x.
-      */ 
+      */
 
 void rk4(double *y, double *dydx, int n, double x, double h, double  *yout,
 	                void (*derivs)(double, double *, double *))
@@ -272,21 +272,21 @@ void rk4(double *y, double *dydx, int n, double x, double h, double  *yout,
       yt[i] = y[i] + hh * dyt[i];
    }
 
-   (*derivs)(xh, yt, dym);                // third step 
+   (*derivs)(xh, yt, dym);                // third step
 
    for(i = 1; i < n; i++) {
       yt[i]   = y[i] + h * dym[i];
       dym[i] += dyt[i];
    }
-	
-   (*derivs)(x+h,yt,dyt);                // fourth step 
+
+   (*derivs)(x+h,yt,dyt);                // fourth step
 
         // acummulate increments with proper weights
 
    for(i = 0; i< n; i++) {
       yout[i] = y[i] + h6 *(dydx[i] + dyt[i] + 2.0 * dym[i]);
    }
-   
+
    delete [] yt;     // release local memory
    delete [] dyt;
    delete [] dym;
@@ -298,7 +298,7 @@ void rk4(double *y, double *dydx, int n, double x, double h, double  *yout,
     **       ludcmp()
     ** takes as input a two-dimensional matrix a[][] of dimension n and
     ** replaces it by the LU decomposition of a rowwise permutation of
-    ** itself. The results is stored in a[][] in the form given by 
+    ** itself. The results is stored in a[][] in the form given by
     ** eq. (2.3.14) in "Numerical Recipe", sect. 2.3, page 45. The vector
     ** indx[] records the row permutation effected by the partial pivoting;
     ** d is output as +1 or -1 depending on whether the number of row
@@ -330,13 +330,13 @@ void ludcmp(double **a, int n, int *indx, double *d)
       if(big == ZERO) {
          printf("\n\nSingular matrix in routine ludcmp()\n");
          exit(1);
-      }               
+      }
       vv[i] = 1.0/big;                 // save scaling */
    } // end i-loop */
 
    for(j = 0; j < n; j++) {     // loop over columns of Crout's method
       for(i = 0; i< j; i++) {   // not i = j
-         sum = a[i][j];    
+         sum = a[i][j];
 	 for(k = 0; k < i; k++) sum -= a[i][k]*a[k][j];
 	 a[i][j] = sum;
       }
@@ -357,19 +357,19 @@ void ludcmp(double **a, int n, int *indx, double *d)
 	    a[j][k]    = dum;
 	 }
 	 (*d)    *= -1;            // and change the parit of d
-	 vv[imax] = vv[j];         // also interchange scaling factor 
+	 vv[imax] = vv[j];         // also interchange scaling factor
       }
       indx[j] = imax;
       if(fabs(a[j][j]) < ZERO)  a[j][j] = ZERO;
 
         /*
         ** if the pivot element is zero the matrix is singular
-        ** (at least to the precision of the algorithm). For 
+        ** (at least to the precision of the algorithm). For
         ** some application of singular matrices, it is desirable
         ** to substitute ZERO for zero,
         */
 
-      if(j < (n - 1)) {                   // divide by pivot element 
+      if(j < (n - 1)) {                   // divide by pivot element
          dum = 1.0/a[j][j];
 	 for(i=j+1;i < n; i++) a[i][j] *= dum;
       }
@@ -378,21 +378,21 @@ void ludcmp(double **a, int n, int *indx, double *d)
    delete [] vv;   // release local memory
 
 }  // End: function ludcmp()
- 
+
     /*
-    ** The function 
+    ** The function
     **             lubksb()
     ** solves the set of linear equations A X = B of dimension n.
-    ** a[][] is input, not as the matrix A[][] but rather as 
+    ** a[][] is input, not as the matrix A[][] but rather as
     ** its LU decomposition, determined by the function ludcmp(),
-    ** indx[] is input as the permutation vector returned by 
+    ** indx[] is input as the permutation vector returned by
     ** ludcmp(). b[] is input as the right-hand side vector B,
     ** The solution X is returned in B. The input data a[][],
-    ** n and indx[] are not modified. This routine take into 
+    ** n and indx[] are not modified. This routine take into
     ** account the possibility that b[] will begin with many
     ** zero elements, so it is efficient for use in matrix
     ** inversion.
-    ** The function is slightly modified from the version in 
+    ** The function is slightly modified from the version in
     ** in Numerical recipe.
     */
 
@@ -429,7 +429,7 @@ void lubksb(double **a, int n, int *indx, double *b)
     ** eigenvectors of a matrix reduced by tred2() are required,
     ** then z[][] on input is the matrix output from tred2().
     ** On output, the k'th column returns the normalized eigenvector
-    ** corresponding to d[k]. 
+    ** corresponding to d[k].
     ** The function is modified from the version in Numerical recipe.
     */
 
@@ -486,14 +486,14 @@ void tqli(double *d, double *e, int n, double **z)
       } while(m != l);
    } /* end l-loop */
 } /* End: function tqli(), (C) Copr. 1986-92 Numerical Recipes Software )%. */
-   
+
     /*
     ** The function
     **                tred2()
     ** perform a Housholder reduction of a real symmetric matrix
-    ** a[][]. On output a[][] is replaced by the orthogonal matrix 
+    ** a[][]. On output a[][] is replaced by the orthogonal matrix
     ** effecting the transformation. d[] returns the diagonal elements
-    ** of the tri-diagonal matrix, and e[] the off-diagonal elements, 
+    ** of the tri-diagonal matrix, and e[] the off-diagonal elements,
     ** with e[0] = 0.
     ** The function is modified from the version in Numerical recipe.
     */
@@ -525,7 +525,7 @@ void tqli(double *d, double *e, int n, double **z)
 
 	     for(j = 0;j <= l;j++) {
 		a[j][i] = a[i][j]/h;       // can be omitted if eigenvector not wanted
-		g       = 0.0; 
+		g       = 0.0;
 		for(k = 0; k <= j; k++) {
 		   g += a[j][k]*a[i][k];
 		}
@@ -589,7 +589,7 @@ double pythag(double a, double b)
 
 
        /*
-       ** The function 
+       ** The function
        **              gauleg()
        ** takes the lower and upper limits of integration x1, x2, calculates
        ** and return the abcissas in x[0,...,n - 1] and the weights in w[0,...,n - 1]
@@ -600,7 +600,7 @@ void gauleg(double x1, double x2, double x[], double w[], int n)
 {
    int         m,j,i;
    double      z1,z,xm,xl,pp,p3,p2,p1;
-   double      const  pi = 3.14159265359; 
+   double      const  pi = 3.14159265359;
    double      *x_low, *x_high, *w_low, *w_high;
 
    m  = (n + 1)/2;                             // roots are symmetric in the interval
@@ -640,13 +640,13 @@ void gauleg(double x1, double x2, double x[], double w[], int n)
            ** ppp its derivative by standard relation involving also p2,
            ** polynomial of one lower order.
            */
- 
+
 	 pp = n * (z * p1 - p2)/(z * z - 1.0);
 	 z1 = z;
 	 z  = z1 - p1/pp;                   // Newton's method
       } while(fabs(z - z1) > ZERO);
 
-          /* 
+          /*
 	  ** Scale the root to the desired interval and put in its symmetric
           ** counterpart. Compute the weight and its symmetric counterpart
           */
@@ -660,7 +660,7 @@ void gauleg(double x1, double x2, double x[], double w[], int n)
 
 
 /*
-	 ** The function 
+	 ** The function
          **           jacobi_rot()
 	 ** A helping function for jacobi making the actual rotations
 	 ** a is the matrix to be rotated, s is sine of the rotation
@@ -668,7 +668,7 @@ void gauleg(double x1, double x2, double x[], double w[], int n)
 	 ** The integers i-l denotes the matrix element to be
 	 ** rotated.
 	 **
-         */ 
+         */
 
 inline void jacobi_rot(double** a, double s, double tau, int i, int j, int k, int l){
   double g,h;
@@ -681,7 +681,7 @@ inline void jacobi_rot(double** a, double s, double tau, int i, int j, int k, in
 }//End function jacobi_rot
 
        /*
-       ** The function 
+       ** The function
        **              jacobi()
        ** Computes the eigenvalues and eigenvectors of the square symmetric matrix
        ** A  by use of the Jacobi method.
@@ -692,7 +692,7 @@ inline void jacobi_rot(double** a, double s, double tau, int i, int j, int k, in
 void jacobi(double** a, double* d, double** v, int n, int &nrot){
   int i,j, ip, iq;
   double tresh, theta, tau, t, sm, s, h, g, c;
-  
+
   double* b = new double[n];
   double* z = new double[n];
   for(ip = 0; ip < n; ip++){
@@ -729,7 +729,7 @@ void jacobi(double** a, double* d, double** v, int n, int &nrot){
       for(iq = ip + 1; iq < n; iq++){
 	g = 100.0*fabs(a[ip][iq]);
 	//After four sweeps we skip the rotation if the off-diagonal element is small
-	if(i >4 && (fabs(d[ip]) + g) == fabs(d[ip]) 
+	if(i >4 && (fabs(d[ip]) + g) == fabs(d[ip])
 	   && (fabs(d[iq]) + g) == fabs(d[iq])){
 	  a[ip][iq] = 0.0;
 	}else if(fabs(a[ip][iq]) > tresh){
@@ -775,12 +775,12 @@ void jacobi(double** a, double* d, double** v, int n, int &nrot){
     }
   }
   printf("\n\nToo many iterations in routine jacobi.\n");
-  exit(1); 
+  exit(1);
 }//End function jacobi()
 
 
          /*
-	 ** The function 
+	 ** The function
          **           spline()
          ** takes as input x[0,..,n - 1] and y[0,..,n - 1] containing a tabulation
          ** y_i = f(x_i) with x_0 < x_1 < .. < x_(n - 1) together with yp_1 and yp2
@@ -788,10 +788,10 @@ void jacobi(double** a, double* d, double** v, int n, int &nrot){
          ** function returns y2[0,..,n-1] which contanin the second derivatives of
          ** f(x_i)at each point x_i. If yp1 and/or yp2 is larger than the constant
          ** INFINITY the function will put corresponding second derivatives to zero.
-         */ 
+         */
 
 void spline(double x[], double y[], int n, double yp1, double yp2, double y2[])
-{ 
+{
    int          i,k;
    double       p,qn,sig,un,*u;
 
@@ -829,11 +829,11 @@ void spline(double x[], double y[], int n, double yp1, double yp2, double y2[])
 }  // End: function spline()
 
      /*
-     ** The function 
+     ** The function
      **           splint()
-     ** takes xa[0,..,n - 1] and y[0,..,n - 1] which tabulates a function 
+     ** takes xa[0,..,n - 1] and y[0,..,n - 1] which tabulates a function
      ** (with the xa[i]'s in order) and given ya[0,..,n - 1], which is the
-     ** output from function spline() and with given value of x returns a 
+     ** output from function spline() and with given value of x returns a
      ** cubic--spline interpolation value y.
      */
 
@@ -857,7 +857,7 @@ void splint(double xa[], double ya[], double y2a[], int n, double x, double *y)
    }
    a  = (xa[khi] - x)/h;
    b  = (x - xa[klo])/h;
-   *y =   a * ya[klo] + b * ya[khi] + ((a * a * a - a) * y2a[klo] 
+   *y =   a * ya[klo] + b * ya[khi] + ((a * a * a - a) * y2a[klo]
        + (b * b * b - b) * y2a[khi]) * (h * h)/6.0;
 
 } // End: function splint()
@@ -867,8 +867,8 @@ void splint(double xa[], double ya[], double y2a[], int n, double x, double *y)
    **            polint()
    ** takes as input xa[0,..,n-1] and ya[0,..,n-1] together with a given value
    ** of x and returns a value y and an error estimate dy. If P(x) is a polynomial
-   ** of degree N - 1 such that P(xa_i) = ya_i, i = 0,..,n-1, then the returned 
-   ** value is y = P(x). 
+   ** of degree N - 1 such that P(xa_i) = ya_i, i = 0,..,n-1, then the returned
+   ** value is y = P(x).
    */
 
 void polint(double xa[], double ya[], int n, double x, double *y, double *dy)
@@ -876,7 +876,7 @@ void polint(double xa[], double ya[], int n, double x, double *y, double *dy)
   int      i, m, ns = 1;
   double   den,dif,dift,ho,hp,w;
   double   *c,*d;
-  
+
   dif = fabs(x - xa[0]);
 
   c = new(nothrow) double [n];
@@ -927,7 +927,7 @@ void polint(double xa[], double ya[], int n, double x, double *y, double *dy)
       ** The function
       **       rtbis()
       ** calculates a root between x1 and x2 of a function
-      ** pointed to by (*func) using the method of bisection  
+      ** pointed to by (*func) using the method of bisection
       ** The root is returned with an accuracy of +- xacc.
       */
 
@@ -945,7 +945,7 @@ double rtbis(double (*func)(double), double x1, double x2, double xacc)
       printf("\nroot in function must be within");
       printf("x1 = %f  and x2 = %f\n", x1, x2);
       exit(1);
-   }    
+   }
    rtb = f < 0.0 ? (dx = x2 - x1, x1) : (dx = x1 - x2, x2);
    for(j = 0; j < MAXIT; j++) {
       fmid = (*func)(xmid = rtb + (dx *= 0.5));
@@ -955,7 +955,7 @@ double rtbis(double (*func)(double), double x1, double x2, double xacc)
    printf("\n\nError in function rtbis():");      // should never reach this point
    printf("\nToo many bisections!!!\n");
    exit(1);
-} 
+}
 #undef MAXIT
    // End: function rtbis()
 
@@ -967,7 +967,7 @@ double rtbis(double (*func)(double), double x1, double x2, double xacc)
       ** The root is returned with an accuracy of +- xacc.
       */
 
-#define MAXIT 30      // max iterations 
+#define MAXIT 30      // max iterations
 
 double rtsec(double (*func)(double), double x1, double x2, double xacc)
 {
@@ -982,7 +982,7 @@ double rtsec(double (*func)(double), double x1, double x2, double xacc)
       swap = fl;
       fl   = f;
       f    = swap;
-   } 
+   }
    else {
       xl  = x1;
       rts = x2;
@@ -995,7 +995,7 @@ double rtsec(double (*func)(double), double x1, double x2, double xacc)
       f    = (*func)(rts);
       if(fabs(dx) < xacc || f == 0.0) return rts;
    }
-   printf("\n\nError in function rtsec():");      // should never reach this point 
+   printf("\n\nError in function rtsec():");      // should never reach this point
    printf("\nToo many iterations!!!\n");
    exit(1);
 }
@@ -1020,7 +1020,7 @@ double rtnewt(void (*funcd)(double, double *, double *), double x1, double x2,
    int     j;
    double  df, dx, f, rtn;
 
-   rtn = 0.5 * (x1 + x2);                // initial guess 
+   rtn = 0.5 * (x1 + x2);                // initial guess
    for(j = 0; j < MAXIT; j++) {
       (*funcd)(rtn, &f, &df);
       dx   = f/df;
@@ -1085,7 +1085,7 @@ double zbrent(double (*func)(double), double x1, double x2, double xacc)
 	 if(a == c) {
 	    p = 2.0 * xm * s;
 	    q = 1.0 - s;
-         } 
+         }
          else {
 	    q = fa / fc;
 	    r = fb / fc;
@@ -1161,7 +1161,7 @@ double ran0(long *idum)
 #undef IR
 #undef MASK
 
-// End: function ran0() 
+// End: function ran0()
 
      /*
      ** The function
@@ -1227,9 +1227,9 @@ double ran1(long *idum)
 // End: function ran1()
 
      /*
-     ** The function 
+     ** The function
      **         ran2()
-     ** is a long periode (> 2 x 10^18) random number generator of 
+     ** is a long periode (> 2 x 10^18) random number generator of
      ** L'Ecuyer and Bays-Durham shuffle and added safeguards.
      ** Call with idum a negative integer to initialize; thereafter,
      ** do not alter idum between sucessive deviates in a
@@ -1311,7 +1311,7 @@ double ran2(long *idum)
     ** returns a uniform random number deviate between 0.0 and 1.0. Set
     ** the idum to any negative value to initialize or reinitialize the
     ** sequence. Any large MBIG, and any small (but still large) MSEED
-    ** can be substituted for the present values. 
+    ** can be substituted for the present values.
     */
 
 #define MBIG 1000000000
@@ -1332,9 +1332,9 @@ double ran3(long *idum)
 
       mj     = MSEED - (*idum < 0 ? -*idum : *idum);
       mj    %= MBIG;
-      ma[55] = mj;                            // initialize ma[55] 
+      ma[55] = mj;                            // initialize ma[55]
 
-      for(i = 1, mk = 1; i <= 54; i++) {      // initialize rest of table 
+      for(i = 1, mk = 1; i <= 54; i++) {      // initialize rest of table
          ii     = (21*i) % 55;
 	 ma[ii] = mk;
 	 mk     = mj - mk;
@@ -1384,7 +1384,7 @@ double trapezoidal_rule(double a, double b, int n, double (*func)(double))
       }
       trapez_sum=(trapez_sum+fb+fa)*step;
       return trapez_sum;
-}  // end trapezoidal_rule 
+}  // end trapezoidal_rule
 
 double rectangle_rule(double a, double b, int n, double (*func)(double))
 {
@@ -1399,4 +1399,4 @@ double rectangle_rule(double a, double b, int n, double (*func)(double))
       }
       rectangle_sum *= step;  //  multiply with step length.
       return rectangle_sum;
-}  // end rectangle_rule 
+}  // end rectangle_rule
