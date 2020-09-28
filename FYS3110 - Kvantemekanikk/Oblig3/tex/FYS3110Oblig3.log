@@ -1,7 +1,7 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.6960 64-bit) (preloaded format=pdflatex 2020.2.29)  4 SEP 2020 17:32
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.6960 64-bit) (preloaded format=pdflatex 2020.2.29)  14 SEP 2020 22:18
 entering extended mode
-**./FYS3110Oblig2.tex
-(FYS3110Oblig2.tex
+**./FYS3110Oblig3.tex
+(FYS3110Oblig3.tex
 LaTeX2e <2020-02-02> patch level 4
 L3 programming layer <2020-02-25> (D:\latex\mik\tex/latex/base\article.cls
 Document Class: article 2019/12/20 v1.4l Standard LaTeX document class
@@ -772,7 +772,7 @@ Package: framed 2011/10/22 v 0.96: framed or shaded text with page breaks
 \@float@every@listing=\toks38
 \c@listing=\count334
 )
-runsystem(if not exist _minted-FYS3110Oblig2 mkdir _minted-FYS3110Oblig2)...exe
+runsystem(if not exist _minted-FYS3110Oblig3 mkdir _minted-FYS3110Oblig3)...exe
 cuted.
 
 Package hyperref Info: Option `colorlinks' set `true' on input line 25.
@@ -781,12 +781,12 @@ Package hyperref Info: Option `colorlinks' set `true' on input line 25.
 File: lstlang1.sty 2019/09/10 1.8c listings language file
 )
 runsystem(for ^%i in (pygmentize.exe pygmentize.bat pygmentize.cmd) do set > FY
-S3110Oblig2.aex <nul: /p x=^%~$PATH:i>> FYS3110Oblig2.aex)...executed.
+S3110Oblig3.aex <nul: /p x=^%~$PATH:i>> FYS3110Oblig3.aex)...executed.
 
-runsystem(del FYS3110Oblig2.aex)...executed.
+runsystem(del FYS3110Oblig3.aex)...executed.
 
- (FYS3110Oblig2.aux)
-\openout1 = `FYS3110Oblig2.aux'.
+ (FYS3110Oblig3.aux)
+\openout1 = `FYS3110Oblig3.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
 LaTeX Font Info:    ... okay on input line 46.
@@ -841,9 +841,9 @@ LaTeX Info: Redefining \ref on input line 46.
 LaTeX Info: Redefining \pageref on input line 46.
 LaTeX Info: Redefining \nameref on input line 46.
 
-(FYS3110Oblig2.out) (FYS3110Oblig2.out)
+(FYS3110Oblig3.out) (FYS3110Oblig3.out)
 \@outlinefile=\write6
-\openout6 = `FYS3110Oblig2.out'.
+\openout6 = `FYS3110Oblig3.out'.
 
  ABD: EveryShipout initializing macros
 (D:\latex\mik\tex/latex/base\textcomp.sty
@@ -865,59 +865,100 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 LaTeX Warning: No \author given.
 
-
-Overfull \hbox (10.42256pt too wide) detected at line 69
-[][][]
- []
-
 [1
 
-{C:/Users/KarlH/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
-[3] [4]
-Overfull \hbox (7.90407pt too wide) in paragraph at lines 249--250
-\OT1/cmr/m/n/12 v. Vi kan skri-ve en vilkarlig vek-tor som $\OML/cmm/m/it/12 u
- \OT1/cmr/m/n/12 = \OML/cmm/m/it/12 a [] \OT1/cmr/m/n/12 + \OML/cmm/m/it/12 b [
-] \OT1/cmr/m/n/12 + [][] \OML/cmm/m/it/12 c[] [] ; a; b; c[] \OMS/cmsy/m/n/12 2
-
- []
+{C:/Users/KarlH/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+\openout4 = `FYS3110Oblig3.pyg'.
 
 
-Overfull \hbox (37.25722pt too wide) in paragraph at lines 251--252
-[]\OT1/cmr/m/n/12 Tilsvarende skri-ver vi en vilkarlig vek-tor $\OML/cmm/m/it/
-12 v \OT1/cmr/m/n/12 = \OML/cmm/m/it/12 x [] \OT1/cmr/m/n/12 + \OML/cmm/m/it/12
- y [] \OT1/cmr/m/n/12 + [][] \OML/cmm/m/it/12 z[] [] ; x; y; z[] \OMS/cmsy/m/n/
-12 2
- []
+(_minted-FYS3110Oblig3/default-pyg-prefix.pygstyle)
+(_minted-FYS3110Oblig3/default.pygstyle)
+(_minted-FYS3110Oblig3/847993AD1D0BEAE6B218AF920D924521FE51F83FFADC4D2D2C35FA36
+F938D6DF.pygtex
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 2.
+ [2])
+<../energylevel.png, id=37, 433.62pt x 289.08pt>
+File: ../energylevel.png Graphic file (type png)
+<use ../energylevel.png>
+Package pdftex.def Info: ../energylevel.png  used on input line 137.
+(pdftex.def)             Requested size: 256.0748pt x 170.72333pt.
+\openout4 = `FYS3110Oblig3.pyg'.
 
-[5] [6]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 286.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 286.
- (FYS3110Oblig2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 286.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 286.
-Package rerunfilecheck Info: File `FYS3110Oblig2.out' has not changed.
+
+(_minted-FYS3110Oblig3/A07315EF07B5D90E9789D35523128F9FFE51F83FFADC4D2D2C35FA36
+F938D6DF.pygtex)
+\openout4 = `FYS3110Oblig3.pyg'.
+
+
+(_minted-FYS3110Oblig3/5FA20579F326865847262BFCE703018DFE51F83FFADC4D2D2C35FA36
+F938D6DF.pygtex)
+\openout4 = `FYS3110Oblig3.pyg'.
+
+
+(_minted-FYS3110Oblig3/D470ADF5B16B1314B6CC31BC0D157821FE51F83FFADC4D2D2C35FA36
+F938D6DF.pygtex [3pdfTeX warning (ext4): destination with the same identifier (
+name{figure.1}) has been already used, duplicate ignored
+
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.1 ...={\catcode`\$=3\catcode`\^=7\catcode`\_=8}]
+                                                   <../energylevel.png>])
+<../tidsutvikling.png, id=47, 433.62pt x 289.08pt>
+File: ../tidsutvikling.png Graphic file (type png)
+<use ../tidsutvikling.png>
+Package pdftex.def Info: ../tidsutvikling.png  used on input line 174.
+(pdftex.def)             Requested size: 256.0748pt x 170.72333pt.
+
+[4pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) 
+has been already used, duplicate ignored
+
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.197 	\end{equation*}
+                       <../tidsutvikling.png>]
+\openout4 = `FYS3110Oblig3.pyg'.
+
+
+(_minted-FYS3110Oblig3/4369E68F007B30B6B6047B9DDE4BE0D4FE51F83FFADC4D2D2C35FA36
+F938D6DF.pygtex) [5]
+\openout4 = `FYS3110Oblig3.pyg'.
+
+
+(_minted-FYS3110Oblig3/3DD34A0689B44CBFF7F7A3344FA83472FE51F83FFADC4D2D2C35FA36
+F938D6DF.pygtex) [6] [7]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 349.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 349.
+ (FYS3110Oblig3.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 349.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 349.
+Package rerunfilecheck Info: File `FYS3110Oblig3.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 286.
+runsystem(del FYS3110Oblig3.pyg)...executed.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 349.
  ) 
 Here is how much of TeX's memory you used:
- 22684 strings out of 481280
- 414015 string characters out of 2923860
- 918276 words of memory out of 3000000
- 37708 multiletter control sequences out of 15000+200000
- 540794 words of font info for 57 fonts, out of 3000000 for 9000
+ 22944 strings out of 481280
+ 420642 string characters out of 2923860
+ 922276 words of memory out of 3000000
+ 37945 multiletter control sequences out of 15000+200000
+ 542059 words of font info for 62 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 60i,13n,60p,946b,365s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 60i,13n,60p,946b,612s stack positions out of 5000i,500n,10000p,200000b,50000s
 <D:/latex/mik/fonts/type1/public/amsfonts/cm/cmbx12.pfb><D:/latex/mik/fonts/t
 ype1/public/amsfonts/cm/cmex10.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm
-/cmmi12.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmmi8.pfb><D:/latex/mi
-k/fonts/type1/public/amsfonts/cm/cmr12.pfb><D:/latex/mik/fonts/type1/public/ams
-fonts/cm/cmr17.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr8.pfb><D:/la
-tex/mik/fonts/type1/public/amsfonts/cm/cmsy10.pfb><D:/latex/mik/fonts/type1/pub
-lic/amsfonts/cm/cmsy8.pfb><D:/latex/mik/fonts/type1/public/amsfonts/symbols/msb
-m10.pfb>
-Output written on FYS3110Oblig2.pdf (6 pages, 125828 bytes).
+/cmitt10.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmmi12.pfb><D:/latex/
+mik/fonts/type1/public/amsfonts/cm/cmmi8.pfb><D:/latex/mik/fonts/type1/public/a
+msfonts/cm/cmr12.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr17.pfb><D:
+/latex/mik/fonts/type1/public/amsfonts/cm/cmr6.pfb><D:/latex/mik/fonts/type1/pu
+blic/amsfonts/cm/cmr8.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmsy10.p
+fb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmsy6.pfb><D:/latex/mik/fonts/t
+ype1/public/amsfonts/cm/cmsy8.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/
+cmtt12.pfb><D:/latex/mik/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on FYS3110Oblig3.pdf (7 pages, 181722 bytes).
 PDF statistics:
- 120 PDF objects out of 1000 (max. 8388607)
- 43 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 128 PDF objects out of 1000 (max. 8388607)
+ 30 named destinations out of 1000 (max. 500000)
+ 23 words of extra memory for PDF output out of 10000 (max. 10000000)
 
