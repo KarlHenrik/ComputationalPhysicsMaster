@@ -1,4 +1,4 @@
-all: buckling bucklingTiming oneElectron twoElectron oneElectronRhoN
+all: buckling bucklingTiming oneElectron twoElectron oneElectronRhoN testing
 
 buckling: buckling.o jacobiSolve.o
 	g++ -O3 -o buckling buckling.o jacobiSolve.o -larmadillo -llapack -lblas
@@ -33,5 +33,11 @@ oneElectronRhoN.o: oneElectronRhoN.cpp
 jacobiSolve.o: jacobiSolve.cpp
 	g++ -O3 -c jacobiSolve.cpp
 
+testing: testing.o
+	g++ -O3 -o testing testing.o jacobiSolve.o -larmadillo -llapack -lblas
+
+testing.o: testing.cpp
+	g++ -O3 -c testing.cpp
+
 clean:
-	rm *.o buckling bucklingTiming oneElectron twoElectron oneElectronRhoN
+	rm *.o buckling bucklingTiming oneElectron twoElectron oneElectronRhoN testing
