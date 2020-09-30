@@ -10,6 +10,7 @@ using namespace  std;
 using namespace  arma;
 
 void twoElectronOmega(double);
+void twoElectronOmegaNoC(double);
 
 int main(int argc, char const *argv[]) {
     // Constants
@@ -58,6 +59,11 @@ int main(int argc, char const *argv[]) {
     twoElectronOmega(1);
     twoElectronOmega(5);
 
+    twoElectronOmegaNoC(0.01);
+    twoElectronOmegaNoC(0.5);
+    twoElectronOmegaNoC(1);
+    twoElectronOmegaNoC(5);
+
     return 0;
 }
 
@@ -86,5 +92,33 @@ void twoElectronOmega(double omega) {
     uvec eigvals_order = sort_index(jacobi_eigvals_unsorted);
     vec gs = R.col(eigvals_order(0));
     string filename = "Results/2EGS" + to_string(omega);
+    gs.save(filename, arma_ascii);
+}
+
+void twoElectronOmegaNoC(double omega) {
+    // Constants
+    int n = 200;
+    double rho_N = 10;
+    // Initializing matrices
+    mat R = eye(n, n); // The matrix R which will hold all of the eigenvectors
+    mat A = zeros<mat>(n,n); // The tridiagonal matrix A which is to be diagonalized
+    double h = rho_N / (n + 1);
+    double h2 = h * h;
+    double d = 2 / h2;
+    double a = - 1 / h2;
+    A(0, 0) = d + h2;
+    for (int row = 1; row < n; row++) {
+        double rho = (row + 1) * h;
+        A(row, row) = d + omega * rho * rho;
+        A(row - 1, row) = a;
+        A(row, row - 1) = a;
+    }
+    // Diagonalizing with Jacobi rotations
+    jacobiSolve(A, R, n);
+    // Saving the ground state vector to file
+    vec jacobi_eigvals_unsorted = diagvec(A);
+    uvec eigvals_order = sort_index(jacobi_eigvals_unsorted);
+    vec gs = R.col(eigvals_order(0));
+    string filename = "Results/2EGSnoC" + to_string(omega);
     gs.save(filename, arma_ascii);
 }
