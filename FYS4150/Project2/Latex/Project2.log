@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.6960 64-bit) (preloaded format=pdflatex 2020.2.29)  28 SEP 2020 09:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.6960 64-bit) (preloaded format=pdflatex 2020.2.29)  30 SEP 2020 23:15
 entering extended mode
 **./Project2.tex
 (Project2.tex
@@ -862,7 +862,7 @@ Package: framed 2011/10/22 v 0.96: framed or shaded text with page breaks
 )
 runsystem(if not exist _minted-Project2 mkdir _minted-Project2)...executed.
 
-Package hyperref Info: Option `colorlinks' set `true' on input line 24.
+Package hyperref Info: Option `colorlinks' set `true' on input line 25.
 
 (D:\latex\mik\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2019/09/10 1.8c listings language file
@@ -873,33 +873,33 @@ oject2.aex <nul: /p x=^%~$PATH:i>> Project2.aex)...executed.
 runsystem(del Project2.aex)...executed.
 
 Class revtex4-1 Info: Unrecognized LaTeX tabular. Please update this document c
-lass! (Proceeding with fingers crossed.) on input line 43.
+lass! (Proceeding with fingers crossed.) on input line 44.
 
 
 Class revtex4-1 Warning: Repair the float package.
 
-Class revtex4-1 Info: cite was not loaded (OK!) on input line 43.
-Class revtex4-1 Info: mcite was not loaded (OK!) on input line 43.
-Class revtex4-1 Info: multicol was not loaded (OK!) on input line 43.
+Class revtex4-1 Info: cite was not loaded (OK!) on input line 44.
+Class revtex4-1 Info: mcite was not loaded (OK!) on input line 44.
+Class revtex4-1 Info: multicol was not loaded (OK!) on input line 44.
 (Project2.aux)
 \openout1 = `Project2.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
  (D:\latex\mik\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count343
@@ -919,7 +919,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 )
 \AtBeginShipoutBox=\box86
-Package hyperref Info: Link coloring ON on input line 43.
+Package hyperref Info: Link coloring ON on input line 44.
 
 (D:\latex\mik\tex/latex/hyperref\nameref.sty
 Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
@@ -932,9 +932,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count349
 )
-LaTeX Info: Redefining \ref on input line 43.
-LaTeX Info: Redefining \pageref on input line 43.
-LaTeX Info: Redefining \nameref on input line 43.
+LaTeX Info: Redefining \ref on input line 44.
+LaTeX Info: Redefining \pageref on input line 44.
+LaTeX Info: Redefining \nameref on input line 44.
  (Project2.out)
 (Project2.out)
 \@outlinefile=\write7
@@ -945,40 +945,18 @@ LaTeX Info: Redefining \nameref on input line 43.
 Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
 )
 \c@lstlisting=\count350
-Class revtex4-1 Info: Taking \maketitle back from hyperref on input line 43.
+Class revtex4-1 Info: Taking \maketitle back from hyperref on input line 44.
 Class revtex4-1 Info: Overriding lineo.sty, restoring output routine, on input 
-line 43.
-Class revtex4-1 Info: Line numbering not turned on yet on input line 43.
+line 44.
+Class revtex4-1 Info: Line numbering not turned on yet on input line 44.
 \openout3 = `Project2Notes.bib'.
 
-Class revtex4-1 Info: Overriding \@LN@LLerror on input line 43.
+Class revtex4-1 Info: Overriding \@LN@LLerror on input line 44.
 
-Underfull \hbox (badness 10000) in paragraph at lines 55--56
+Underfull \hbox (badness 4699) in paragraph at lines 62--63
  []\OT1/cmr/m/n/9 - Git-hub re-po-si-tory link med all kode og re-sul-ta-ter me
-d eks-tra for-kla-rin-ger: 
+d eks-tra for-kla-rin-ger: [][]htt- 
  []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 55--56
- [][]\OT1/cmr/m/n/9 https://github.com/KarlHenrik/ComputationalPhysicsMaster/tr
-ee/master/FYS4150%20- 
- []
-
-
-Package natbib Warning: Citation `myRepo' on page 1 undefined on input line 66.
-
-
-
-Package natbib Warning: Citation `myRepo' on page 1 undefined on input line 66.
-
-
-
-Package natbib Warning: Citation `libRepo' on page 1 undefined on input line 66
-.
-
-
-Package natbib Warning: Citation `cspRepo' on page 1 undefined on input line 66
-.
 
 LaTeX Font Info:    Trying to load font information for U+msa on input line 76.
 
@@ -990,264 +968,251 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 76.
 
 (D:\latex\mik\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-
-Package natbib Warning: Citation `oppgavetekst' on page 1 undefined on input li
-ne 106.
-
-[1{C:/Users/KarlH/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-Overfull \hbox (10.04047pt too wide) detected at line 190
-[][]
+) [1{C:/Users/KarlH/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+Overfull \hbox (0.91797pt too wide) detected at line 143
+\OMS/cmsy/m/n/10  [] [] \OML/cmm/m/it/10 R\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r\O
+T1/cmr/m/n/10 ) + \OML/cmm/m/it/10 V\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r\OT1/cmr
+/m/n/10 )\OML/cmm/m/it/10 R\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r\OT1/cmr/m/n/10 )
+ = \OML/cmm/m/it/10 ER\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r\OT1/cmr/m/n/10 )\OML/
+cmm/m/it/10 :
  []
 
 
-Package natbib Warning: Citation `myRepo' on page 2 undefined on input line 204
-.
-
-\openout5 = `Project2.pyg'.
-
-(_minted-Project2/default-pyg-prefix.pygstyle)
-(_minted-Project2/default.pygstyle)
-(_minted-Project2/5F04639F80AA083448225794666D667B4726EA9109C6566DEB6BA5302B280
-7E5.pygtex
-LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 3.
-)
-
-Package natbib Warning: Citation `myRepo' on page 2 undefined on input line 256
-.
-
-\openout5 = `Project2.pyg'.
-
-
-(_minted-Project2/3FD67C5C3A7660C331F725C6C0F07BE44726EA9109C6566DEB6BA5302B280
-7E5.pygtex [2])
-
-Package natbib Warning: Citation `luwiki' on page 3 undefined on input line 270
-.
-
-
-Package natbib Warning: Citation `myRepo' on page 3 undefined on input line 274
-.
-
-
-Package natbib Warning: Citation `libRepo' on page 3 undefined on input line 27
-4.
-
-
-Underfull \hbox (badness 1436) in paragraph at lines 276--277
-[]\OT1/cmr/m/n/10 For a sam-men-lig-ne has-tig-he-ten til me-to-de-ne im-
+Overfull \hbox (16.9648pt too wide) detected at line 196
+[] [] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10  []
  []
 
 
-Package natbib Warning: Citation `myRepo' on page 3 undefined on input line 279
-.
+Overfull \hbox (32.03674pt too wide) detected at line 212
+[] \OML/cmm/m/it/10 u\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r[]; r[]\OT1/cmr/m/n/10 
+) = \OML/cmm/m/it/10 E[]u\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r[]; r[]\OT1/cmr/m/n
+/10 )\OML/cmm/m/it/10 :
+ []
 
 
-Package natbib Warning: Citation `myRepo' on page 3 undefined on input line 281
-.
+Overfull \hbox (14.32416pt too wide) detected at line 216
+[] \OML/cmm/m/it/10 u\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r; R\OT1/cmr/m/n/10 ) = 
+\OML/cmm/m/it/10 E[]u\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r; R\OT1/cmr/m/n/10 )\OM
+L/cmm/m/it/10 :
+ []
 
+[2]
+Overfull \hbox (16.9648pt too wide) detected at line 274
+[] [] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10  []
+ []
 
-LaTeX Warning: File `../Results/losning1.jpg' not found on input line 284.
+[3]
+Underfull \hbox (badness 10000) in paragraph at lines 340--340
+[]\OT1/cmr/m/n/9 Tabell II. []Ndvendige ite-ra-sjo-ner av Jacobi-
+ []
 
+<../Figures/bjelke1.png, id=108, 433.62pt x 289.08pt>
+File: ../Figures/bjelke1.png Graphic file (type png)
+<use ../Figures/bjelke1.png>
+Package pdftex.def Info: ../Figures/bjelke1.png  used on input line 369.
+(pdftex.def)             Requested size: 256.0748pt x 170.72333pt.
 
-! Package pdftex.def Error: File `../Results/losning1.jpg' not found: using dra
-ft setting.
-
-See the pdftex.def package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.284 ...hics[width=90mm]{../Results/losning1.jpg}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-Overfull \hbox (10.0748pt too wide) in paragraph at lines 284--285
+Overfull \hbox (10.0748pt too wide) in paragraph at lines 369--370
 [][] 
  []
 
-
-LaTeX Warning: File `../Results/losning.jpg' not found on input line 292.
-
-
-! Package pdftex.def Error: File `../Results/losning.jpg' not found: using draf
-t setting.
-
-See the pdftex.def package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.292 ...phics[width=90mm]{../Results/losning.jpg}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-Overfull \hbox (10.0748pt too wide) in paragraph at lines 292--293
-[][] 
- []
-
-[3pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) 
-has been already used, duplicate ignored
+[4pdfTeX warning (ext4): destination with the same identifier (name{table.1}) h
+as been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.298 	
-       pdfTeX warning (ext4): destination with the same identifier (name{figure
-.2}) has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.298 	
-       ]
-
-LaTeX Warning: File `../Results/relErrx.jpg' not found on input line 300.
-
-
-! Package pdftex.def Error: File `../Results/relErrx.jpg' not found: using draf
-t setting.
-
-See the pdftex.def package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.300 ...phics[width=90mm]{../Results/relErrx.jpg}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-Overfull \hbox (10.0748pt too wide) in paragraph at lines 300--301
-[][] 
- []
-
-
-LaTeX Warning: File `../Results/relErr7.jpg' not found on input line 306.
-
-
-! Package pdftex.def Error: File `../Results/relErr7.jpg' not found: using draf
-t setting.
-
-See the pdftex.def package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.306 ...phics[width=90mm]{../Results/relErr7.jpg}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-Overfull \hbox (10.0748pt too wide) in paragraph at lines 306--307
-[][] 
- []
-
-
-Overfull \hbox (2.88782pt too wide) in paragraph at lines 334--344
- []$ 
- []
-
-
-LaTeX Warning: File `../Results/relErrPlot.jpg' not found on input line 367.
-
-
-! Package pdftex.def Error: File `../Results/relErrPlot.jpg' not found: using d
-raft setting.
-
-See the pdftex.def package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.367 ...cs[width=90mm]{../Results/relErrPlot.jpg}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-Overfull \hbox (10.0748pt too wide) in paragraph at lines 367--368
-[][] 
- []
-
-[4pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) 
-has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.371 	
-       pdfTeX warning (ext4): destination with the same identifier (name{figure
-.4}) has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.371 	
-       pdfTeX warning (ext4): destination with the same identifier (name{table.
-1}) has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.371 	
+l.393 	
        pdfTeX warning (ext4): destination with the same identifier (name{table.
 2}) has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.371 	
+l.393 	
        pdfTeX warning (ext4): destination with the same identifier (name{table.
 3}) has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.371 	
-       ]
-No file Project2.bbl.
-No file Project2.bbl.
+l.393 	
+       pdfTeX warning (ext4): destination with the same identifier (name{figure
+.1}) has been already used, duplicate ignored
 
-Package natbib Warning: There were undefined citations.
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.393 	
+       pdfTeX warning (ext4): destination with the same identifier (name{table.
+4}) has been already used, duplicate ignored
 
-runsystem(del Project2.pyg)...executed.
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.393 	
+        <../Figures/bjelke1.png>]
+<../Figures/ettElektron.png, id=122, 433.62pt x 289.08pt>
+File: ../Figures/ettElektron.png Graphic file (type png)
+<use ../Figures/ettElektron.png>
+Package pdftex.def Info: ../Figures/ettElektron.png  used on input line 396.
+(pdftex.def)             Requested size: 256.0748pt x 170.72333pt.
 
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 385.
-[5pdfTeX warning (ext4): destination with the same identifier (name{figure.5}) 
+Overfull \hbox (10.0748pt too wide) in paragraph at lines 396--397
+[][] 
+ []
+
+<../Figures/toElektron.png, id=123, 433.62pt x 289.08pt>
+File: ../Figures/toElektron.png Graphic file (type png)
+<use ../Figures/toElektron.png>
+Package pdftex.def Info: ../Figures/toElektron.png  used on input line 407.
+(pdftex.def)             Requested size: 256.0748pt x 170.72333pt.
+
+Overfull \hbox (10.0748pt too wide) in paragraph at lines 407--408
+[][] 
+ []
+
+
+Underfull \hbox (badness 1931) in paragraph at lines 405--410
+[]\OT1/cmr/m/n/10 Plotter egen-vek-to-re-ne til den la-ves-te egen-ver-di-en
+ []
+
+<../Figures/toElektronNoC.png, id=124, 433.62pt x 289.08pt>
+File: ../Figures/toElektronNoC.png Graphic file (type png)
+<use ../Figures/toElektronNoC.png>
+Package pdftex.def Info: ../Figures/toElektronNoC.png  used on input line 414.
+(pdftex.def)             Requested size: 256.0748pt x 170.72333pt.
+
+Overfull \hbox (10.0748pt too wide) in paragraph at lines 414--415
+[][] 
+ []
+
+
+Underfull \hbox (badness 1931) in paragraph at lines 412--417
+[]\OT1/cmr/m/n/10 Plotter egen-vek-to-re-ne til den la-ves-te egen-ver-di-en
+ []
+
+
+Underfull \hbox (badness 3758) in paragraph at lines 412--417
+\OT1/cmr/m/n/10 (grunn-til-stan-den) kvad-rert for ulik $\OML/cmm/m/it/10 ![]$ 
+\OT1/cmr/m/n/10 uten noen
+ []
+
+[5pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) 
 has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.385 \end{document}
-                    ] [6]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 385.
+l.429 	
+       pdfTeX warning (ext4): destination with the same identifier (name{figure
+.3}) has been already used, duplicate ignored
+
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.429 	
+       pdfTeX warning (ext4): destination with the same identifier (name{figure
+.4}) has been already used, duplicate ignored
+
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.429 	
+        <../Figures/ettElektron.png> <../Figures/toElektron.png> <../Figures/to
+ElektronNoC.png>] (Project2.bbl
+Overfull \hbox (100.50557pt too wide) in paragraph at lines 58--59
+ []\OT1/cmr/m/n/9 ``Jacobis egen-ver-di-al-go-rit-me, fys4150 kurs-ma-te-ri-ell
+: [][]htt-ps://compphysics.github.io/ComputationalPhysics/doc/pub/eigvalues/htm
+l/eigvalues.html[][],''. 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 64--65
+ []\OT1/cmr/m/n/9 ``Github re-po-si-tory link med all kode og re-sul-ta-ter med
+ eks-tra for-kla-rin-ger: [][]htt-
+ []
+
+) (Project2.bbl
+! Undefined control sequence.
+l.55   \href@noop
+                  {} {\enquote {\bibinfo {title} {Jacobis egenverdialgoritme,
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.55   \href@noop {} {\enquote
+                               {\bibinfo {title} {Jacobis egenverdialgoritme,
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.61   \href@noop
+                  {} {\enquote {\bibinfo {title} {Github repository link med...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.61   \href@noop {} {\enquote
+                               {\bibinfo {title} {Github repository link med...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.67   \href@noop
+                  {} {\enquote {\bibinfo {title} {Oppgavetekst:
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.67   \href@noop {} {\enquote
+                               {\bibinfo {title} {Oppgavetekst:
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 444.
+ [6] [7]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 444.
  (Project2.aux)
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 385.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 444.
 Package rerunfilecheck Info: File `Project2.out' has not changed.
-(rerunfilecheck)             Checksum: E7785779AEC066EFC2E0E6D308C1BE0A;797.
+(rerunfilecheck)             Checksum: 45A6CB2A20AE2A3CC0FC70566F9B6105;1076.
  ) 
 Here is how much of TeX's memory you used:
- 24848 strings out of 481280
- 444427 string characters out of 2923860
- 966275 words of memory out of 3000000
- 39817 multiletter control sequences out of 15000+200000
- 539971 words of font info for 54 fonts, out of 3000000 for 9000
+ 24581 strings out of 481280
+ 438988 string characters out of 2923860
+ 972275 words of memory out of 3000000
+ 39574 multiletter control sequences out of 15000+200000
+ 539636 words of font info for 52 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 60i,14n,60p,1116b,609s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 60i,9n,60p,642b,499s stack positions out of 5000i,500n,10000p,200000b,50000s
 <D:/latex/mik/fonts/type1/public/amsfonts/cm/cmbx10.pfb><D:/latex/mik/fonts/t
 ype1/public/amsfonts/cm/cmbx12.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm
 /cmbx9.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmex10.pfb><D:/latex/mi
 k/fonts/type1/public/amsfonts/cm/cmmi10.pfb><D:/latex/mik/fonts/type1/public/am
-sfonts/cm/cmmi5.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmmi6.pfb><D:/
-latex/mik/fonts/type1/public/amsfonts/cm/cmmi7.pfb><D:/latex/mik/fonts/type1/pu
-blic/amsfonts/cm/cmmi9.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr10.p
-fb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr5.pfb><D:/latex/mik/fonts/ty
-pe1/public/amsfonts/cm/cmr6.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cm
-r7.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr9.pfb><D:/latex/mik/font
-s/type1/public/amsfonts/cm/cmsy10.pfb><D:/latex/mik/fonts/type1/public/amsfonts
-/cm/cmsy6.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmsy7.pfb><D:/latex/
-mik/fonts/type1/public/amsfonts/cm/cmsy9.pfb><D:/latex/mik/fonts/type1/public/a
-msfonts/cm/cmti9.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmtt10.pfb><D
-:/latex/mik/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on Project2.pdf (6 pages, 257916 bytes).
+sfonts/cm/cmmi6.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmmi7.pfb><D:/
+latex/mik/fonts/type1/public/amsfonts/cm/cmmi9.pfb><D:/latex/mik/fonts/type1/pu
+blic/amsfonts/cm/cmr10.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr5.pf
+b><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmr7.pfb><D:/latex/mik/fonts/typ
+e1/public/amsfonts/cm/cmr9.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cms
+y10.pfb><D:/latex/mik/fonts/type1/public/amsfonts/cm/cmsy7.pfb><D:/latex/mik/fo
+nts/type1/public/amsfonts/cm/cmti9.pfb><D:/latex/mik/fonts/type1/public/amsfont
+s/symbols/msbm10.pfb><D:/latex/mik/fonts/type1/public/amsfonts/symbols/msbm7.pf
+b>
+Output written on Project2.pdf (7 pages, 297808 bytes).
 PDF statistics:
- 196 PDF objects out of 1000 (max. 8388607)
- 26 named destinations out of 1000 (max. 500000)
- 109 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 219 PDF objects out of 1000 (max. 8388607)
+ 34 named destinations out of 1000 (max. 500000)
+ 161 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -15,6 +15,7 @@
 \usepackage{listings}         % display code
 \usepackage{subfigure}        % imports a lot of cool and useful figure commands
 \usepackage{float}			  % force placement of tables and figures
+\usepackage{amsmath}
 \usepackage{minted}
 
 \hypersetup{ % this is just my personal choice, feel free to change things
@@ -50,335 +51,393 @@
 \newpage
 	
 \begin{abstract} %------------------Abstract-----------------------
-	Hva skjer
+	I dette prosjektet løser vi tre ulike diffligninger ved å diskretisere de og sette de opp som egenverdiproblemer. Den første ligningen finner formen til en bøyende bjelke. Den andre finner den radielle komponenten til bølgefunksjonen til et elektron i et harmonisk oscillator potensial. Den tredje finner avstanden mellom to interagerende elektroner i et harmonisk oscillator potensial.
 	
-	- Github repository link med all kode og resultater med ekstra forklaringer: \href{https://github.com/KarlHenrik/ComputationalPhysicsMaster/tree/master/FYS4150\%20-\%20Computational\%20Physics/Project\%202}{https://github.com/KarlHenrik/ComputationalPhysicsMaster/tree/master/FYS4150\%20-\%20Computational\%20Physics/Project\%202}
+	Vi bruker Jacobis egenverdialgoritme til å løse ligningene. Vi finner at Jacobis egenverdialgoritme gir så godt som samme resultater som C++ funksjoner fra biblioteket Armadillo, og som den analytiske løsningen for den bøyende bjelken. Men den er mye treigere, og bruker 38.2s på en utregning Armadillo fullførte fortere enn maskinen klarte å måle.
+	
+	For de kvantemekaniske systemene såg vi at vi måtte finne balansen mellom antall målepunkter og endepunktet i beregningene våre. Den numeriske metoden tilnærmet fortsatt den analytiske løsningen godt.
+	
+	Til slutt observerte vi et samspill mellom harmonisk oscillator potensialet og den frastøtende Coulombkraften, der vi såg at rekkevidden til Coulombkraften førte til større forskjell i avstanden mellom elektronene for svake potensialer enn for sterke.
+	
+	- Github repository link med all kode og resultater med ekstra forklaringer: \href{https://github.com/KarlHenrik/ComputationalPhysicsMaster/tree/master/FYS4150/Project2}{https://github.com/KarlHenrik/ComputationalPhysicsMaster/tree/master/FYS4150/Project2}
 \end{abstract}
 \maketitle
 
 \section{Introduksjon} %------------------Introduksjon-----------------------
-	Løsningen av den en-dimensjonale Poisson ligningen med Dirichlet grensebetingelser er en god øvelse i å jobbe med matriser, minneallokasjon, vektorer og å evaluere ulike løsningsmetoder.
+	Løsningen av diffligninger som egenverdiproblemer er et kraftig verktøy som lar oss gjøre mange forenklinger ved å bruke nyttige metoder og resultater fra blant annet lineær algebra. Dette prosjektet illustrerer hvordan svært ulike fysiske systemer lar seg løse på helt samme vis, noe som alltid er en stor fordel siden det sparer oss mye arbeid og siden det lettere lar oss se sammenhenger mellom ulike problemer.
 	
-	I metode seksjonen vil vi presentere problemet og utlede den generelle Thomas algoritmen og en versjon spesielt tilpasset problemet vi ser på. Vi vil også nemne LU faktorisering som en løsningsmetode.
-	
-	I resultat seksjonen presenterer vi løsningen av ligningen, hastigheten til metodene og hvordan feilen endrer seg med steglengde.
-	
-	Til dette prosjektet har jeg skrevet kode som implementerer den generelle Thomas algoritmen, og den spesielt tilpassede versjonen \cite{myRepo}. Jeg har også skrevet kode for å bearbeide og presentere resultatene fra denne koden \cite{myRepo}. For å løse ligningssettet med LU faktorisering brukte jeg ferdigskrevet kode fra kursets github repository \cite{libRepo}\cite{cspRepo}.
-
+	Til dette prosjektet har jeg benyttet kode som implementerer Jacobis egenverdialgoritme \cite{eigvalEmne}, med justeringer. Oppsett av matrisene og lagring av resultater implementerte jeg selv \cite{myRepo}. Jeg har også skrevet kode for å bearbeide og presentere resultatene fra denne koden \cite{myRepo}.
 
 \section{Metoder} %------------------Metoder-----------------------
-	Vi skal numerisk løse den en-dimensjonale Poisson ligningen med Dirichlet grensebetingelser.
-
-\subsection{Ligningen vi skal løse}
-
-	Vi begynner med å se på den tredimensjonale Poisson ligningen:
+	Vi skal numerisk løse ulike diffligninger som egenverdiproblemer. Den sentrale idéen er å diskretisere diffligningen slik at vi får en matrise-egenverdi ligning. Så diagonaliserer vi matrisen vår til en similær diagonal matrise for å få egenverdiene og egenvektorene. Vi ser først hvordan vi får matrise-egenverdi ligningene før vi ser på hvordan vi løser de med Jacobi-egenverdialgoritme.
+	
+\subsection{Bøyende bjelke}
+	
+	En bjelke som blir påført en kraft $F$ ved endene $(0, L)$ innover bjelken får en avbøyning $u(x)$ (som vi skal finne) ved posisjon $x$ som følger ligningen
 	
 	\begin{equation*}
-	\nabla^2 \Phi = -4\pi \rho (\mathbf{r}).
+	\gamma \frac{d^2 u(x)}{dx^2} = -F u(x)
 	\end{equation*}
 	
-	Krever vi sfærisk symmetrisk $\Phi$ og $\mathbf{r}$ forenkles dette til en en-dimensjonell ligning i r:
+	Hvor $\gamma$ er en materialkonstant. Vi krever at avbøyingen ved endepunktene er $u(0) = u(L) = 0$ (Dirichlet grensebetingelser). Definerer vi $\rho = \frac{x}{L}$ og $\lambda = FL^2/\gamma$ får vi ligningen av $\rho$ for $\rho \in [0,1]$
 	
 	\begin{equation*}
-	\frac{1}{r^2}\frac{d}{dr}\left(r^2\frac{d\Phi}{dr}\right) = -4\pi \rho(r),
+	\frac{d^2 u(\rho)}{d\rho^2} = -\lambda u(\rho),
 	\end{equation*}
 	
-	Vi substituerer $\Phi(r)= \phi(r)/r$ og får:
+	Vi kan diskretisere denne ligningen ved å tilnærme den andrederiverte
 	
 	\begin{equation*}
-	\frac{d^2\phi}{dr^2}= -4\pi r\rho(r).
+	\frac{u(\rho+h) -2u(\rho) +u(\rho-h)}{h^2} + O(h^2) = -\lambda u(\rho),
 	\end{equation*}
 	
-	Definerer et kildeledd $f$ gitt ved ladningsfordelingen $\rho$ ganget med $r$ og konstanten $-4\pi$.
-	
-	Substituerer til slutt $\phi\rightarrow u$ og $r\rightarrow x$ og får ligningen vi skal løse i dette prosjektet:
-	
-	\begin{equation*}
-	-u''(x) = f(x)
-	\end{equation*}
-	
-	Vi løser denne med Dirichlet grensebetingelser som vil si at vi får ligningen med betingelser:
-	
-	\begin{equation*}
-	-u''(x) = f(x), \hspace{0.5cm} x\in(0,1), \hspace{0.5cm} u(0) = u(1) = 0.
-	\end{equation*}
-	
-	I vårt tilfelle bruker vi et kildledd gitt ved $f(x) = 100e^{-10x}$. Den analytiske løsningen blir da $u(x) = 1 - (1 - e^{-10})x - e^{-10x}$. Vi bruker denne til å måle feilen til den numeriske løsningen vår. (utregning tatt fra oppgavetekst \cite{oppgavetekst})
-
-\subsection{Diskret tilnærming}
-
-	Vi skal tilnærme $u(x)$ ved å regne ut verdiene $v_i$ i punktene $x_i = ih$. $x_i$ går fra $x_0 = 0$ til $x_{n+1} = 1$ med steglengde $h=1/(n+1)$. Vi har $v_0 = v_{n+1} = 0$. Vi tilnærmer den andrederiverte av $u$ med:
-	
+	hvor $h$ er steglengden i diskreteringen vår. Vi tar ikke med feilleddet videre i utregningen. Hvis vi har N punkter for $\rho$ får vi $h = 1/N$. Vi skriver da 
 	\begin{equation*}
 	\begin{aligned}
-	-\frac{v_{i+1}+v_{i-1}-2v_i}{h^2} &= f_i  \hspace{0.5cm} \mathrm{for} \hspace{0.1cm} i=1,\dots, n \\
-	-v_{i+1} - v_{i-1} + 2v_i &= f_i h^2 \\
-	-v_{i+1} - v_{i-1} + 2v_i &= b_i
+	\rho_i = ih \hspace{1cm} i=1,2,\dots , N \\
+	u_i = u(\rho_i) \hspace{1cm} i=1,2,\dots , N
 	\end{aligned}
 	\end{equation*}
-	hvor $f_i=f(x_i)$ og $b_i = f_i h^2$.
-	
-	Dette gir oss n ligninger som svarer til av $b_i$-ene fra n=1 til n. Siden $v_0 = v_{n+1} = 0$ forsvinner $v_{i-1}$ leddet i den første ligningen, og $v_{i+1}$ leddet i den siste ligningen. Vi kan skrive disse som
-	
+	Og vi kan skrive ligningen vår som
+	\begin{equation*}
+	-\frac{u_{i+1} -2u_i +u_{i-1} }{h^2}  = \lambda u_i
+	\end{equation*}
+	Definerer
 	\begin{equation*}
 	\begin{aligned}
-	\mathbf{A}\mathbf{v} = \tilde{\mathbf{b}}
+	d&=\frac{2}{h^2} \\
+	e &= -\frac{1}{h^2}
 	\end{aligned}
 	\end{equation*}
-	hvor
-
+	Siden $u_0 = u_N = 0$ kan vi skrive disse $N - 1$ ikke-trivielle ligningene som en matriseligning
+	\begin{equation*}
+	\begin{bmatrix} d& a & 0   & 0    & \dots  &0     & 0 \\
+	a & d & a & 0    & \dots  &0     &0 \\
+	0   & a & d & a  &0       &\dots & 0\\
+	\dots  & \dots & \dots & \dots  &\dots      &\dots & \dots\\
+	0   & \dots & \dots & \dots  &a  &d & a\\
+	0   & \dots & \dots & \dots  &\dots       &a & d\end{bmatrix} 
+	\begin{bmatrix} u_1 \\ u_2 \\ u_3 \\ \dots \\ u_{N-2} \\ u_{N-1}\end{bmatrix}
+	= \lambda \begin{bmatrix} u_1 \\ u_2 \\ u_3 \\ \dots \\ u_{N-2} \\ u_{N-1}\end{bmatrix}
+	\end{equation*}
+	
+	Vi skal løse dette egenverdiproblemet numerisk for å finne de mulige verdiene $\lambda$ (som sier noe om egenskapene til bjelken) og verdiene $u_i$ som tilfredstiller ligningen (som gir de mulige formene til den avbøyde bjelken).
+	Dette egenverdiproblemet har analytiske løsninger vi kan bruke til å vurdere den numeriske løsningen. Egenverdiene er gitt ved:
+	\begin{equation*}
+	\lambda_j = d+2a\cos{(\frac{j\pi}{N})}, \hspace{0.2cm} j=1,2,\dots N-1.
+	\end{equation*}
+	og egenvektorene:
 	\begin{equation*}
 	\begin{aligned}
-	\mathbf{A} = \begin{bmatrix}
-	2& -1& 0 &\dots   & \dots &0 \\
-	-1 & 2 & -1 &0 &\dots &\dots \\
-	0&-1 &2 & -1 & 0 & \dots \\
-	& \dots   & \dots &\dots   &\dots & \dots \\
-	0&\dots   &  &-1 &2& -1 \\
-	0&\dots    &  & 0  &-1 & 2 \\
+	\mathbf{u}_j = [ \sin(\frac{j\pi}{N}), \sin(\frac{2j\pi}{N}), ..., \sin(\frac{(N-1)j\pi}{N}) ]^T,\\ \hspace{0.2cm} j=1,\dots N-1
+	\end{aligned}
+	\end{equation*}
+	
+\subsection{Elektron i harmonisk oscillator potensial}
+	
+	Et elektron i et harmonisk oscillator potensial $V(r) = \frac{1}{2}kr^2 = \frac{1}{2}m\omega^2r^2$ beskrives av en bølgefunksjon som følger Schrödingerligningn. Vi antar sfærisk symmetri om senteret til potensialet, og ser kun på den radielle delen av Schrödingerligningn. 
+	\begin{equation*}
+	-\frac{\hbar^2}{2 m} \left ( \frac{1}{r^2} \frac{d}{dr} r^2
+	\frac{d}{dr} - \frac{l (l + 1)}{r^2} \right )R(r) 
+	+ V(r) R(r) = E R(r).
+	\end{equation*}
+	hvor $R(r)$ er den radielle delen av bølgefunksjonen(som vi skal finne). $|R(r)|^2$ beskriver sannsynligheten for å observere elektronet i en avstand $r$ fra sentrum av potensialet.
+	
+	$E$ er energien til den harmoniske oscillatoren. $\omega$ er oscillatorfrekvensen og de mulige energiene er
+	\begin{equation*}
+	E_{nl}=  \hbar \omega \left(2n+l+\frac{3}{2}\right),
+	\end{equation*}
+	med $n=0,1,2,\dots$ og $l=0,1,2,\dots$. Hvor $n$ er energikvantetallet og $l$ er orbitalmomentet kvantetallet. Vi ser her kun på tilfellet $l = 0$.
+	
+	Vi substituerer $R(r) = (1/r) u(r)$ og $\rho = (1/\alpha) r$. Har da at $u(0) = u(\infty) = 0$ (krever alltid null sannsynlighet for å finne elektron uendelig langt unna).
+	
+	Setter $\alpha = \left(\frac{\hbar^2}{mk}\right)^{1/4}$ og $\lambda = \frac{2m\alpha^2}{\hbar^2}E$. Da kan vi skrive om ligningen vår til: (se \cite{oppgavetekst} for mer motivert utregning)
+	
+	\begin{equation*}
+	-\frac{d^2}{d\rho^2} u(\rho) + \rho^2u(\rho)  = \lambda u(\rho) .
+	\end{equation*}
+	
+	Vi kan diskretisere denne ligningen på samme vis som for den bøyende bjelken. Vi definerer på nytt en steglengde $h = \rho_N / N$ hvor $N$ er antall punkter og $\rho_N$ er den største verdien for $\rho$ i diskretiseringen vår. Vi kan ikke sette $\rho_N = \infty$ i den numeriske løsningen, men vi vil finne at vi får gode tilnærminger for selv relativt små $\rho_N$. Videre:
+	\begin{equation*}
+	\begin{aligned}
+	\rho_i = ih \hspace{1cm} i=1,2,\dots , N \\
+	u_i = u(\rho_i) \hspace{1cm} i=1,2,\dots , N \\
+	V_i = \rho_i^2 \hspace{1cm} i=1,2,\dots , N
+	\end{aligned}
+	\end{equation*}
+	Da blir den diskretiserte ligningen
+	\begin{equation*}
+	-\frac{u_{i+1} -2u_i +u_{i-1} }{h^2}+V_iu_i  = \lambda u_i
+	\end{equation*}
+	Definerer
+	\begin{equation*}
+	\begin{aligned}
+	d_i&=\frac{2}{h^2}+V_i \\
+	e &= -\frac{1}{h^2}
+	\end{aligned}
+	\end{equation*}
+	Siden $u(0) = u(\rho_N) = 0$ kan skrive disse ikke-trivielle ligningene som en matriseligning
+	\begin{equation*}
+	\begin{bmatrix}d_1 & e & 0   & 0    & \dots  &0     & 0 \\
+	e & d_2 & e & 0    & \dots  &0     &0 \\
+	0   & e & d_3 & e  &0       &\dots & 0\\
+	\dots  & \dots & \dots & \dots  &\dots      &\dots & \dots\\
+	0   & \dots & \dots & \dots  &\dots  e     &d_{N-2} & e\\
+	0   & \dots & \dots & \dots  &\dots       &e & d_{N-1}
+	\end{bmatrix}  \begin{bmatrix} u_{1} \\
+	u_{2} \\
+	\dots\\ \dots\\ \dots\\
+	u_{N-1}
+	\end{bmatrix}=\lambda \begin{bmatrix} u_{1} \\
+	u_{2} \\
+	\dots\\ \dots\\ \dots\\
+	u_{N-1}
 	\end{bmatrix}
-	\end{aligned}
 	\end{equation*}
-	og 
+	Vi skal finne egenverdiene og egenvektorene til denne matrisen numerisk ved å diagonalisere den, slik som for den bøyende bjelken. Egenverdiene $\lambda$ gir oss energien $E$ hvis vi vet $k$. Egenvektorene $u$ (ganget med r) gir oss den tilhørende bølgefunksjonen som lar oss si noe om posisjonen til elektronet.
+	
+	For vår skalering av problemet er de analytiske egenverdiene $\lambda=3,7,11,15,\dots$. Vi skal bruke disse til å vurdere resultatet til den numeriske løsningen.
+	
+\subsection{To elektron i harmonisk oscillator potensial}
+	
+	To elektron i et harmonisk oscillator potensial vil frastøte hverandre pga. Coulomb kraften. Dette gjør det vanskeligere å regne ut bølgefunksjonene til elektronene, men vi skal se at avstanden mellom elektronene kan finnes ved en ligning lik de vi har sett på hittil.
+	Vi begynner med Schrödingerligningn for kun ett elektron
+	\begin{equation*}
+	-\frac{\hbar^2}{2 m} \frac{d^2}{dr^2} u(r) 
+	+ \frac{1}{2}k r^2u(r)  = E^{(1)} u(r),
+	\end{equation*}
+	hvor $E^{(1)}$ er energien til dette ene elektronet. For to elektroner uten noen frastøtende kraft får vi
+	\begin{equation*}
+	\left(  -\frac{\hbar^2}{2 m} \frac{d^2}{dr_1^2} -\frac{\hbar^2}{2 m} \frac{d^2}{dr_2^2}+ \frac{1}{2}k r_1^2+ \frac{1}{2}k r_2^2\right)u(r_1,r_2)  = E^{(2)} u(r_1,r_2) .
+	\end{equation*}
+	hvor $E^{(2)}$ er summen av energiene til elektronene. Merk at elektronene deler følgefunksjon $u(r_1, r_2)$ siden vi ikke kan skille mellom hvilket elekton vi observerer. Vi introduserer den relative koordinaten $\mathbf{r} = \mathbf{r}_1-\mathbf{r}_2$ og massesenterkoordinaten $\mathbf{R} = 1/2(\mathbf{r}_1+\mathbf{r}_2)$. Med disse skriver vi om ligningen
+	\begin{equation*}
+	\left(  -\frac{\hbar^2}{m} \frac{d^2}{dr^2} -\frac{\hbar^2}{4 m} \frac{d^2}{dR^2}+ \frac{1}{4} k r^2+  kR^2\right)u(r,R)  = E^{(2)} u(r,R).
+	\end{equation*}
+	Vi kan separere bølgefunksjonen $u(r,R) = \psi(r)\phi(R)$. Vi kan også separere energien $E^{(2)}=E_r+E_R$. Videre ser vi kun på bølgefunksjonen og energien tilhørende den relative posisjonen, og vi legger til et potensial fra Coulomb-kraften.
+	\begin{equation*}
+	V(r_1,r_2) = \frac{\beta e^2}{|\mathbf{r}_1-\mathbf{r}_2|}=\frac{\beta e^2}{r},
+	\end{equation*}
+	hvor $\beta e^2=1.44$ eVnm. Vi får da totalt
+	\begin{equation*}
+	\left(  -\frac{\hbar^2}{m} \frac{d^2}{dr^2}+ \frac{1}{4}k r^2+\frac{\beta e^2}{r}\right)\psi(r)  = E_r \psi(r).
+	\end{equation*}
+	Definerer 
 	\begin{equation*}
 	\begin{aligned}
-	\mathbf{v} = \begin{bmatrix}
-	v_1 \\
-	v_2 \\
-	v_3 \\
-	\dots \\
-	v_{n-1} \\
-	v_{n}
-	\end{bmatrix},
-	\tilde{\mathbf{b}} = \begin{bmatrix}
-	\tilde{b}_1 \\
-	\tilde{b}_2 \\
-	\tilde{b}_3 \\
-	\dots \\
-	\tilde{b}_{n-1} \\
-	\tilde{b}_{n}
+	\omega_r^2=\frac{1}{4}\frac{mk}{\hbar^2} \alpha^4 \\
+	\alpha = \frac{\hbar^2}{m\beta e^2} \\
+	\lambda = \frac{m\alpha^2}{\hbar^2}E
+	\end{aligned}
+	\end{equation*}
+	og skriver om Schrödingerligningn vår til
+	\begin{equation*}
+	-\frac{d^2}{d\rho^2} \psi(\rho) + \omega_r^2\rho^2\psi(\rho) +\frac{1}{\rho} = \lambda \psi(\rho).
+	\end{equation*}
+	
+	Vi kan diskretisere denne ligningen på samme vis som før. Vi definerer en steglengde $h = \rho_N / N$ hvor $N$ er antall punkter og $\rho_N$ er den største verdien for $\rho$ i diskretiseringen vår. Vi kan ikke sette $\rho_N = \infty$ i den numeriske løsningen, men vi vil finne at vi får gode tilnærminger for selv relativt små $\rho_N$. Videre:
+	\begin{equation*}
+	\begin{aligned}
+	\rho_i = ih \hspace{1cm} i=1,2,\dots , N \\
+	u_i = \psi(\rho_i) \hspace{1cm} i=1,2,\dots , N \\
+	V_i = \omega_r^2 \rho_i^2 + \frac{1}{\rho} \hspace{1cm} i=1,2,\dots , N
+	\end{aligned}
+	\end{equation*}
+	Da blir den diskretiserte ligningen
+	\begin{equation*}
+	-\frac{u_{i+1} -2u_i +u_{i-1} }{h^2}+V_iu_i  = \lambda u_i
+	\end{equation*}
+	Definerer
+	\begin{equation*}
+	\begin{aligned}
+	d_i&=\frac{2}{h^2}+V_i \\
+	e &= -\frac{1}{h^2}
+	\end{aligned}
+	\end{equation*}
+	Siden $u(0) = u(\rho_N) = 0$ kan skrive disse ikke-trivielle ligningene som en matriseligning
+	\begin{equation*}
+	\begin{bmatrix}d_1 & e & 0   & 0    & \dots  &0     & 0 \\
+	e & d_2 & e & 0    & \dots  &0     &0 \\
+	0   & e & d_3 & e  &0       &\dots & 0\\
+	\dots  & \dots & \dots & \dots  &\dots      &\dots & \dots\\
+	0   & \dots & \dots & \dots  &\dots  e     &d_{N-2} & e\\
+	0   & \dots & \dots & \dots  &\dots       &e & d_{N-1}
+	\end{bmatrix}  \begin{bmatrix} u_{1} \\
+	u_{2} \\
+	\dots\\ \dots\\ \dots\\
+	u_{N-1}
+	\end{bmatrix}=\lambda \begin{bmatrix} u_{1} \\
+	u_{2} \\
+	\dots\\ \dots\\ \dots\\
+	u_{N-1}
 	\end{bmatrix}
-	\end{aligned}
 	\end{equation*}
-
-\subsection{Metode 1: Den generelle Thomas algoritmen}
-	Matrisen $\mathbf{A}$ er en tridiagonal matrise, siden den kun har elementer på, rett over og rett under diagonalen. Generelt kan en tridiagonal matrise skrives som:
+	Vi skal finne egenverdiene og egenvektorene til denne matrisen numerisk ved å diagonalisere den, slik som for den bøyende bjelken. Egenverdiene $\lambda$ gir oss energien $E$. Egenvektorene $u$ gir oss den tilhørende bølgefunksjonen som lar oss si noe om avstanden mellom elektronene.
 	
+	Vi skal se hva som skjer for $\omega_r = 0.01, 0.5, 1, 5$, altså hva som skjer for et svakt eller sterkt harmonisk oscillator potensial for grunntilstanden (tilstanden med lavest energi/egenverdi).
+	
+\subsection{Jacobi-egenverdialgoritme}
+	Denne diskusjonen rundt Jacobis egenverdialgoritme baserer seg på FYS4150 kursmateriell \cite{eigvalEmne}. Her kommer jeg bare til å gå gjennom de sentrale ideene, og ikke alle detaljene.
+	
+	Vi har en symmetrisk matrise $A$ som vi vil finne egenverdiene og egenvektorene til. Hvis vi finner en diagonal matrise $D$ som er similær med $A$ vil de per def. ha samme egenverdier, og siden $D$ er diagonal vil disse bare være diagonalelementene til $D$.
+	
+	Målet er å finne en unitær similær transformasjon $S$ slik at $D = S^T A S$ hvor $S^T S = S^{-1}S = I$.
+	
+	Anta $x$ er en egenvektor til $A$. Da har vi $Ax = \lambda x$, og dermed $SDS^T x = \lambda x$ og til slutt $D(S^Tx) = \lambda (S^Tx)$. $S^T x$ er en egenvektor til $D$ med egenverdi $\lambda$, men egenvektorene til en diagonal matrise er standardbasisvektorene, så vi kan finne egenvektorene $x$ til A ved å begynne med standardbasisvektorene og multiplisere med $S$ fra venstre.
+	
+	Unitære transformasjoner $w_i = Uv_i$ bevarer prikk produktet og ortogonaliteten $v_j^T v_i = \delta_{ij}$ siden $w_j^T w_i = (Uv_j)^T (Uv_i) = v_j^T U^TUv_i = v_j^T v_i$.
+	
+	Jacobis egenverdialgoritme går ut på å bruke flere transformasjoner $S$ på formen
 	\begin{equation*}
-	\begin{aligned}
-	\mathbf{A} = \begin{bmatrix}
-	d_1 & c_1 & 0 &\dots   & \dots &0 \\
-	a_1 & d_2 & c_2 &0 &\dots &\dots \\
-	0& a_2 & d_3 & c_3 & 0 & \dots \\
-	& \dots   & \dots &\dots   &\dots & \dots \\
-	0&\dots   &  &a_{n-2} & d_{n-1} & c_{n-1} \\
-	0&\dots    &  & 0  &a_{n-1} & d_n \\
-	\end{bmatrix}
-	\end{aligned}
+	\mathbf{S}=
+	\left( 
+	\begin{array}{cccccccc}
+		1  &    0  & \dots &   0        &    0  & \dots & 0 &   0       \\
+		0  &    1  & \dots &   0        &    0  & \dots & 0 &   0       \\
+		\dots & \dots & \dots & \dots      & \dots & \dots & 0 & \dots     \\ 
+		0  &    0  & \dots & \cos\theta  &    0  & \dots & 0 & \sin\theta \\
+		0  &    0  & \dots &   0        &    1  & \dots & 0 &   0       \\
+		\dots & \dots & \dots & \dots      & \dots & \dots & 1 & \dots     \\
+		0  &    0  & \dots &  -\sin\theta        &    0  & \dots & 0 &   \cos\theta   
+	\end{array}
+	\right)
 	\end{equation*}
+	disse kan ses på som en plan-rotasjon med vinkel $\theta$ i det euklidiske n-dimensjonelle rommet. Man velger plasseringen av cos og sin leddene slik at $S^T A S$ er nærmere diagonal enn $A$. Det dette betyr i praksis er å finne det største elementet i $A$ og velge $S$ slik at dette settes til 0 på begge sider av diagonalen (hugs at $A$ er symmetrisk). De andre elementene i $A$ som deler rad og kolonne med det største elementet i $A$ (på begge sider av diagonalen) vil også endres, men summen av størrelsen til elementene som ikke er på diagonalen til $A$ vil bli mindre \cite{eigvalEmne}.
 	
-	Vi kan løse ligningen $\mathbf{A}\mathbf{v} = \tilde{\mathbf{b}}$ med denne generelle tridiagonale matrisen $\mathbf{A}$ med Thomas algoritmen. Først eliminerer man $a_i$-ene med forlengssubstitusjon, og så løser man ligningssystemet med baklengssubstitusjon.
-	
-	For forlengssubstitusjon ser vi at vi ikke trenger å endre på første rad. På andre rad trekker vi fra første rad ganget med $a_1/d_1$, for å eliminere $a_1$. Da får vi et nytt diagonalelement $\tilde{d}_2 = d_2 - c_1 * a_1/d_1$ og et nytt element på høyresiden $b_2 = \tilde{b}_2 - \tilde{b}_1 * a_1/d_1$.
-	
-	Når vi videre skal eliminere $a_2$ på tredje rad ser vi at vi har samme situasjon som vi hadde i andre rad, bare forskjøvet et hakk til høyre. Og alle stegene videre vil være helt like. Vi får formlene:
-	
+	Først finner vi plasseringen til de største elementene i $A$ ($a_{kl}$ og $a_{lk}$) (på hver sin side av diagonalen). Plasserer vi cos og sin leddene i $S$ i samme rader og kolonner (l og k) og setter leddene med indeks kl og lk i $S^T A S$ lik 0 får vi denne ligningen:
 	\begin{equation*}
-	\begin{aligned}
-	\tilde{d}_i = d_i - c_{i-1} * a_{i-1}/d_{i-1} \hspace{0.4cm} og \hspace{0.4cm} b_i = \tilde{b}_i - \tilde{b}_{i-1} * a_{i-1}/d_{i-1}
-	\end{aligned}
+	\tan(\theta) = -\tau \pm \sqrt{1 - \tau^2}
 	\end{equation*}
-	for $i=2,\dots, n$.
-	
-	Når vi gjør baklengssubstitusjonen finner vi verdiene $v_i$ ved å bevege oss baklengs gjennom matrisen. Siste rad vil kun inneholde $\tilde{d}_n$, siden $a_n$ ble eliminert. Vi setter derfor $v_n = b_n / \tilde{d}_n$. Ved ant siste rad har vi kun igjen $\tilde{d}_{n-1}$ og $c_{n-1}$, men nå vet vi $v_n$, så vi finner $v_{n-1} = (b_{n-1} - c_{n-1}v_{n}) / \tilde{d}_{n-1}$. Ved tredje siste rad og videre har vi samme situasjon og vi får:
-	
+	hvor vi brukte at
 	\begin{equation*}
-	\begin{aligned}
-	v_{i} = (b_{i} - c_{i}v_{i+1}) / \tilde{d}_{i}
-	\end{aligned}
+	\cot 2\theta= \tau = \frac{a_{ll}-a_{kk}}{2a_{kl}}
 	\end{equation*}
-	for $i=n-1,\dots, 1$.
+	Dette lar oss finne $\theta$ og dermed $S$ som lar oss komme nærmere en similær diagonal matrise $D$ (i praksis finner vi bare $sin\theta$ og $cos\theta$)). Gjør vi dette nok ganger ender vi opp med en matrise som har små nok elementer av diagonalen at den er tilnærmet diagonal.
 	
-	Etter dette har vi funnet alle punktene $v_i$ vi var ute etter. For hvert steg har vi tre induktive formler med til sammen 9 FLOPs. Metoden bruker dermed 9n FLOPs, og er i størrelsesorden $\order{n}$ (kan reduseres til 8n FLOPs ved å regne ut $a_{i-1}/d_{i-1}$ kun en gang for hvert steg).
-	
-	Metoden er implementert i filen tridiagSlow.cpp, som finnes i det vedlagte github repositoriet \cite{myRepo}. Et relevant kodeutsnitt som viser forlengs- og baklengssubstitusjonen er vist her:
-	
-	\begin{minted}[mathescape, linenos]{python}
-double factor;
-for (int i = 2; i < n; i++) {
-    factor = a[i - 1] / d[i - 1];
-    d[i] = d[i] - c[i - 1] * factor;
-    b[i] = b[i] - b[i - 1] * factor;
-}
-sol[n-1] = b[n-1] / d[n-1];
-for (int i = n - 2; i > 0; i--) {
-    sol[i] = (b[i] - c[i] * sol[i + 1]) / d[i];
-}
-	\end{minted}
-
-\subsection{Metode 2: Vårt spesialtilfelle}
-
-	I vårt tilfelle vet vi alle elementene i A, og langs diagonalene er de radvis like. Den første konsekvensen av dette er at vi kan regne ut oppdateringen av hovuddiagonalen på forhånd (slik at de ikke regnes med i antall FLOPs). Formelen:
-	
-	\begin{equation*}
-	\begin{aligned}
-	\tilde{d}_i &= d_i - c_{i-1} * a_{i-1}/d_{i-1} \\
-	&= d_i - (-1) * (-1)/d_{i-1} \\
-	&= d_i - 1/d_{i-1}
-	\end{aligned}
-	\end{equation*}
-	for $i=2,\dots, n$, med $d_1 = 2$ gir $d_i = \frac{i + 1}{i}$ for $i=1,\dots, n$.
-	
-	Forlengssubstitusjonen blir:
-	
-	\begin{equation*}
-	\begin{aligned}
-	b_i &= \tilde{b}_i - \tilde{b}_{i-1} * a_{i-1}/d_{i-1} \\
-	&= \tilde{b}_i - \tilde{b}_{i-1} * (-1)/d_{i-1} \\
-	&= \tilde{b}_i + \tilde{b}_{i-1} /d_{i-1}
-	\end{aligned}
-	\end{equation*}
-	for $i=2,\dots, n$.
-	
-	Og baklengssubstitusjonen blir:
-	
-	\begin{equation*}
-	\begin{aligned}
-	v_{i} &= (b_{i} - c_{i}v_{i+1}) / \tilde{d}_{i} \\
-	&= (b_{i} - (-1)v_{i+1}) / \tilde{d}_{i} \\
-	&= (b_{i} + v_{i+1}) / \tilde{d}_{i}
-	\end{aligned}
-	\end{equation*}
-	for $i=n-1,\dots, 1$.
-	
-	For hvert steg har vi da 4 FLOPs, så metoden bruker til sammen 4n flops som er i størrelsesorden $\order{n}$.
-	
-	Metoden er implementert i filen tridiag.cpp, som finnes i det vedlagte github repositoriet \cite{myRepo}. Et relevant kodeutsnitt som viser forlengs- og baklengssubstitusjonen er vist her:
-	
-	\begin{minted}[mathescape, linenos]{python}
-for (int i = 2; i < n; i++) {
-    b[i] = b[i] + b[i - 1] / d[i - 1];
-}
-sol[n-1] = b[n-1] / d[n-1];
-for (int i = n - 2; i > 0; i--) {
-    sol[i] = (b[i] + sol[i + 1]) / d[i];
-}
-	\end{minted}
-	
-	
-\subsection{Metode 3: LU faktorisering og løsing}
-	LU faktorisering er en kjent metode som kan brukes til å løse ligningssett på formen $\mathbf{A}\mathbf{v} = \tilde{\mathbf{b}}$, som går ut på å faktorisere $\mathbf{A}$ inn i en nedre triangulær matrise $\mathbf{L}$ og en øvre triangulær matrise $\mathbf{U}$, for så å enkelt løse ligningene $\mathbf{A}\mathbf{y} = \tilde{\mathbf{b}}$ og $\mathbf{U}\mathbf{v} = \mathbf{y}$ \cite{luwiki}.
-	
-	LU faktorisering tar omtrent $\frac{2}{3}n^3$ FLOPs, og er dermed på størrelsesorden $\order{n^3}$.
-	
-	Metoden er brukt i programmet tridiagLU.cpp, som finnes i det vedlagte github repositoriet\cite{myRepo}. Jeg importerer funksjoner fra filen lib.cpp, tatt fra githubsiden til kurset\cite{libRepo}, for å løse ligningssettet med LU faktorisering.
-	
-	For å sammenligne hastigheten til metodene importerer jeg ''time.h'' i C++, og bruker funksjonen clock(). Tidtakingen blir gjort i programmet ''tridiagTiming.cpp''.
 
 \section{Resultater} %------------------Resultater-----------------------
-	Alle tre metodene gir samme funksjonsverdier for n opp til 1000. Testet kun verdiene til den tilpassede Thomas algoritmen for høyere n enn det. Viser ikke tabeller av verdier her for å vise det, men resultatene ligger med koden på github\cite{myRepo}.
 	
-	Programmet ''tridiagSlow.cpp'' bruker den generelle Thomas algoritmen til å løse ligningen. Kjørte programmet for n = 10 punkter, og får plottet i figur \ref{fig:losning1} med notebooken ''Project1Notebook.ipynb'' \cite{myRepo}.
-
-	\begin{figure}[H]
-		\includegraphics[width=90mm]{../Results/losning1.jpg}
-		\caption{Analytisk og numerisk løsning av 1d Poisson ligningen. Brukte her den tilpassede Thomas algoritmen.}
-		\label{fig:losning1}
-	\end{figure}
-
-	Kjørte tilsvarende programmet ''tridiag.cpp'' som bruker den tilpassede versjonen av Thomas algoritmen for n = 1000 punkter og får plottet i figur \ref{fig:losning} med samme notebook.
-
-	\begin{figure}[H]
-		\includegraphics[width=90mm]{../Results/losning.jpg}
-		\caption{Analytisk og numerisk løsning av 1d Poisson ligningen. Brukte her den tilpassede Thomas algoritmen.}
-		\label{fig:losning}
-	\end{figure}
-	
-	Kjørte programmet ''tridiag.cpp'' som bruker den tilpassede versjonen av Thomas algoritmen for n = 1000 punkter og får plottet i figur \ref{fig:relErr3}. Den viser hvordan den relative feilen endrer seg fra punkt til punkt for liten n. Figur \ref{fig:relErr7} produsert på tilsvarende vis med n = $10^7$ viser hvordan feilen endrer seg fra punkt til punkt for stor n.
-	
-	\begin{figure}[H]
-		\includegraphics[width=90mm]{../Results/relErrx.jpg}
-		\caption{$log_{10}$ av relativ feil for alle punktene for n = 1000.}
-		\label{fig:relErr3}
-	\end{figure}
-
-	\begin{figure}[H]
-		\includegraphics[width=90mm]{../Results/relErr7.jpg}
-		\caption{$log_{10}$ av relativ feil for alle punktene for n = $10^7$.}
-		\label{fig:relErr7}
-	\end{figure}
-
-	Tiden de ulike metodene brukte på å løse ligningen for ulike n vises i tabell \ref{tab:tid}. 
+\subsection{Jacobi-egenverdialgoritme ytelse}
+	Vi løser ligningene for den bøyende bjelken analytisk, med funksjoner fra C++ biblioteket Armadillo og med Jacobi-egenverdialgoritmen, og sammenligner tiden de tar.
 	
 	\begin{table}[H]
 		\begin{center}
-			\caption{Tid for de ulike metodene i sekunder.}
-			\label{tab:tid}
+			\caption{Tid (s) det tok for hver metode å løse å løse bøyende bjelke ligningen for ulike antall punkter.}
+			\label{tab:time}
 			\begin{tabular}{|c|c|c|c|} \hline
-				\textbf{$log_{10}(n)$} & \textbf{Tridiag} & \textbf{Tridiag Generell} & \textbf{LU} \\ \hline
-				1 & 0.00000 & 0.00000 & 0.00000 \\
-				2 & 0.00000 & 0.00000 & 0.00100 \\
-				3 & 0.00000 & 0.00000 & 1.17000 \\
-				4 & 0.00000 & 0.00000 & 2228.8350 \\
-				5 & 0.00200 & 0.00200 & \\
-				6 & 0.01400 & 0.01800 & \\
-				7 & 0.13600 & 0.17700 & \\ \hline
-			\end{tabular}
-		\end{center}
-	\end{table}
-	Tabell \ref{tab:flops} viser omtrent hvor mange FLOPs hver metode bruker for ulike n.
-	\begin{table}[H]
-		\begin{center}
-			\caption{FLOPs for de ulike metodene.}
-			\label{tab:flops}
-			\begin{tabular}{|c|c|c|c|} \hline
-				\textbf{$log_{10}(n)$} & \textbf{Tridiag (4n)} & \textbf{Tridiag Generell(8n)} & \textbf{LU(2/3$n^3$)} \\ \hline
-				1 & 4$*10$ & 8$*10$ & $6.67*10^{2}$ \\
-				2 & 4$*10^2$ & 8$*10^{2}$ & $6.67*10^{5}$ \\
-				3 & 4$*10^3$ & 8$*10^{3}$ & $6.67*10^{8}$ \\
-				4 & 4$*10^4$ & 8$*10^{4}$ & $6.67*10^{11}$ \\
-				5 & 4$*10^5$ & 8$*10^{5}$ & $6.67*10^{14}$\\
-				6 & 4$*10^6$ & 8$*10^{6}$ & $6.67*10^{17}$\\
-				7 & 4$*10^7$ & 8$*10^{7}$ & $6.67*10^{20}$\\ \hline
+				\textbf{$n$} & \textbf{Analytisk} & \textbf{Armadillo} & \textbf{Jacobi} \\ \hline
+				100 & 0.01 & 0.00 & 0.17 \\
+				200 & 0.01 & 0.00 & 2.41 \\
+				300 & 0.04 & 0.00 & 12.5 \\
+				400 & 0.09 & 0.00 & 38.3 \\ \hline
 			\end{tabular}
 		\end{center}
 	\end{table}
 
-	Endringen av relativ feil som funksjon av økende n vises i tabell \ref{tab:relErr} og i figur \ref{fig:relErrPlot}. Vi ser her på den største enkeltfeilen mellom analytisk og numerisk løsning. For n = $10^6$ er feilen litt under -11 for alle punktene borsett fra de ved endepunktene.
-	
+	Vi ser også på hvor mange iterasjoner av Jacobi-egenverdialgoritme som var nødvendig for at alle ikke-diagonale elementene var så godt som null ($< 10^{-10}$).
 	\begin{table}[H]
 		\begin{center}
-			\caption{$log_{10}$ av relativ feil som funksjon av $log_{10}(n)$}
-			\label{tab:relErr}
+			\caption{Nødvendige iterasjoner av Jacobi-egenverdialgoritme for ulike antall punkter.}
+			\label{tab:iters}
 			\begin{tabular}{|c|c|} \hline
-				\textbf{$log_{10}(n)$} & $log_{10}(|\frac{v_i - u_i}{u_i}|)$ \\ \hline
-				1 & -1.1005822 \\
-				2 & -3.070673 \\
-				3 & -5.079183 \\
-				4 & -7.079094 \\
-				5 & -9.079008 \\
-				6 & -10.431693 \\
-				7 & -9.2979409 \\ \hline
+				\textbf{$n$} & \textbf{Iterasjoner} \\ \hline
+				100 & 18773 \\
+				200 & 74944 \\
+				300 & 170278 \\
+				400 & 301772 \\ \hline
 			\end{tabular}
 		\end{center}
 	\end{table}
-	
+
+\subsection{Bøyende bjelke løsning}
+	Ved å løse ligningen for den bøyende bjelken for 100 punkter får vi disse minste egenverdiene:
+	\begin{table}[H]
+		\begin{center}
+			\caption{De fire minste egenverdiene for den bøyende bjelken for de ulike metodene. De er helt like, og med flere siffer enn det som er fint å se på ser vi at de alle er like for de første 10 sifrene.}
+			\label{tab:bbeig}
+			\begin{tabular}{|c|c|c|} \hline
+				\textbf{Analytisk} & \textbf{Armadillo} & \textbf{Jacobi} \\ \hline
+				9.868 & 9.868 & 9.868 \\
+				39.46 & 39.46 & 39.46 \\
+				88.76 & 88.76 & 88.76 \\
+				157.7 & 157.7 & 157.7\\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+	Vi fikk også egenvektorene tilhørende alle egenverdiene. Plotter her egenvektoren for den minste egenverdien funnet analytisk og med Jacobi.
 	\begin{figure}[H]
-		\includegraphics[width=90mm]{../Results/relErrPlot.jpg}
-		\caption{$log_{10}$ av relativ feil som funksjon av $log_{10}(n)$.}
-		\label{fig:relErrPlot}
+		\includegraphics[width=90mm]{../Figures/bjelke1.png}
+		\caption{Egenvektor for ligningen til den bøyende bjelken tilhørende den laveste egenverdien. Sammenligner her den analytiske løsningen med løsningen funnet med Jacobis egenverdialgoritme.}
+		\label{fig:bb}
+	\end{figure}
+	De andre egenvektorene svinger flere ganger om sentrum. Neste egenvektor svinger én gang om midten, neste deretter to ganger osv.
+	
+\subsection{Ett elektron løsning}
+	For å analysere effekten av å endre antall integrasjonpunkter $N$ og maksverdi $\rho$ regnet vi ut den første egenverdien for ulike kombinasjoner av disse.
+	\begin{table}[H]
+		\begin{center}
+			\caption{Absolutt feil i den første egenverdien for ulike kombinasjoner av $N$ og $rho_N$ når vi løser ligingen for ett elektron}
+			\label{tab:rhoN}
+			\begin{tabular}{|c|c|c|c|c|} \hline
+				\textbf{n/$\rho_N$} & \textbf{3} & \textbf{6} & \textbf{9} & \textbf{12} \\ \hline
+				50 & 0.01108 & 0.00433 & 0.00976 & 0.01741\\
+				100 & 0.01188 & 0.00110 & 0.00248 & 0.00441\\
+				150 & 0.01203 & 0.00049 & 0.00111 & 0.00197\\
+				200 & 0.01209 & 0.00027 & 0.00062 & 0.00111\\
+				250 & 0.01211 & 0.00017 & 0.00040 & 0.00071\\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+
+	Ved et kjapt manuelt søk fant vi at $N = 300$ og $\rho_N = 6$ gav fire riktige sifre for den første egenverdien (som skal være lik 3), men fire riktige sifre for et betydelig antall egenverdier fikk vi ikke for hensiktsmessige $N$.
+	
+	Vi plotter egenvektorene tilhørende de tre minste egenverdiene kvadrert.
+	\begin{figure}[H]
+		\includegraphics[width=90mm]{../Figures/ettElektron.png}
+		\caption{Løsninger av ligningen for elektron i HO potensial, her: Egenvektorene tilhørende de tre minste egenverdiene kvadrert. Funnet med Jacobis egenverdialgoritme. Merk at dette er løsningen av difflikningen, ganget med $\rho$, for å få den radielle bølgefunksjonen tilbake.}
+		\label{fig:ettelektron}
+	\end{figure}
+
+\subsection{To elektron løsning}
+	Vi løste ligningen for to elektroner for $\omega_r = 0.01$, $\omega_r = 0.5$, $\omega_r =1$,
+	og $\omega_r = 5$.
+	
+	Plotter egenvektorene til den laveste egenverdien (grunntilstanden) kvadrert for ulik $\omega_r$. 
+	\begin{figure}[H]
+		\includegraphics[width=90mm]{../Figures/toElektron.png}
+		\caption{Løsninger av ligningen for to elektron i HO potensial, her: løsningene for $\omega_r = 0.01$, $\omega_r = 0.5$, $\omega_r =1$, og $\omega_r = 5$. Funnet med Jacobis egenverdialgoritme.}
+		\label{fig:toelektron}
+	\end{figure}
+
+	Plotter egenvektorene til den laveste egenverdien (grunntilstanden) kvadrert for ulik $\omega_r$ uten noen frastøtende Coulomb kraft mellom elektronene.
+	\begin{figure}[H]
+		\includegraphics[width=90mm]{../Figures/toElektronNoC.png}
+		\caption{Løsninger av ligningen for to elektron i HO potensial, uten Coulomb ledd, her: løsningene for $\omega_r = 0.01$, $\omega_r = 0.5$, $\omega_r =1$, og $\omega_r = 5$. Funnet med Jacobis egenverdialgoritme.}
+		\label{fig:toelektronnoC}
 	\end{figure}
 	
 \section{Diskusjon} %------------------Diskusjon-----------------------
-	Vi observerte at alle tre metodene finner samme funksjonsverdier for n = 10 opp til 1000 (testet ikke tallene til alle metodene for større n). Dette skyldes trolig at alle metodene manipulerer matriseelementer til å finne en ''eksakt'' løsning til det samme ligningssettet.
+	Tiden det tok å finne de analytiske løsningene til den bøyende bjelken er ikke av interesse, siden det kun var evalueringen av trigonometriske funksjoner for å finne hvert element. Armadillo funksjoner brukte nok mindre tid til å finne løsninger siden de brukte enklere operasjoner som addisjon og multiplikasjon, og vektorisering. Jacobis egenverdialgoritme brukte svært lang tid selv for relativt små matriser \ref{tab:time}. Dette kommer nok av at algoritmen bruker mye tid på å finne det største elementet i $A$, og fordi det må mange iterasjoner til for å ende opp med en løsning.
 	
-	På figur \ref{fig:losning} ser vi at den numeriske og analytiske løsningen passer godt sammen, og i tabell \ref{tab:relErr} ser vi at de passer bedre og bedre sammen for større n helt til rundt n = $10^6$, da den øker litt. Dette ser vi også på figur \ref{fig:relErrPlot}, hvor et stigningstall på ca. -2 er tydelig for de fem første punktene(dette kommer av mindre avkortingsfeil gitt mindre h). Hvis vi hadde sett på gjennomsnittlig feil, hadde også det sjette punktet vært på denne linjen. Ved n = $10^7$ mister vi nøyaktighet fordi tallene vi regner med er for små til å holde på nyttig informasjon, vi ser at dette fører til variasjon i verdiene vi får ut i figur \ref{fig:relErr7}, sammenlignet med figur \ref{fig:relErr3}. Vi får derfor her best resultat for n = $10^6$.
+	Antall iterasjoner Jacobis egenverdialgoritme brukte økte omtrent lineært med økende $n$, omtrent 100000 for hver hundre $n$ \ref{tab:iters}. Lineær økning i iterasjoner er ønskelig for de fleste algoritmer, men her må det nevnes at siden matrisen $A$ vi ser på er tridiagonal øker antall matriseelementer som ikke er 0 også lineært.
 	
-	Vi fikk tatt tiden på de to versjonene av Thomas algoritmen opp til n = $10^7$, da den generelle versjonen brukte 0.177s og den tilpassede versjonen brukte 0.136s. Som vi ser i tabell \ref{tab:flops} skal den tilpassede versjonen utføre halvparten så mange FLOPs, men vi ser at den allikevel ikke er dobbelt så rask. Dette skyldes trolig tiden det tar å lese og skrive til minnet, samt andre ukontrollerbare effekter. Høyere n hadde vi ikke minnekapasitet til å regne ut for. LU metoden gjør betydelig flere FLOPs, som man ser i tabell \ref{tab:flops}, og den bruker naturligvis mye lengre tid. Fra n = 1000 til n = 10000 brukte den rundt 2000 ganger lengre tid, selv om det kun var 1000 ganger flere FLOPs, dette skyldes trolig den store mengden data som må lagres, skrives og leses siden vi bruker nxn matriser. For n = 10000 brukte LU metoden litt over 37 minutter. Ganger vi det med kun 1000 (siden det blir 1000 ganger flere FLOPs for n = $10^5$), får vi litt under 26 dager, så vi kan slå fast at LU metoden fungerer særs dårlig til å løse dette problemet.
+	Alle tre metodene for å finne egenverdiene til den bøyende bjelken gav så godt som de samme egenverdiene, som vist i tabell \ref{tab:bbeig}. Egenvektorene hadde også godt samsvar som vi ser i figur \ref{fig:bb}. Dvs. at selv om Jacobis egenverdialgoritme er treig, så finner den riktig svar til slutt.
+	
+	Løsningen av ett elektron i HO potensial var avhengig av antall datapunkter og største $\rho$ verdi. Vi fann at en $\rho_N$ verdi på rundt 6 gav best resultat for rundt 250 målepunkter \ref{tab:rhoN}. Dette er en balanse mellom liten steglengde hvor funksjonen har store verdier, og å inkludere punkter hvor funksjonen har små verdier, men som fortsatt er ulik 0. For enda flere målepunkter vil derfor en større $\rho_N$ fungere bedre. På figur \ref{fig:ettelektron} ser vi at funksjonen er nær 0 ved $\rho_N = 6$.
+	
+	For to elektroner varierte vi styrken av HO potensialet ved å variere $\omega_r$. Liten $\omega_r$ tilsvarer et svakt potensial. På figur \ref{fig:toelektron} ser vi at et sterkt potensial holder elektronene nære hverandre, mens et svakt potensial lar elektronene frastøte hverandre slik at de kommer lengre unna hverandre. På figur \ref{fig:toelektronnoC} ser vi at uten noen frastøtende Coulombkraft er elektronene nærmere hverandre.
+	
+	Vi ser også at forskjellen (når vi sammenligner med og uten Coulomb kraft) i gjennomsnittlig avstand mellom elektronene (toppene av grafene) er størst for et svakt potensial. Man kunne trodd at forskjellen ville vært størst når elektronene tvinges sammen av et sterkt potensial (siden Coulombkraften er sterkest her), men Coulomb kraften har lang rekkevidde, så et svakt potensial lar den ha effekt over stor avstand, selv om elektronene er lengre unna hverandre.
 
 
 \section{Konklusjon} %------------------Konklusjon-----------------------
-	Vi løste den en-dimensjonale Poisson ligningen med Dirichlet grensebetingelser numerisk. Vi implementerte tre ulike metoder for å løse ligningen, og sammenlignt kompleksiteten og hastigheten til disse. LU faktorisering har en kompleksitet på $2/3n^3$, og brukte dermed lang tid på å løse ligningen med kort steglengde. Den generelle Thomas algoritmen har en kompleksitet på $8n$ og var dermed effektiv også for små steglengder. Den tilpassede Thomas algoritmen har en kompleksitet på $4n$ og presterte best av alle metodene. Det er tydelig at valg av metode kan ha mye å si for hvor effektivt man kan løse et problem, siden LU faktorisering brukte 37 minutter på å regne ut noe de andre metodene gjorde nærmest umiddelbart.
+	I dette prosjektet løste vi tre ulike diffligninger ved å diskretisere de og sette de opp som egenverdiproblemer. Den første ligningen fann formen til en bøyende bjelke. Den andre fann den radielle komponenten til bølgefunksjonen til et elektron i et harmoniso oscillator potensial. Den tredje fann avstanden mellom to interagerende elektroner i et harmonisk oscillator potensial.
+	
+	Vi brukte Jacobis egenverdialgoritme til å løse ligningene. Vi fann at Jacobis egenverdialgoritme gir så godt som samme resultater som C++ funksjoner fra biblioteket Armadillo, og som den analytiske løsningen for den bøyende bjelken. Men den var mye treigere, og brukte 38.2s på en utregning Armadillo fullførte fortere enn maskinen klarte å måle.
+	
+	For de kvantemekaniske systemene såg vi at vi måtte finne balansen mellom antall målepunkter og endepunktet i beregningene våre. Den numeriske metoden tilnærmet fortsatt den analytiske løsningen godt.
+	
+	Til slutt observerte vi et samspill mellom harmonisk oscillator potensialet og den frastøtende Coulombkraften, der vi såg at rekkevidden til Coulombkraften førte til større forskjell i avstanden mellom elektronene for svake potensialer enn for sterke.
 
 \begin{figure*} \bibliography{biblio} \end{figure*}
 	
