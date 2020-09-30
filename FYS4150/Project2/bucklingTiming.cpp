@@ -13,6 +13,7 @@ using namespace  arma;
 double armaTime(mat, int);
 double jacobiTime(mat, mat, int);
 double analyticalTime(int, double, double);
+int jacobiIters(mat, mat, int);
 
 int main(int argc, char const *argv[]) {
     // Writing to file
@@ -24,11 +25,13 @@ int main(int argc, char const *argv[]) {
     ofile << setw(15) << "n";
     ofile << setw(15) << "Armadillo";
     ofile << setw(15) << "Analytical";
-    ofile << setw(15) << "Jacobi" << endl;
+    ofile << setw(15) << "Jacobi";
+    ofile << setw(15) << "Jacobi-Iterations" << endl;
     for (int n = 100; n < 1000; n = n + 100) {
         mat R = eye(n, n); // The matrix R which will hold all of the eigenvectors
         mat A = zeros<mat>(n,n); // The tridiagonal matrix A which is to be diagonalized
-        double h2 = 1.0 / (n * n);
+        double h = 1.0 / (n + 1);
+        double h2 = h * h;
         double d = 2 / h2;
         double a = - 1 / h2;
         A(0, 0) = d;
@@ -43,6 +46,7 @@ int main(int argc, char const *argv[]) {
         ofile << setw(15) << setprecision(8) << analyticalTime(n, d, a);
         if (n <= 400) {
             ofile << setw(15) << setprecision(8) << jacobiTime(A, R, n);
+            ofile << setw(15) << setprecision(8) << jacobiIters(A, R, n);
         }
         ofile << endl;
     }
@@ -81,4 +85,20 @@ double analyticalTime(int n, double d, double a) {
             analytical_eigvecs(row, col) = sin((row + 1) * (col + 1) * factor);
         }
     }
+}
+
+int jacobiIters(mat A, mat R, int n) {
+    int p; int q;
+    offdiag(A, &p, &q, n);
+    double maxnondiag = fabs(A(p, q));
+    double tolerance = 1.0E-10;
+    int maxiter = n * n * n;
+    int iterations = 0;
+    while (maxnondiag > tolerance && iterations <= maxiter) {
+        offdiag(A, &p, &q, n);
+        maxnondiag = fabs(A(p, q));
+        Jacobi_rotate(A, R, p, q, n);
+        iterations++;
+    }
+    return iterations;
 }

@@ -11,10 +11,11 @@ using namespace  arma;
 
 int main(int argc, char const *argv[]) {
     // Initializing matrices
-    int n = 200;
+    int n = 100;
     mat R = eye(n, n); // The matrix R which will hold all of the eigenvectors
     mat A = zeros<mat>(n,n); // The tridiagonal matrix A which is to be diagonalized
-    double h2 = 1.0 / (n * n);
+    double h = 1.0 / (n + 1);
+    double h2 = h * h;
     double d = 2 / h2;
     double a = - 1 / h2;
     A(0, 0) = d;
@@ -28,8 +29,8 @@ int main(int argc, char const *argv[]) {
     vec arma_eigval = zeros<vec>(n);
     mat arma_eigvecs = zeros<mat>(n, n);
     eig_sym(arma_eigval, arma_eigvecs, A);
-    arma_eigval.save("Results/arma_eigval", arma_ascii);
-    arma_eigvecs.save("Results/arma_eigvecs", arma_ascii);
+    arma_eigval.save("Results/0arma_eigval", arma_ascii);
+    arma_eigvecs.save("Results/0arma_eigvecs", arma_ascii);
     cout << "Armadillo solver: " << arma_eigval(0) << endl;
 
     // Diagonalizing with Jacobi rotations
@@ -42,8 +43,8 @@ int main(int argc, char const *argv[]) {
         jacobi_eigvals(i) = jacobi_eigvals_unsorted(eigvals_order(i));
         jacobi_eigvecs.col(i) = R.col(eigvals_order(i));
     }
-    jacobi_eigvals.save("Results/jacobi_eigval", arma_ascii);
-    jacobi_eigvecs.save("Results/jacobi_eigvecs", arma_ascii);
+    jacobi_eigvals.save("Results/0jacobi_eigval", arma_ascii);
+    jacobi_eigvecs.save("Results/0jacobi_eigvecs", arma_ascii);
     cout << "Jacobi: " << jacobi_eigvals(0) << endl;
 
     // Analytical solution
@@ -56,8 +57,8 @@ int main(int argc, char const *argv[]) {
             analytical_eigvecs(row, col) = sin((row + 1) * (col + 1) * factor);
         }
     }
-    analytical_eigvals.save("Results/analytical_eigval", arma_ascii);
-    analytical_eigvecs.save("Results/analytical_eigvecs", arma_ascii);
+    analytical_eigvals.save("Results/0analytical_eigval", arma_ascii);
+    analytical_eigvecs.save("Results/0analytical_eigvecs", arma_ascii);
     cout << "Analytical: "  << d + 2 * a * cos(1 * M_PI / (n + 1)) << endl;
     return 0;
 }

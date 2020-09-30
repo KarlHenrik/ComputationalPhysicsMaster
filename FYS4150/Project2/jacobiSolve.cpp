@@ -66,7 +66,7 @@ void jacobiSolve(mat &A, mat &R, int n) {
     offdiag(A, &p, &q, n);
     double maxnondiag = fabs(A(p, q));
     double tolerance = 1.0E-10;
-    int maxiter = n * n;
+    int maxiter = n * n * n;
     int iterations = 0;
     while (maxnondiag > tolerance && iterations <= maxiter) {
         offdiag(A, &p, &q, n);
