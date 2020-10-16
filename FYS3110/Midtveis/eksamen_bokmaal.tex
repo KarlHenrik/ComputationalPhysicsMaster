@@ -1,0 +1,149 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[norsk]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath} % For \mathbb
+\usepackage{amsfonts}
+\usepackage{hyperref}
+
+
+%% Numbered exercises
+\newcounter{excount}[chapter]
+\newenvironment{exercise}[1][]{\addtocounter{excount}{1} \noindent {\bf Oppgave
+    \arabic{excount} \ \ #1}\hspace{2mm}}{\vspace{4mm}}
+
+
+\title{Midtermineksamen FYS3110\\ Høst 2020}
+\author{}
+
+
+\begin{document}
+
+\maketitle
+
+\addtocounter{page}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Preamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Viktig informasjon:}
+\begin{itemize}
+\item
+Besvarelsen skal leveres elektronisk som pdf-fil i Inspera, enten generert fra \LaTeX\  eller scannet, senest fredag 9. oktober klokken  14.00.
+\item
+Fristen er absolutt, men du kan levere eksamen flere ganger. Bare den siste innsendingen vil bli vurdert.
+\item
+Denne midtermineksamen teller omlag 25\% av den totale karakteren i FYS3110.
+\item
+Du står fritt til å bruke alle hjelpemidler, og du har anledning til å samarbeide med dine medstudenter for å løse oppgavene. Imidlertid må besvarelsen være din egen, og de vanlige reglene for plagiat gjelder for innholdet.
+\item
+Høyeste mulige poengsum for denne eksamen er 25 poeng. Opp til ett poeng vil bli gitt for klare, konsise og velformulerte svar, inkludert passende figurer og/eller diagrammer.
+\item
+En liten advarsel: det er ikke gitt at oppgavene denne gangen går fra middels vanskelig til mer utfordrende, vanskelighetsgraden er litt frem og tilbake, og de fleste av oppgavene kan gjøres uten å ha fått til alle foregående.
+\item
+Lykke til!
+% Ikke at du trenger det selvfølgelig.
+\end{itemize}
+
+\cleardoublepage
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%
+\begin{exercise}{\bf En super symmetri\\}
+%%%%%%%%%%%%%%%%%%%%
+
+
+Vi definerer to operatorer 
+\begin{equation}
+\hat A \equiv i\frac{\hat p}{\sqrt{2m}}+W(\hat x), 
+\quad \text{og} \quad
+\hat A^\dagger = -i\frac{\hat p}{\sqrt{2m}}+W(\hat x),
+\end{equation}
+hvor $W$ er en differensierbar funksjon av en variabel.
+
+\begin{itemize}
+\item[{\bf a)}] 
+Vis at Hamiltonoperatorene 
+\begin{equation}
+    \hat H_-\equiv \hat A^\dagger\hat A = \frac{\hat p^2}{2m}+V_-(x)
+    , \quad \text{og} \quad
+    \hat H_+\equiv \hat A\hat A^\dagger= \frac{\hat p^2}{2m}+V_+(x),
+    \label{eq:Hamilton_def}
+\end{equation}
+hvor $m$ tolkes som massen til en partikkel, er hermitiske, og finn $V_-$ og $V_+$ uttrykt ved $W$ i posisjonsbasisen. 
+[3 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf b)}] 
+Vis at dersom $|n^-\rangle$ er en normert egentilstand til $\hat H_-$ med egenverdi $E_n$ så er $\hat A|n^-\rangle$ en egentilstand til $\hat H_+$  med samme egenverdi, og vis at dersom $|m^+\rangle$ er en normert egentilstand til $\hat H_+$ med egenverdi $E_m$, så er $\hat A^\dagger|m^+\rangle$ en egentilstand til $\hat H_-$ med samme egenverdi. Finn den korrekte normeringen for begge de nye tilstandene. [3 poeng]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf c)}] Vis at egenverdiene til $\hat H_-$ og $\hat H_+$ aldri er negative. [2 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf d)}] Gitt at det finnes en vakuumtilstand $|0\rangle$ for $\hat H_-$ med den lavest mulige egenverdien $E_0=0$, vis at $\hat A|0\rangle$ er nullvektoren. Kommenter svaret i lys av oppgave {\bf b)}. [2 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf e)}] Bruk resultatet i oppgave {\bf d)} til å finne bølgefunksjonen for en egentilstand $|0\rangle$ til $\hat H_-$ med energi $E_0=0$, uttrykt ved hjelp av $W(x)$. Hva slags krav må vi stille til $W(x)$ for at denne bølgefunksjonen skal være normerbar? [3 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf f)}] Kan vakuumtilstandene til $\hat H_-$ og $\hat H_+$ begge ha null energi? Begrunn svaret. [1 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf g)}] Gitt potensialet 
+\begin{equation}
+V(x)=V_0\left(\frac{2}{\sin^2\frac{\pi x}{a}}-1\right),
+\end{equation}
+definert på intervallet $(0,a)$,\footnote{Og uendelig utenfor.} vis at Hamiltonoperatoren til systemet kan skrives på samme form som en av Hamiltonoperatorene i  (\ref{eq:Hamilton_def}). Finn den tilhørende funksjonen $W(x)$ og bunnpunktet $V_0$. {\it Hint:} 
+\begin{equation}
+\frac{d}{dx}\frac{1}{\tan x}=-\frac{1}{\sin^2x}.
+\end{equation} [2 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf h)}]
+Finn alle egenverdiene til Hamiltonoperatoren til systemet i {\bf g)}, samt eksplisitte uttrykk for de tilhørende normerte bølgefunksjonene. Du kan anta at alle løsningene i kap.\ 2 i Griffiths er kjent. 
+[3 poeng]
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vi kan samle de to Hamiltonoperatorene i
+\begin{equation}
+    \hat H = \left[\begin{matrix} \hat H_- & 0 \\ 0 & \hat H_+ \end{matrix}\right],
+\end{equation}
+for å studere begge systemene samtidig, hvor de tidligere tilstandene nå er komponenter i en to-komponents vektor som den nye Hamiltonoperatoren $\hat H$ virker på. Vi definerer samtidig to nye operatorer 
+\begin{equation}
+    \hat Q \equiv \left[\begin{matrix} 0 & 0 \\ \hat A&0 \end{matrix}\right]
+    \quad \text{og} \quad
+    \hat Q^\dagger= \left[ \begin{matrix} 0 & \hat A^\dagger \\ 0 & 0 \end{matrix} \right].
+\end{equation}
+
+\begin{itemize}
+\item[{\bf i)}] Vi kaller
+\begin{equation}
+\{\hat A,\hat B\}\equiv\hat A\hat B+\hat B\hat A,
+\end{equation}
+for {\bf antikommutatoren} til operatorene $\hat A$ og $\hat B$. Vis at Hamiltonoperatoren kan skrives som 
+\begin{equation}
+\{\hat Q^\dagger,\hat Q\}=\hat H.\label{eq:Qantikom}
+\end{equation}
+[2 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf j)}] Vis at $\hat Q$ og $\hat Q^\dagger$ kommuterer med Hamiltonoperatoren $\hat H$,
+\begin{equation}
+    [\hat Q, \hat H]=0.
+\end{equation}
+[2 poeng]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item[{\bf k)}] Gitt at $|n\rangle$ er en egentilstand til $\hat H$, vis at $\hat Q|n\rangle$ og $\hat Q^\dagger|n\rangle$ er egentilstander med samme energi. Implikasjonen av dette er at $\hat Q$ representerer  en (super) symmetri for systemet beskrevet av $\hat H$; energien er bevart under bruk av $\hat Q$. [1 poeng] 
+
+\end{itemize}
+\end{exercise}
+\end{document}
+
+
+% Bacon ipsum dolor amet boudin leberkas rump, prosciutto beef ribs cupim spare ribs meatball. Fatback kevin pork chop bresaola. Buffalo turkey corned beef capicola cupim. Pork capicola burgdoggen ribeye tail pancetta. Sirloin filet mignon turducken, shankle landjaeger prosciutto kielbasa bacon biltong strip steak salami doner capicola. Ground round pork bresaola, spare ribs jerky pork belly burgdoggen brisket tri-tip alcatra.

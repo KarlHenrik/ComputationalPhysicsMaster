@@ -1,0 +1,371 @@
+\documentclass[norsk,a4paper,12pt]{article}
+% if you want a single-column, remove reprint
+
+% allows special characters (including æøå)
+\usepackage[utf8]{inputenc}
+\usepackage [norsk]{babel} %if you write norwegian
+%\usepackage[english]{babel}  %if you write english
+
+
+\usepackage{physics,amssymb}  % mathematical symbols (physics imports amsmath)
+\usepackage{graphicx}         % include graphics such as plots
+\usepackage{xcolor}           % set colors
+\usepackage{hyperref}         % automagic cross-referencing (this is GODLIKE)
+\usepackage{tikz}             % draw figures manually
+\usepackage{listings}         % display code
+\usepackage{subfigure}        % imports a lot of cool and useful figure commands
+\usepackage{float}			  % force placement of tables and figures
+\usepackage{amsmath}
+\usepackage{minted} %code
+
+\hypersetup{ % this is just my personal choice, feel free to change things
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}}
+
+%% Defines the style of the programming listing
+%% This is actually my personal template, go ahead and change stuff if you want
+\lstset{ %
+	inputpath=,
+	backgroundcolor=\color{white!88!black},
+	basicstyle={\ttfamily\scriptsize},
+	commentstyle=\color{magenta},
+	language=Python,
+	morekeywords={True,False},
+	tabsize=4,
+	stringstyle=\color{green!55!black},
+	frame=single,
+	keywordstyle=\color{blue},
+	showstringspaces=false,
+	columns=fullflexible,
+	keepspaces=true}
+
+\title{FYS3110 - Midtveis}
+
+\begin{document}
+	
+\maketitle
+
+\section*{Oppgave 1 - En super symmetri}
+
+\subsection*{a)}
+
+Har
+
+\begin{equation}
+	\hat A \equiv i\frac{\hat p}{\sqrt{2m}}+W(\hat x), 
+	\quad \text{og} \quad
+	\hat A^\dagger = -i\frac{\hat p}{\sqrt{2m}}+W(\hat x),
+\end{equation}
+
+Vi har $\hat{H}_- = \hat{A}^\dagger \hat{A}$. Da har vi at $ \hat{H}_-^\dagger = (\hat{A}^\dagger \hat{A})^\dagger = \hat{A}^\dagger (\hat{A}^\dagger)^\dagger = \hat{A}^\dagger \hat{A} = \hat{H}_-$.
+Vi har $\hat{H}_+ = \hat{A} \hat{A}^\dagger$. Da har vi at $ \hat{H}_+^\dagger = (\hat{A} \hat{A}^\dagger)^\dagger = (\hat{A}^\dagger)^\dagger \hat{A}^\dagger = \hat{A} \hat{A}^\dagger = \hat{H}_+$.
+$\hat{H}_-$ og  $\hat{H}_+$ er dermed begge hermitiske, siden de er like sine egne hermitisk konjugerte.
+
+I posisjonsbasis har vi $\hat{x} = x$ og $\hat{p} = -i\hbar \frac{d}{d x}$. Finner
+
+\begin{equation}
+\begin{aligned}
+	\hat{H}_- = \hat{A}^\dagger \hat{A} &= (-i\frac{\hat p}{\sqrt{2m}}+W(\hat x)) (i\frac{\hat p}{\sqrt{2m}}+W(\hat x)) \\
+	&= \frac{\hat p^2}{2m} + (-i\frac{\hat p}{\sqrt{2m}} W(x)) + (W(x) i\frac{\hat p}{\sqrt{2m}}) + W(x)^2 \\
+	&= \frac{\hat p^2}{2m} + V_-(x)
+\end{aligned}
+\end{equation}
+hvor
+\begin{equation}
+\begin{aligned}
+	V_-(x) &= (-i\frac{\hat p}{\sqrt{2m}} W(x)) + (W(x) i\frac{\hat p}{\sqrt{2m}}) + W(x)^2 \\
+	&= W(x)^2 - \frac{i}{\sqrt{2m}}(-i\hbar) \frac{d}{d x} W(x) + W(x) \frac{i}{\sqrt{2m}}(-i\hbar) \frac{d}{d x} \\
+	&= W(x)^2 - \frac{\hbar}{\sqrt{2m}} (\frac{d}{d x}W(x) - W(x)\frac{d}{d x})
+\end{aligned}
+\end{equation}
+lar $V_-(x)$ virke på en vilkårlig tilstand $\psi$
+\begin{equation}
+\begin{aligned}
+	V_-(x) &= W(x)^2\psi - \frac{\hbar}{\sqrt{2m}} (\frac{d}{d x}W(x)\psi - W(x)\frac{d}{d x}\psi) \\
+	&= W(x)^2\psi - \frac{\hbar}{\sqrt{2m}} (W(x)\frac{d}{d x}\psi + \psi\frac{d}{d x}W(x) - W(x)\frac{d}{d x}\psi) \\
+	&= W(x)^2\psi - \frac{\hbar}{\sqrt{2m}} \psi\frac{d}{d x}W(x)
+\end{aligned}
+\end{equation}
+Kan da skrive $V_-(x)$ som
+\begin{equation}
+\begin{aligned}
+	V_-(x) &= W(x)^2 - \frac{\hbar}{\sqrt{2m}} \frac{d}{d x}W(x)
+\end{aligned}
+\end{equation}
+Hvor $\frac{d}{d x}$ kun virker på $W(x)$. Finner
+\begin{equation}
+\begin{aligned}
+	\hat{H}_+ = \hat{A} \hat{A}^\dagger &= (i\frac{\hat p}{\sqrt{2m}}+W(\hat x)) (-i\frac{\hat p}{\sqrt{2m}}+W(\hat x)) \\
+	&= \frac{\hat p^2}{2m} + (i\frac{\hat p}{\sqrt{2m}} W(x)) + (-W(x) i\frac{\hat p}{\sqrt{2m}}) + W(x)^2 \\
+	&= \frac{\hat p^2}{2m} + V_+(x)
+\end{aligned}
+\end{equation}
+hvor
+\begin{equation}
+\begin{aligned}
+	V_+(x) &= (i\frac{\hat p}{\sqrt{2m}} W(x)) + (-W(x) i\frac{\hat p}{\sqrt{2m}}) + W(x)^2 \\
+	&= W(x)^2 + \frac{i}{\sqrt{2m}}(-i\hbar) \frac{d}{d x} W(x) - W(x) \frac{i}{\sqrt{2m}}(-i\hbar) \frac{d}{d x} \\
+	&= W(x)^2 + \frac{\hbar}{\sqrt{2m}} (\frac{d}{d x}W(x) - W(x)\frac{d}{d x}) \\
+	&= W(x)^2 + \frac{\hbar}{\sqrt{2m}} \frac{d}{d x}W(x)
+\end{aligned}
+\end{equation}
+Hvor $\frac{d}{d x}$ kun virker på $W(x)$. Brukte samme metode som for $V_-(x)$.
+
+\subsection*{b)}
+Fra oppgaveteksten har vi egenverdiligningene $\hat{H}_- \ket{n^-} = E_n \ket{n^-}$ og $\hat{H}_+ \ket{m^+} = E_m \ket{m^+}$.
+
+Evaluerer
+\begin{equation}
+\begin{aligned}
+	\hat{H}_+ \hat{A} \ket{n^-} = \hat{A} \hat{A}^\dagger \hat{A} \ket{n^-} = \hat{A} \hat{H}_- \ket{n^-} = \hat{A} E_n \ket{n^-} = E_n \hat{A} \ket{n^-}
+\end{aligned}
+\end{equation}
+og ser at $\hat{A} \ket{n^-}$ er en egentilstand til $\hat{H}_+$ med egenverdi $E_n$. Evaluerer
+\begin{equation}
+\begin{aligned}
+	\hat{H}_- \hat{A}^\dagger \ket{m^+} = \hat{A}^\dagger \hat{A} \hat{A}^\dagger \ket{m^+} = \hat{A}^\dagger \hat{H}_+ \ket{m^+} = \hat{A}^\dagger E_m \ket{m^+} = E_m \hat{A}^\dagger \ket{m^+}
+\end{aligned}
+\end{equation}
+og ser at $\hat{A}^\dagger \ket{m^+}$ er en egentilstand til $\hat{H}_-$ med egenverdi $E_m$.
+
+Finner korrekt normering til tilstandene. Definerer normeringskonstanter $c_n$ og $c_m$ slik at vi får tilstandene $c_n \hat{A} \ket{n^-}$ og $c_m \hat{A}^\dagger \ket{m^+}$ vi skal normere.
+
+Finner $c_n$ ved å regne ut normen til $c_n \hat{A} \ket{n^-}$
+\begin{equation}
+\begin{aligned}
+	 c_n^* \bra{n^-} \hat{A}^\dagger c_n \hat{A} \ket{n^-} &= |c_n|^2 \bra{n^-} \hat{H}_- \ket{n^-} = |c_n|^2 \bra{n^-} E_n \ket{n^-} \\
+	 &= |c_n|^2 E_n \bra{n^-}\ket{n^-} = |c_n|^2 E_n = 1 \\
+	 &\Rightarrow |c_n| = \frac{1}{\sqrt{E_n}}
+\end{aligned}
+\end{equation}
+Finner at $\frac{1}{\sqrt{E_n}} \hat{A} \ket{n^-}$ er en korrekt normering for tilstanden $\hat{A} \ket{n^-}$.
+
+Finner $c_m$ ved å regne ut normen til $c_m \hat{A}^\dagger \ket{m^+}$
+\begin{equation}
+\begin{aligned}
+	c_m^* \bra{m^+} \hat{A} c_m \hat{A}^\dagger \ket{m^+} &= |c_m|^2 \bra{m^+} \hat{H}_+ \ket{m^+} = |c_m|^2 \bra{m^+} E_m \ket{m^+} \\
+	&= |c_m|^2 E_m \bra{m^+}\ket{m^+} = |c_m|^2 E_m = 1 \\
+	&\Rightarrow |c_m| = \frac{1}{\sqrt{E_m}}
+\end{aligned}
+\end{equation}
+Finner at $\frac{1}{\sqrt{E_m}} \hat{A}^\dagger \ket{m^+}$ er en korrekt normering for tilstanden $\hat{A}^\dagger \ket{m^+}$.
+
+\subsection*{c)}
+Hvis en egentilstand $\ket{n^-}$ til $\hat{H}_-$ har en egenverdi $-E_n$, $E_n > 0$ blir det umulig å normere tilstanden $c_n \hat{A} \ket{n^-}$ siden normen dens er gitt ved:
+\begin{equation}
+\begin{aligned}
+	c_n^* \bra{n^-} \hat{A}^\dagger c_n \hat{A} \ket{n^-} &= |c_n|^2 \bra{n^-} \hat{H}_- \ket{n^-} = |c_n|^2 \bra{n^-} -E_n \ket{n^-} \\
+	&= -|c_n|^2 E_n \bra{n^-}\ket{n^-} = -|c_n|^2 E_n = 1
+\end{aligned}
+\end{equation}
+Hvis en egentilstand $\ket{m^+}$ til $\hat{H}_+$ har en egenverdi $-E_m$, $E_m > 0$ blir det umulig å normere tilstanden $c_m \hat{A}^\dagger \ket{m^+}$ siden normen dens er gitt ved:
+\begin{equation}
+\begin{aligned}
+	c_m^* \bra{m^+} \hat{A} c_m \hat{A}^\dagger \ket{m^+} &= |c_m|^2 \bra{m^+} \hat{H}_+ \ket{m^+} = |c_m|^2 \bra{m^+} -E_m \ket{m^+} \\
+	&= -|c_m|^2 E_m \bra{m^+}\ket{m^+} = -|c_m|^2 E_m = 1
+\end{aligned}
+\end{equation}
+De blir umulige å normere fordi $|c_n|^2$, $E_n$, $|c_m|^2$ og $E_m$ alltid er positive, og da kan normene aldri bli lik 1. Dette gjør at egenverdiene til $\hat{H}_-$ og $\hat{H}_+$ aldri er negative.
+
+\subsection*{d)}
+Vi har $\hat{H}_- \ket{0} = E_0 \ket{0} = 0 \ket{0} = 0$. Regner ut normen til $\hat{A} \ket{0}$
+\begin{equation}
+\begin{aligned}
+\bra{0} \hat{A}^\dagger \hat{A} \ket{0} = \bra{0} \hat{H}_- \ket{0} = \bra{0} 0 \ket{0} = 0
+\end{aligned}
+\end{equation}
+Siden normen til $\hat{A} \ket{0}$ er null, er $\hat{A} \ket{0}$ nullvektoren.
+
+Fra normeringen i b) ser vi at $E_n = 0$ gjør at det ikke finnes noen mulig normeringskonstant siden $c_n = \frac{1}{\sqrt{E_n}}$.
+
+\subsection*{e)}
+Vi har en egentilstand $\ket{0}$ til $\hat{H}_-$ med energi $E_0 = 0$. Fra {\bf d)} har vi $\hat{A}\ket{0}$ er nullvektoren. Dette vil si at for bølgefunksjonen $\psi$ til $\ket{0}$ har vi $\hat{A}\psi = 0$. Dette lar oss finne $\psi$
+\begin{equation}
+\begin{aligned}
+	\hat{A}\psi &= 0 \\
+	i \frac{\hat{p}}{\sqrt{2m}}\psi + W(x)\psi &= 0 \\
+	-i \frac{i\hbar}{\sqrt{2m}}\frac{d\psi}{d x} &= -W(x)\psi \\
+	\frac{1}{\psi}\frac{d\psi}{d x} &= -\frac{\sqrt{2m}}{\hbar}W(x) \\
+	\int \frac{1}{\psi}d\psi\frac{d x}{d x} &= - \int \frac{\sqrt{2m}}{\hbar}W(x) dx \\
+	ln|\psi| + C_0 &= - \frac{\sqrt{2m}}{\hbar} \int W(x) dx \\
+	\psi &= c e^{- \frac{\sqrt{2m}}{\hbar} \int W(x) dx}
+\end{aligned}
+\end{equation}
+hvor c er en konstant vi må velge. Normen til $\psi$ blir gitt ved
+\begin{equation}
+\begin{aligned}
+	|\psi|^2 &= |c|^2 e^{- 2\frac{\sqrt{2m}}{\hbar} \int W(x) dx}
+\end{aligned}
+\end{equation}
+For at normen skal kunne settes lik 1 (for at $\psi$ skal være normerbar) må $\int W(x) dx$ gå mot uendelig i grensene $x = \pm \infty$, siden $\psi$ må bli $0$ i $\pm \infty$.
+
+\subsection*{f)}
+Hvis vakuumtilstanden $\ket{0}$ til $\hat{H}_-$ er normerbar og har null energi, blir den tilsvarende tilstanden til $\hat{H}_+$ med null energi $A\ket{0}$. Men fra {\bf d)} vet vi at $A\ket{0}$ er nullvektoren, og derfor ikke er en mulig tilstand. Vakuumtilstandene til $\hat{H}_-$ og $\hat{H}_+$ kan derfor ikke begge ha null energi. Dette betyr at de vil ha tilsvarende egentilstander for hver egenverdi, med mindre en av de har en vakuumtilstand med null energi, da har de tilsvarende egentilstander for hver egenverdi(som vil være felles) etter 0.
+
+\subsection*{g)}
+Hamiltonoperatoren til en partikkel i et gitt potensial $V(x)$ er gitt ved
+\begin{equation}
+\begin{aligned}
+	\hat{H} = \frac{\hat{p}^2}{2m} + V(x)
+\end{aligned}
+\end{equation}
+hvor leddet $\frac{\hat{p}^2}{2m}$ gir den kinetiske energien til partikkelen og $V(x)$ gir den potensielle energien. Hamiltonoperatorene $H_-$ og $H_+$ er på denne formen (kinetisk pluss potensial ledd). I $H_-$ har vi et potensial $V_-(x)$ bestemt av en funksjon $W(x)$. Vi kan sette $V_-(x) = V(x)$ og se hvilken funksjon $W(x)$ vi får
+\begin{equation}
+\begin{aligned}
+	V_-(x) &= V(x) \\
+	W(x)^2 - \frac{\hbar}{\sqrt{2m}} \frac{d}{d x}W(x) &= V_0(\frac{2}{sin^2(\frac{\pi x}{a})} - 1) \\
+	\frac{d}{d x}W(x) &= \frac{\sqrt{2m}}{\hbar} (W(x)^2 - \frac{2V_0}{sin^2(\frac{\pi x}{a})} + V_0)
+\end{aligned}
+\end{equation}
+Bruker hintet i oppgaven og antar $W(x) = \frac{k}{tan(\frac{\pi x}{a})}$, hvor $k$ er en konstant vi bestemmer. Da er 
+\begin{equation}
+\begin{aligned}
+	W(x)^2 &= \frac{k^2}{tan^2(\frac{\pi x}{a})} = \frac{k^2}{sin^2(\frac{\pi x}{a})} - k^2 \\
+	\frac{d}{d x}W(x) &= -\frac{\pi}{a} \frac{k}{sin^2(\frac{\pi x}{a})}
+\end{aligned}
+\end{equation}
+Vi setter disse uttrykkene inn i ligningen og finner $k$ og $V_0$ som oppfyller ligningen
+\begin{equation}
+\begin{aligned}
+	-\frac{\pi}{a} \frac{k}{sin^2(\frac{\pi x}{a})} &= \frac{\sqrt{2m}}{\hbar} (\frac{k^2}{sin^2(\frac{\pi x}{a})} - k^2 - \frac{2V_0}{sin^2(\frac{\pi x}{a})} + V_0)
+\end{aligned}
+\end{equation}
+Setter $k = \sqrt{V_0}$
+\begin{equation}
+\begin{aligned}
+	-\frac{\pi}{a} \frac{\sqrt{V_0}}{sin^2(\frac{\pi x}{a})} &= \frac{\sqrt{2m}}{\hbar} (\frac{V_0}{sin^2(\frac{\pi x}{a})} - V_0 - \frac{2V_0}{sin^2(\frac{\pi x}{a})} + V_0) \\
+	-\frac{\pi}{a} \frac{\sqrt{V_0}}{sin^2(\frac{\pi x}{a})} &= \frac{\sqrt{2m}}{\hbar} (-\frac{V_0}{sin^2(\frac{\pi x}{a})}) \\
+	\frac{\pi}{a} \sqrt{V_0} &= \frac{\sqrt{2m}}{\hbar} V_0 \\
+	\sqrt{V_0} &= \frac{\pi}{a} \frac{\hbar}{\sqrt{2m}} \\
+V_0 &= \frac{\pi^2\hbar^2}{2ma^2}
+\end{aligned}
+\end{equation}
+Vi får altså
+\begin{equation}
+\begin{aligned}
+	W(x) = \frac{k}{tan(\frac{\pi x}{a})} = \frac{\sqrt{V_0}}{tan(\frac{\pi x}{a})} = \frac{\pi\hbar}{a\sqrt{2m}}\frac{1}{tan(\frac{\pi x}{a})}
+\end{aligned}
+\end{equation}
+Funksjonen $V(x) = V_0(\frac{2}{sin^2(\frac{\pi x}{a})} - 1)$ er på sitt laveste når $sin^2(\frac{\pi x}{a}) = 1$ (største verdien nevneren kan ta), altså når $x = \frac{a}{2}$. Da er $V(x) = V_0(2 - 1) = V_0$, altså er $V_0$ den laveste verdien potensialet kan ta.
+
+\subsection*{h)}
+Vi skal finne egentilstandene og de tilhørende egenverdier til hamiltonoperatoren
+\begin{equation}
+\begin{aligned}
+	\hat{H} = \frac{\hat{p}^2}{2m} + V(x) = \frac{\hat{p}^2}{2m} + V_-(x) = \hat{H}_-
+\end{aligned}
+\end{equation}
+fra {\bf g)}. Fra {\bf b)} og {\bf f)} vet vi at en normert egentilstand $\ket{m^+}$ til $\hat{H}_+$ med egenverdi $E_m$ gir oss en normert egentilstand $\frac{1}{\sqrt{E_m}}\hat{A}^\dagger \ket{m^+}$ til $H_-$, med mindre $\ket{m^+}$ har null energi. Vi kan derfor finne egentilstandene til $\hat{H}_-$ ved å først finne egentilstandene til $\hat{H}_+$. Med uttrykket vårt for $W(x)$ kan vi skrive
+\begin{equation}
+\begin{aligned}
+	\hat{H_+} &= \frac{\hat p^2}{2m} + V_+(x) \\
+	&= \frac{\hat p^2}{2m} + W(x)^2 + \frac{\hbar}{\sqrt{2m}} \frac{d}{d x}W(x) \\
+	&= \frac{\hat p^2}{2m} + \frac{V_0}{sin^2(\frac{\pi x}{a})} - V_0 - \frac{\hbar}{\sqrt{2m}}\frac{\pi}{a}\frac{\sqrt{V_0}}{sin^2(\frac{\pi x}{a})} \\
+	&= \frac{\hat p^2}{2m} + \frac{V_0}{sin^2(\frac{\pi x}{a})} - V_0 - \frac{V_0}{sin^2(\frac{\pi x}{a})} \\
+	&= \frac{\hat p^2}{2m} - V_0
+\end{aligned}
+\end{equation}
+Vi ser at $H_+$ er hamiltonoperatoren for uendelig brønn med et potensial $-V_0$ fra $0$ til $a$. $H_+$ har dermed (kap. 2 Griffiths) egenverdier
+\begin{equation}
+\begin{aligned}
+	E_n = n^2 \frac{\pi^2 \hbar^2}{2ma^2} - V_0 = n^2 V_0 - V_0 = V_0 (n^2 - 1)
+\end{aligned}
+\end{equation}
+og tilhørende normerte bølgefunksjoner
+\begin{equation}
+\begin{aligned}
+	\psi_n^+(x) = \sqrt{\frac{2}{a}} sin(\frac{n \pi}{a} x)
+\end{aligned}
+\end{equation}
+for $n = 1,2,3 \dots$
+
+$\psi_1^+(x)$ er grunntilstanden til $H_+$ med energi $E_1 = 0$. Vi vet da at $H_-$ da ikke har noen gyldig $\psi_1^-$ med egenverdi $E_1^- = 0$. $H_-$ vil derimot ha løsninger $\psi_n^-$ med de samme egenverdiene $E_n$ for $n$ større enn 1. Bølgefunksjonene $\psi_n^-$ blir gitt ved
+\begin{equation}
+\begin{aligned}
+	\psi_n^- &= \frac{1}{\sqrt{E_n}}\hat{A}^\dagger \psi_n^+ \\
+	&= \frac{1}{\sqrt{E_n}}(-i\frac{\hat{p}}{\sqrt{2m}} + W(x)) \sqrt{\frac{2}{a}} sin(\frac{n \pi}{a} x) \\
+	&= \frac{1}{\sqrt{E_n}}\sqrt{\frac{2}{a}}( -\frac{\hbar}{\sqrt{2m}} \frac{d}{dx} + \frac{\pi\hbar}{a\sqrt{2m}}\frac{1}{tan(\frac{\pi x}{a})}) sin(\frac{n \pi}{a} x) \\
+	&= \frac{1}{\sqrt{E_n}}\frac{\hbar}{\sqrt{2m}} \sqrt{\frac{2}{a}} (-\frac{d}{dx}sin(\frac{n \pi}{a} x) + \frac{\pi}{a}\frac{sin(\frac{n \pi}{a} x)}{tan(\frac{\pi}{a} x)}) \\
+	&= \frac{1}{\sqrt{E_n}}\frac{\hbar}{\sqrt{2m}} \sqrt{\frac{2}{a}}  (-n\frac{\pi}{a} cos(\frac{n \pi}{a} x) + \frac{\pi}{a}\frac{sin(\frac{n \pi}{a} x)}{tan(\frac{\pi}{a} x)}) \\
+	&= \frac{1}{\sqrt{E_n}}\frac{\pi \hbar}{a \sqrt{2m}} \sqrt{\frac{2}{a}}(-n cos(\frac{n \pi}{a} x) + \frac{sin(\frac{n \pi}{a} x)}{tan(\frac{\pi}{a} x)}) \\
+	&= \frac{1}{\sqrt{n^2 - 1}} \frac{a\sqrt{2m}}{\pi \hbar} \frac{\pi \hbar}{a \sqrt{2m}} \sqrt{\frac{2}{a}}(-n cos(\frac{n \pi}{a} x) + \frac{sin(\frac{n \pi}{a} x)}{tan(\frac{\pi}{a} x)}) \\
+	&= \frac{1}{\sqrt{n^2 - 1}} \sqrt{\frac{2}{a}}(-n cos(\frac{n \pi}{a} x) + \frac{sin(\frac{n \pi}{a} x)}{tan(\frac{\pi}{a} x)})
+\end{aligned}
+\end{equation}
+for $n = 2, 3, 4, \dots$.
+
+\subsection*{i)}
+\begin{equation}
+\begin{aligned}
+	\{\hat{Q}^\dagger,\hat{Q}\} &= \hat{Q}^\dagger \hat{Q} + \hat{Q} \hat{Q}^\dagger \\
+	&= \left[ \begin{matrix} 0 & \hat A^\dagger \\ 0 & 0 \end{matrix} \right] \left[\begin{matrix} 0 & 0 \\ \hat A&0 \end{matrix}\right] + \left[\begin{matrix} 0 & 0 \\ \hat A&0 \end{matrix}\right] \left[ \begin{matrix} 0 & \hat A^\dagger \\ 0 & 0 \end{matrix} \right] \\
+	&= \left[ \begin{matrix} \hat{A}\hat{A}^\dagger & 0 \\ 0 & 0 \end{matrix} \right] + \left[ \begin{matrix} 0 & 0 \\ 0 & \hat{A}\hat{A}^\dagger \end{matrix} \right] \\
+	&= \left[ \begin{matrix} \hat{A}^\dagger\hat{A} & 0 \\ 0 & \hat{A}\hat{A}^\dagger \end{matrix} \right] = \left[ \begin{matrix} \hat{H}_- & 0 \\ 0 & \hat{H}_+ \end{matrix} \right] = \hat{H}
+\end{aligned}
+\end{equation}
+
+\subsection*{j)}
+
+\begin{equation}
+\begin{aligned}
+	\comm{\hat{Q}}{\hat{H}} &= [\hat{Q}, \hat{Q}^\dagger \hat{Q} + \hat{Q} \hat{Q}^\dagger] \\
+	&= [\hat{Q}, \hat{Q}^\dagger \hat{Q}] + [\hat{Q}, \hat{Q} \hat{Q}^\dagger] \\
+	&= [\hat{Q}, \hat{Q}^\dagger]\hat{Q} + \hat{Q}^\dagger [\hat{Q}, \hat{Q}] + [\hat{Q}, \hat{Q}]\hat{Q}^\dagger + \hat{Q} [\hat{Q}, \hat{Q}^\dagger] \\
+	&= [\hat{Q}, \hat{Q}^\dagger]\hat{Q} + \hat{Q} [\hat{Q}, \hat{Q}^\dagger] \\
+	&= \hat{Q}\hat{Q}^\dagger\hat{Q} - \hat{Q}^\dagger\hat{Q}\hat{Q} + \hat{Q}\hat{Q}\hat{Q}^\dagger - \hat{Q}\hat{Q}^\dagger\hat{Q} \\
+	&= - \hat{Q}^\dagger\hat{Q}\hat{Q} + \hat{Q}\hat{Q}\hat{Q}^\dagger = 0
+\end{aligned}
+\end{equation}
+Siden
+\begin{equation}
+\begin{aligned}
+	\hat{Q}\hat{Q} = \left[ \begin{matrix} 0 & 0 \\ \hat A & 0 \end{matrix} \right] \left[ \begin{matrix} 0 & 0 \\ \hat A & 0 \end{matrix} \right] = \left[ \begin{matrix} 0 & 0 \\ 0 & 0 \end{matrix} \right]
+\end{aligned}
+\end{equation}
+\begin{equation}
+\begin{aligned}
+	\comm{\hat{Q}^\dagger}{\hat{H}} &= [\hat{Q}^\dagger, \hat{Q}^\dagger \hat{Q} + \hat{Q} \hat{Q}^\dagger] \\
+	&= [\hat{Q}^\dagger, \hat{Q}^\dagger \hat{Q}] + [\hat{Q}^\dagger, \hat{Q} \hat{Q}^\dagger] \\
+	&= [\hat{Q}^\dagger, \hat{Q}^\dagger]\hat{Q} + \hat{Q}^\dagger [\hat{Q}^\dagger, \hat{Q}] + [\hat{Q}^\dagger, \hat{Q}]\hat{Q}^\dagger + \hat{Q} [\hat{Q}^\dagger, \hat{Q}^\dagger] \\
+	&= \hat{Q}^\dagger [\hat{Q}^\dagger, \hat{Q}] + [\hat{Q}^\dagger, \hat{Q}]\hat{Q}^\dagger \\
+	&= \hat{Q}^\dagger\hat{Q}^\dagger\hat{Q} - \hat{Q}^\dagger\hat{Q}\hat{Q}^\dagger + \hat{Q}^\dagger\hat{Q}\hat{Q}^\dagger - \hat{Q}\hat{Q}^\dagger\hat{Q}^\dagger \\
+	&= \hat{Q}^\dagger\hat{Q}^\dagger\hat{Q} - \hat{Q}\hat{Q}^\dagger\hat{Q}^\dagger = 0
+\end{aligned}
+\end{equation}
+Siden
+\begin{equation}
+\begin{aligned}
+	\hat{Q}^\dagger\hat{Q}^\dagger = \left[ \begin{matrix} 0 & \hat A^\dagger \\ 0 & 0 \end{matrix} \right] \left[ \begin{matrix} 0 & \hat A^\dagger \\ 0 & 0 \end{matrix} \right] = \left[ \begin{matrix} 0 & 0 \\ 0 & 0 \end{matrix} \right]
+\end{aligned}
+\end{equation}
+
+\subsection*{k)}
+Vi har egenverdiligningen
+\begin{equation}
+\begin{aligned}
+	\hat{H}\ket{n} = E_n \ket{n}
+\end{aligned}
+\end{equation}
+Siden $\hat{H}$ kommuterer med $\hat{Q}$ og $\hat{Q}^\dagger$ kan vi skrive
+
+\begin{equation}
+\begin{aligned}
+\hat{H}\hat{Q}\ket{n} = \hat{Q}\hat{H}\ket{n} = \hat{Q} E_n \ket{n} = E_n \hat{Q}\ket{n} \\
+\hat{H}\hat{Q}^\dagger\ket{n} = \hat{Q}^\dagger\hat{H}\ket{n} = \hat{Q}^\dagger E_n \ket{n} = E_n \hat{Q}^\dagger\ket{n}
+\end{aligned}
+\end{equation}
+$\hat{Q}\ket{n}$ og $\hat{Q}^\dagger\ket{n}$ er dermed egentilstander til $\hat{H}$ med samme egenverdi som $\ket{n}$, $E_n$.
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
