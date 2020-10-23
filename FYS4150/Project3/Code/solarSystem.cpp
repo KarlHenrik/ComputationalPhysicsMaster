@@ -3,6 +3,8 @@
 SolarSystem::SolarSystem(string ofilename) {
     ofile.open(ofilename);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
+    nbodies = 0;
+    bodies.clear();
 }
 
 void SolarSystem::setofile(string ofilename) {
@@ -11,9 +13,8 @@ void SolarSystem::setofile(string ofilename) {
 }
 
 void SolarSystem::addBody(vec3 pos, vec3 vel, double mass, string name) {
-    double solarMass = 1988500;
-    bodies.push_back( CelestialBody(pos, vel, mass/solarMass, name) );
-    nbodies ++;
+    bodies.push_back( CelestialBody(pos, vel, mass, name) );
+    nbodies++;
 }
 
 void SolarSystem::addFromFile(string infilename, int nread) {
@@ -42,7 +43,7 @@ void SolarSystem::addFromFile(string infilename, int nread) {
         vy = sci2dbl(splitLine[1]);
         vz = sci2dbl(splitLine[2]);
 
-        addBody(vec3(x,y,z), vec3(vx,vy,vz) * 365.25, mass, name);
+        addBody(vec3(x,y,z), vec3(vx,vy,vz) * 365.25, mass / 1988500.0, name);
         nadded++;
         if(nadded == nread) {
             return;
@@ -57,14 +58,15 @@ void SolarSystem::calcAcc(double exponent) {
     }
     double g = 4 * M_PI * M_PI; // gravitational constant for units AU, year and solar mass
     vec3 pos1to2;
-    double r2, forceFactor;
+    double r, forceFactor, rExp;
     for (int i = 0; i < nbodies; i++) {
         CelestialBody &body1 = bodies[i];
         for (int j = i + 1; j < nbodies; j++) { // we only look at each pair of planets once
             CelestialBody &body2 = bodies[j];
             pos1to2 = body2.pos - body1.pos;
-            r2 = pos1to2.lengthSquared();
-            forceFactor = g / (r2 * sqrt(r2));
+            r = pos1to2.length();
+            rExp = pow(r, exponent);
+            forceFactor = g / (rExp * r);
             body1.acc += forceFactor * body2.mass * pos1to2;
             body2.acc += -forceFactor * body1.mass * pos1to2;
         }
@@ -72,9 +74,15 @@ void SolarSystem::calcAcc(double exponent) {
 }
 
 void SolarSystem::writeSystem() {
+    for (CelestialBody &body : bodies) {
+        ofile << setw(15) << setprecision(8) << body.name;
+        ofile << setw(15) << setprecision(8) << body.mass;
+    }
+    ofile << endl;
     return;
 }
-void SolarSystem::writePosVel() {
+
+void SolarSystem::writePos() {
     for (CelestialBody &body : bodies) {
         ofile << setw(15) << setprecision(8) << body.pos[0];
         ofile << setw(15) << setprecision(8) << body.pos[1];
@@ -84,10 +92,41 @@ void SolarSystem::writePosVel() {
     return;
 }
 
-void SolarSystem::recenter() {
+void SolarSystem::writePosVel() {
+    for (CelestialBody &body : bodies) {
+        ofile << setw(15) << setprecision(8) << body.pos[0];
+        ofile << setw(15) << setprecision(8) << body.pos[1];
+        ofile << setw(15) << setprecision(8) << body.pos[2];
+
+        ofile << setw(15) << setprecision(8) << body.vel[0];
+        ofile << setw(15) << setprecision(8) << body.vel[1];
+        ofile << setw(15) << setprecision(8) << body.vel[2];
+    }
+    ofile << endl;
     return;
 }
-void SolarSystem::nullifyMomentum(int bodyIndex) {
+
+void SolarSystem::recenter() { //making the center of mass (0, 0, 0)
+    double totalMass = 0;
+    for (CelestialBody &body : bodies) {
+        totalMass += body.mass;
+    }
+    vec3 com = vec3(0, 0, 0); // center of mass
+    for (CelestialBody &body : bodies) {
+        com += body.pos * body.mass / totalMass;
+    }
+    for (CelestialBody &body : bodies) {
+        body.pos -= com;
+    }
+    return;
+}
+
+void SolarSystem::nullifyMomentum(int bodyIndex) { //making the total momentum 0
+    vec3 totalMomentum = vec3(0, 0, 0);
+    for (CelestialBody &body : bodies) {
+        totalMomentum += body.vel * body.mass;
+    }
+    bodies[bodyIndex].vel -= totalMomentum / bodies[bodyIndex].mass; // changing the velicity of bodies[bodyIndex] so that the total momentum of the solar system is 0
     return;
 }
 
@@ -104,4 +143,23 @@ vector<string> SolarSystem::split(string line) {
     for(string line; iss >> line; )
         splitLine.push_back(line);
     return splitLine;
+}
+
+void SolarSystem::relativisticAcc(double exponent) {
+    // Set all accelerations to 0
+    for (int i = 0; i < nbodies; i++) {
+        bodies[i].acc = vec3(0, 0, 0);
+    }
+    double g = 4 * M_PI * M_PI; // gravitational constant for units AU, year and solar mass
+    double c2 = 3999262982.49891169; //c^2 for c with units AU/year
+    vec3 pos1to2;
+    double r, forceFactor, rExp;
+
+    CelestialBody &body1 = bodies[0];
+    CelestialBody &body2 = bodies[1];
+    pos1to2 = body2.pos - body1.pos;
+    r = pos1to2.length();
+    rExp = pow(r, exponent);
+    forceFactor = g / (rExp * r);
+    body2.acc += -forceFactor * body1.mass * pos1to2 * (1.0 + (3.0 * pos1to2.cross(body2.vel).lengthSquared() ) / (r * r * c2) );
 }

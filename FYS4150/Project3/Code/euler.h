@@ -9,7 +9,7 @@ class Euler {
     public:
         double dt;
         Euler(double dt);
-        void step(SolarSystem &ssys);
+        void step(SolarSystem &ssys, double exponent = 2);
 };
 
 #endif // Euler_H

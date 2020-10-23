@@ -8,8 +8,10 @@
 class vVerlet {
     public:
         double dt;
+        double dt2;
         vVerlet(double dt);
-        void step(SolarSystem &ssys);
+        void step(SolarSystem &ssys, double exponent = 2);
+        void relativisticStep(SolarSystem &ssys, double exponent = 2);
 };
 
 #endif // vVerlet_H

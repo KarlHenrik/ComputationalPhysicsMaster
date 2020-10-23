@@ -4,8 +4,8 @@ Euler::Euler(double dt_) {
     dt = dt_;
 }
 
-void Euler::step(SolarSystem &ssys) {
-    ssys.calcAcc();
+void Euler::step(SolarSystem &ssys, double exponent) {
+    ssys.calcAcc(exponent);
 
     for(CelestialBody &body : ssys.bodies) {
         body.pos += body.vel * dt;
