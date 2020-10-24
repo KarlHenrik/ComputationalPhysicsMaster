@@ -1,8 +1,8 @@
 CFLAGS = -O3
 CC = g++
-executables = earthSun testing main
+executables = earthSun main
 
-all: earthSun testing main
+all: earthSun main
 
 # main
 main: main.o vec3.o solarSystem.o celestialBody.o euler.o vVerlet.o
