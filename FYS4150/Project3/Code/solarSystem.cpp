@@ -3,18 +3,31 @@
 SolarSystem::SolarSystem(string ofilename) {
     ofile.open(ofilename);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
-    nbodies = 0;
-    bodies.clear();
 }
 
 void SolarSystem::setofile(string ofilename) {
+    ofile.close();
     ofile.open(ofilename);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
+    nbodies = 0;
+    nbodiesMoveable = 0;
+    bodies.clear();
 }
 
-void SolarSystem::addBody(vec3 pos, vec3 vel, double mass, string name) {
+void SolarSystem::addBody(vec3 pos, vec3 vel, double mass, string name, bool ignore) {
     bodies.push_back( CelestialBody(pos, vel, mass, name) );
     nbodies++;
+    if (ignore == false) { // the ignored bodies must be added last, and will not be moved or have their positions printed
+        nbodiesMoveable++;
+    }
+}
+
+void SolarSystem::addBodyObj(CelestialBody body, bool ignore) {
+    bodies.push_back( body );
+    nbodies++;
+    if (ignore == false) { // the ignored bodies must be added last, and will not be moved or have their positions printed
+        nbodiesMoveable++;
+    }
 }
 
 void SolarSystem::addFromFile(string infilename, int nread) {
@@ -83,7 +96,8 @@ void SolarSystem::writeSystem() {
 }
 
 void SolarSystem::writePos() {
-    for (CelestialBody &body : bodies) {
+    for (int i = 0; i < nbodiesMoveable; i++) {
+        CelestialBody &body = bodies[i];
         ofile << setw(15) << setprecision(8) << body.pos[0];
         ofile << setw(15) << setprecision(8) << body.pos[1];
         ofile << setw(15) << setprecision(8) << body.pos[2];
@@ -93,7 +107,8 @@ void SolarSystem::writePos() {
 }
 
 void SolarSystem::writePosVel() {
-    for (CelestialBody &body : bodies) {
+    for (int i = 0; i < nbodiesMoveable; i++) {
+        CelestialBody &body = bodies[i];
         ofile << setw(15) << setprecision(8) << body.pos[0];
         ofile << setw(15) << setprecision(8) << body.pos[1];
         ofile << setw(15) << setprecision(8) << body.pos[2];
@@ -126,6 +141,9 @@ void SolarSystem::nullifyMomentum(int bodyIndex) { //making the total momentum 0
     for (CelestialBody &body : bodies) {
         totalMomentum += body.vel * body.mass;
     }
+    if (bodyIndex == -1) {
+        bodies[nbodies].vel -= totalMomentum / bodies[nbodies].mass;
+    }
     bodies[bodyIndex].vel -= totalMomentum / bodies[bodyIndex].mass; // changing the velicity of bodies[bodyIndex] so that the total momentum of the solar system is 0
     return;
 }
@@ -157,9 +175,8 @@ void SolarSystem::relativisticAcc(double exponent) {
 
     CelestialBody &body1 = bodies[0];
     CelestialBody &body2 = bodies[1];
-    pos1to2 = body2.pos - body1.pos;
-    r = pos1to2.length();
+    r = body1.pos.length();
     rExp = pow(r, exponent);
     forceFactor = g / (rExp * r);
-    body2.acc += -forceFactor * body1.mass * pos1to2 * (1.0 + (3.0 * pos1to2.cross(body2.vel).lengthSquared() ) / (r * r * c2) );
+    body1.acc += -forceFactor * body2.mass * body1.pos * (1.0 + (3.0 * body1.pos.cross(body1.vel).lengthSquared() ) / (r * r * c2) );
 }

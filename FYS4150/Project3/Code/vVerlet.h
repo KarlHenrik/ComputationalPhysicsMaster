@@ -7,9 +7,9 @@
 
 class vVerlet {
     public:
-        double dt;
-        double dt2;
+        double dt, dto2, dt2o2;
         vVerlet(double dt);
+        void setdt(double dt);
         void step(SolarSystem &ssys, double exponent = 2);
         void relativisticStep(SolarSystem &ssys, double exponent = 2);
 };

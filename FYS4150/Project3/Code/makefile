@@ -1,12 +1,12 @@
 CFLAGS = -O3
 CC = g++
-executables = earthSun main
+executables = main earthSun
 
-all: earthSun main
+all: main earthSun testing
 
 # main
-main: main.o vec3.o solarSystem.o celestialBody.o euler.o vVerlet.o
-	$(CC) $(CFLAGS) -o main main.o vec3.o solarSystem.o celestialBody.o euler.o vVerlet.o
+main: main.o vec3.o solarSystem.o celestialBody.o vVerlet.o
+	$(CC) $(CFLAGS) -o main main.o vec3.o solarSystem.o celestialBody.o vVerlet.o
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -17,11 +17,11 @@ celestialBody.o: celestialBody.cpp
 solarSystem.o: solarSystem.cpp
 	$(CC) $(CFLAGS) -c solarSystem.cpp
 
-euler.o: euler.cpp
-	$(CC) $(CFLAGS) -c euler.cpp
-
 vVerlet.o: vVerlet.cpp
 	$(CC) $(CFLAGS) -c vVerlet.cpp
+
+euler.o: euler.cpp
+	$(CC) $(CFLAGS) -c euler.cpp
 
 # Utility
 vec3.o: vec3.cpp
@@ -31,15 +31,15 @@ vec3.o: vec3.cpp
 earthSun: earthSun.o vec3.o
 	$(CC) $(CFLAGS) -o earthSun earthSun.o vec3.o
 
-earthSun.o: NonOO/earthSun.cpp
-	$(CC) $(CFLAGS) -c NonOO/earthSun.cpp
+earthSun.o: earthSun.cpp
+	$(CC) $(CFLAGS) -c earthSun.cpp
 
 # Testing
 tests-main.o: UnitTests/tests-main.cpp
 	$(CC) $(CFLAGS) -c UnitTests/tests-main.cpp
 
-testing: testing.o tests-main.o
-	$(CC) $(CFLAGS) -o testing testing.o tests-main.o
+testing: testing.o tests-main.o vec3.o solarSystem.o celestialBody.o vVerlet.o euler.o
+	$(CC) $(CFLAGS) -o testing testing.o tests-main.o vec3.o solarSystem.o celestialBody.o vVerlet.o euler.o
 
 testing.o: UnitTests/testing.cpp
 	$(CC) $(CFLAGS) -c UnitTests/testing.cpp
