@@ -10,12 +10,18 @@ Code mappen inneholder mange kodefiler:
 - main.cpp er programmet som produserer alle andre resultatene i prosjektet. Her settes opp og simuleres mange ulike kombinasjoner av planeter, tidssteg og tyngdekrefter. Det kjøres uten inputparametre(siden vi må prøve ut veldig mange spesifikke systemer), og produserer filer i en mappe Output hvis den finnes.
 - vec3.cpp er en 3d vektorklasse fra kurssiden som støtter mange matematiske operasjoner.
 - celestialBody.cpp er en klasse som lar oss lage celestialBody med en 3d vektor posisjon, hastighet, akselerasjon, navn og masse. Disse holdes orden på i et solarSystem objekt.
-- solarSystem.cpp er en klasse som lar oss lage solarSystem objekter som holder på celestialBody objekter, regner ut akselerasjon til disse gitt en tyngdekraft, skriver navnene og massene til en gitt fil, eller posisjonene og hastighetene til en gitt fil. Vi kan også gjøre massesenteret til systemet til origo, eller endre hastigheten til en av planetene slik at bevegelsesmengden til systemet blir 0. Vi legger enten til en og en planet med parametrene til planeten eller ett celestialBody objekt. Vi kan også lese inn planeter fra en fil på formen til planetData.txt (dette blir gjort i main.cpp for å simulere alle planetene)
+- solarSystem.cpp er en klasse som lar oss lage solarSystem objekter som holder på celestialBody objekter, regner ut akselerasjon til disse gitt en tyngdekraft, skriver navnene og massene til en gitt fil, eller posisjonene og hastighetene til en gitt fil. Vi kan også gjøre massesenteret til systemet til origo, eller endre hastigheten til en av planetene slik at bevegelsesmengden til systemet blir 0 (endrer på den første planeten, eller den siste hvis inputparameter er -1). Vi legger enten til en og en planet med parametrene til planeten eller ett celestialBody objekt. Vi kan også lese inn planeter fra en fil på formen til planetData.txt (dette blir gjort i main.cpp for å simulere alle planetene)
 - vVerlet.cpp lar oss lage vVerlet objekter som lar oss bevege celestialBody objektene i et solarSystem objekt ett tidssteg frem ved hjelp av Velocity Verlet algoritmen.
 - euler.cpp lar oss lage euler objekter som lar oss bevege celestialBody objektene i et solarSystem objekt ett tidssteg frem ved hjelp av Euler metoden.
 - UnitTests/testing.cpp inneholder tester for disse klassene. Den kjøres uten inputparametre.
 
 Oppskriftene for kompileringen av disse filene er gitt i makefilen.
+
+## Analysen
+
+Resultatene fra kodekjøringen finnes i Output mappen. Disse resultatene blir gjort om til figurer i de tre Jupyter notebookene i Code mappen. AnalysisTwoBody.ipynb inkluderer også en liten forklaring av lesingen av filene.
+
+## Detaljer om bruk
 
 Det enkleste eksempelet på hvordan disse klassene fungerer vist i dette eksempelet hvor vi simulerer banen til Jorden med en sirkelbane rundt sola i 10 år med Velocity Verlet metoden:
 ```

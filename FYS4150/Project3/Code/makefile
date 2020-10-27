@@ -1,6 +1,6 @@
 CFLAGS = -O3
 CC = g++
-executables = main earthSun
+executables = main earthSun testing
 
 all: main earthSun testing
 

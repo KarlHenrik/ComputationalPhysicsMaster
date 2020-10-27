@@ -25,7 +25,6 @@ int main(int argc, char const *argv[]) {
     CelestialBody mercury(vec3(-6.333487572394930E-02, -4.608453269808703E-01, -3.184761165078634E-02),
                           vec3(2.222816779156590E-02, -2.399853089908365E-03, -2.235205883702246E-03) * 365.25, 0.3302 / solarMass, "Mercury");
 
-
     // ------------------- Cicrular Earth Sun with different exponents -----------------------------
     n = 100000;
     totalTime = 10;
@@ -74,10 +73,10 @@ int main(int argc, char const *argv[]) {
 
     for (double vel : velocities) {
         string ofile = "Output/Escape_velocity" + to_string(vel) + ".txt";
-        SolarSystem solarSystem(ofile);
+        solarSystem.setofile(ofile);
         solarSystem.addBody(vec3(1, 0, 0), vec3(vel, 0, 0), 5.97219 / solarMass, "Earth");
         solarSystem.addBodyObj(sun, true);
-        vVerlet solver(dt);
+        solver.setdt(dt);
         solarSystem.writeSystem();
         for (int i = 0; i < n; i++) {
             solarSystem.writePos();
@@ -110,12 +109,12 @@ int main(int argc, char const *argv[]) {
     vector<double> jmasses{1, 10, 1000};
     for (double jmass : jmasses) {
         string ofile = "Output/jupyterMass" + to_string(jmass) + ".txt";
-        SolarSystem solarSystem(ofile);
+        solarSystem.setofile(ofile);
         solarSystem.addBodyObj(earthReal);
         solarSystem.addBody(vec3(5.261470562232079E-01, -5.201022508399864E+00, 9.830503793253315E-03),
                             vec3(7.423674451944973E-03, 1.116865602956755E-03, -1.707572410053752E-04) * 365.25, 1898.13 * jmass / solarMass, "Jupyter");
         solarSystem.addBodyObj(sun, true);
-        vVerlet solver(dt);
+        solver.setdt(dt);
         solarSystem.writeSystem();
         for (int i = 0; i < n; i++) {
             solarSystem.writePos();
@@ -131,12 +130,12 @@ int main(int argc, char const *argv[]) {
     vector<double> jmasses2{1, 10, 1000};
     for (double jmass : jmasses2) {
         string ofile = "Output/jupyterMassMove" + to_string(jmass) + ".txt";
-        SolarSystem solarSystem(ofile);
+        solarSystem.setofile(ofile);
         solarSystem.addBodyObj(earthReal);
         solarSystem.addBody(vec3(5.261470562232079E-01, -5.201022508399864E+00, 9.830503793253315E-03),
                             vec3(7.423674451944973E-03, 1.116865602956755E-03, -1.707572410053752E-04) * 365.25, 1898.13 * jmass / solarMass, "Jupyter");
         solarSystem.addBodyObj(sun);
-        vVerlet solver(dt);
+        solver.setdt(dt);
         solarSystem.writeSystem();
         for (int i = 0; i < n; i++) {
             solarSystem.writePos();
@@ -218,7 +217,6 @@ int main(int argc, char const *argv[]) {
         solver.step(solarSystem);
         i2++;
     }
-
 
     return 0;
 }

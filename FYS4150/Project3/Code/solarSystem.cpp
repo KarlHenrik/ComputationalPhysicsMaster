@@ -170,7 +170,6 @@ void SolarSystem::relativisticAcc(double exponent) {
     }
     double g = 4 * M_PI * M_PI; // gravitational constant for units AU, year and solar mass
     double c2 = 3999262982.49891169; //c^2 for c with units AU/year
-    vec3 pos1to2;
     double r, forceFactor, rExp;
 
     CelestialBody &body1 = bodies[0];
