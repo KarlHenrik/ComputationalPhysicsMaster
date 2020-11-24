@@ -5,7 +5,7 @@ The report can be found in the Report folder.
 ## Code
 
 ### C++ files
-You compile the code by running the make command, in the folder with the makefile. The main code is run with no input parameters. The testing code is run with no input parameters.
+You compile the code by running the make command in the folder with the makefile. The main code is run with no input parameters. The testing code is run with no input parameters.
 
 main.cpp creates the Ising models of interest to the report and writes the results to files in the Output folder.
 
