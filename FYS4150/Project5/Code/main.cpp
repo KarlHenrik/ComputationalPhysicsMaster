@@ -12,7 +12,7 @@
 using namespace std;
 
 int main(int argc, char const *argv[]) {
-    /*
+
     {   // 1D simple model
         vector <int> steps_to_test {11, 101};
         for (int n : steps_to_test) {
@@ -31,7 +31,6 @@ int main(int argc, char const *argv[]) {
             }
         }
     }
-    */
 
     {   // 2D simple model
         vector <int> steps_to_test {11, 101};
@@ -55,7 +54,6 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    /*
     {   // Lithosphere model
         int n = 1000;
         vec initial = linspace<vec>(0, 1, n);
@@ -70,8 +68,6 @@ int main(int argc, char const *argv[]) {
             solve(system, "crank", intervals, dt);
         }
     }
-    */
-
 
     cout << "Finished sucessfully" << endl;
     return 0;
