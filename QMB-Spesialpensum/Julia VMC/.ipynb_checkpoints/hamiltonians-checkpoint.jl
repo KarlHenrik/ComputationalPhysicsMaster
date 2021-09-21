@@ -1,13 +1,19 @@
 abstract type Hamiltonian end
 
-struct HarmonicOscillator<:Hamiltonian
+struct HarmonicOscillator{V} <: Hamiltonian
     omega2::Float64
-    HOshape::Array{Float64}
-    HarmonicOscillator(omega, HOshape) = new(omega^2, HOshape)
+    HOshape::V
+    function HarmonicOscillator(omega, HOshape)
+        HOshape = sa.SVector{size(HOshape,1), Float64}(HOshape)
+        return new{typeof(HOshape)}(omega^2, HOshape)
+    end
 end
 
-function potential(positions, ham::HarmonicOscillator, temp)::Float64
-    temp .= positions.^2
-    temp .= temp .* ham.HOshape
-    return 0.5 * ham.omega2 * sum(temp)
+function potential(particles, ham::HarmonicOscillator)::Float64
+    temp_vec = zero(particles.temp_vec) #maybe there is a faster way? why does this not allocate??
+    for pos in particles.positions
+        temp_vec .+= pos.^2
+    end
+    temp_vec .= temp_vec .* ham.HOshape
+    return 0.5 * ham.omega2 * sum(temp_vec)
 end

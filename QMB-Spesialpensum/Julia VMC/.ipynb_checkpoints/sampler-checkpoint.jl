@@ -1,20 +1,21 @@
-include("wavefunctions.jl")
+include("Wavefunctions/wavefunctions.jl")
 include("hamiltonians.jl")
 
-import Base.+
+import Base.+, Base./
 
-mutable struct Samples{T<:Union{Float64, Array{Float64}}}
+mutable struct Samples{T}
     E::Float64
     E2::Float64
-    ∇Ψ::T # this will in general have any shape
-    ∇ΨE::T # this will in general have any shape
+    ∇Ψ::T
+    ∇ΨE::T
 end
 
-Samples() = Samples(0.0, 0.0, 0.0, 0.0)
+Samples(wf::SimpleGaussian) = Samples(0.0, 0.0, 0.0, 0.0)
+Samples(wf::Correlated)     = Samples(0.0, 0.0, 0.0, 0.0)
 
-function sample!(samples, positions, wf::WaveFunction, ham::Hamiltonian, temp)
-    E = potential(positions, ham, temp) + kinetic(positions, wf, temp)
-    ∇Ψ = paramDer(positions, wf, temp)
+function sample!(samples, particles, wf::WaveFunction, ham::Hamiltonian)
+    E = potential(particles, ham) + kinetic(particles, wf)
+    ∇Ψ = paramDer(particles, wf)
     samples.E   += E
     samples.E2  += E^2
     samples.∇Ψ  += ∇Ψ
@@ -22,7 +23,19 @@ function sample!(samples, positions, wf::WaveFunction, ham::Hamiltonian, temp)
     return
 end
 
+function gradient(samples)
+    return 2 .* (samples.∇ΨE .- samples.E .* samples.∇Ψ)
+end
+
 
 function +(a::Samples, b::Samples)
     return Samples(a.E + b.E, a.E2 + b.E2, a.∇Ψ .+ b.∇Ψ, a.∇ΨE .+ b.∇ΨE)
+end
+
+function /(a::Samples, b::Number)
+    return Samples(a.E/b, a.E2/b, a.∇Ψ/b, a.∇ΨE/b)
+end
+    
+function /(b::Number, a::Samples)
+    return Samples(a.E/b, a.E2/b, a.∇Ψ/b, a.∇ΨE/b)
 end

@@ -1,43 +1,60 @@
 using Random
-include("wavefunctions.jl")
+include("Wavefunctions/wavefunctions.jl")
 
-function metro_step!(positions, wf, rng, step_length)::Bool
-    p1 = rand(rng, 1:10)
-    old_pos = positions[:, p1]
+struct Metropolis
+    equil_steps::Int64
+    sample_steps::Int64
+    step_length::Float64
+end
 
-    adj_dir = rand(rng, 1:3)
+function metro_step!(particles, wf, rng, metro::Metropolis)::Bool
+    dims, num = particles.dims, particles.num
+    p1 = rand(rng, 1:num)
+    old_pos = copy(particles.positions[p1])
+
+    adj_dir = rand(rng, 1:dims)
     adj_sign = rand(rng, (-1, 1))
-    new_pos = old_pos[:]
-    new_pos[adj_dir] += step_length * adj_sign
-
-    positions[:, p1] .= new_pos
-    wfratio = ratio(positions, p1, old_pos, wf)
+    particles.positions[p1][adj_dir] += metro.step_length * adj_sign
+    
+    wfratio = ratio(particles, p1, old_pos, wf)
     if (rand(rng) < wfratio^2)
         return true
     else
-        positions[:, p1] .= old_pos
+        particles.positions[p1] .= old_pos
         return false
     end
-    return
 end
 
-#=
-function importance_step(positions, wf, rng, num, dims, step_length):
-    p1 = tf.math.argmax(chosen_particle_mask)[0]
-    oldQF = wf.QF(old_positions, p1)
+struct Importance
+    equil_steps::Int64
+    sample_steps::Int64
+    time_step::Float64
+end
 
-    move = 0.5 * oldQF * step_length + tf.random.normal(shape = (dims,), dtype = tf.float64) * tf.math.sqrt(step_length)
-    new_positions = old_positions + chosen_particle_mask * move
+function metro_step!(particles, wf, rng, metro::Importance)::Bool
+    temp_vec = particles.temp_vec
+    dims, num = particles.dims, particles.num
+    p1 = rand(rng, 1:num)
+    old_pos = copy(particles.positions[p1])
+    oldQF = QF(particles, p1, wf)
 
-    ratio = wf.ratio(new_positions, p1, old_positions)
-    newQF = wf.QF(new_positions, p1)
-
-    greensFuncRatio = tf.math.reduce_sum( (oldQF + newQF) * (old_positions[p1] - new_positions[p1] + step_length * (oldQF - newQF)) )
-    greensFuncRatio = tf.math.exp(0.5 * greensFuncRatio)
-    if (tf.random.uniform(shape = (), dtype = tf.float64) < greensFuncRatio * tf.math.pow(ratio, 2)):
-        return new_positions
-    else:
-        return old_positions
-=#
-
+    temp_vec .= 0.5 * metro.time_step .* oldQF
+    temp_vec .= temp_vec .+ randn(rng, dims) .* sqrt(metro.time_step)
+    particles.positions[p1] .+= temp_vec
+    
+    wfratio = ratio(particles, p1, old_pos, wf)
+    newQF = QF(particles, p1, wf)
+    
+    temp_vec .= old_pos .- particles.positions[p1]
+    temp_vec .= temp_vec .+ metro.time_step .* (oldQF .- newQF)
+    temp_vec .= temp_vec .* (oldQF .+ newQF)
+    greensFuncRatio = exp(0.5 * sum(temp_vec))
+    
+    if (rand(rng) < greensFuncRatio * wfratio^2)
+        return true
+    else
+        particles.positions[p1] .= old_pos
+        return false
+    end
+end
 
