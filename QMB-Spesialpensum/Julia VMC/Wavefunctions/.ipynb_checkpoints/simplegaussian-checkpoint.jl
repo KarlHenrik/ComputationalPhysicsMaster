@@ -1,6 +1,5 @@
 import LinearAlgebra as la
 import StaticArrays as sa
-import Base.copy
 
 struct SimpleGaussian{V} <: WaveFunction
     alpha::Float64
@@ -52,7 +51,3 @@ end
 function applyGradient(wf::SimpleGaussian, grad)
     return SimpleGaussian(wf.alpha - grad, wf.HOshape)
 end
-
-function copy(ham::SimpleGaussian)
-    return SimpleGaussian(wf.alpha, wf.HOshape)
-end;
