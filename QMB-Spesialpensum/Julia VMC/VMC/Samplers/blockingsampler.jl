@@ -4,13 +4,20 @@ struct BlockingSampler <: Sampler
     BlockingSampler(sampled_steps) = new(Vector{Float64}(undef, sampled_steps), sampled_steps)
 end
 
+function sample!(sampler::BlockingSampler, particles, wf::WaveFunction, ham::Hamiltonian)
+    # TODO
+    return
+end
+
+struct Blocking <: StatsScheme end
+createSampler(scheme::Blocking, wf, sampled_steps) = BlockingSampler(sampled_steps)
+
 struct BlockingResult <: Result
     E::Float64
     E_err::Float64
 end
 
 function createResult(sampler::BlockingSampler)
-    
     return BlockingResult(E, E_err)
 end
 

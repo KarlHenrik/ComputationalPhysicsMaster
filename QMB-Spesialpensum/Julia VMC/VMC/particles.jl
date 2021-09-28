@@ -1,8 +1,3 @@
-import Random
-import LinearAlgebra as la
-
-include("Wavefunctions/wavefunctions.jl")
-
 struct Particles{M, V}
     positions::M
     dims::Int64
@@ -13,7 +8,7 @@ end
 function Particles(dims, num, rng, wf::WaveFunction)
     positions = Vector{sa.MVector{dims, Float64}}(undef, num)
     for new_particle in 1:num
-        positions[new_particle] = sa.MVector{dims}( (rand(rng, Float64, dims) .- 0.5) .* 2 )
+        positions[new_particle] = sa.MVector{dims}( (Random.rand(rng, Float64, dims) .- 0.5) .* 2 )
     end
     temp_vec = copy(positions[1])
     return Particles(positions, dims, num, temp_vec)
@@ -31,7 +26,7 @@ function Particles(dims, num, rng, wf::Correlated)
                 error("No more room for particles. Reduce the number of particles or the hard-shell radius")
             end
             
-            candidate = sa.MVector{dims}( (rand(rng, Float64, dims) .- 0.5) .* 2 )
+            candidate = sa.MVector{dims}( (Random.rand(rng, Float64, dims) .- 0.5) .* 2 )
             notFound = false
             for placed_particle in 1:new_particle - 1
                 if la.norm(positions[placed_particle] .- candidate) < wf.a

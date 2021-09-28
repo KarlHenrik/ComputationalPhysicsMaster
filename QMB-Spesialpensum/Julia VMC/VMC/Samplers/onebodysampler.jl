@@ -12,6 +12,14 @@ function sample!(sampler::OneBodySampler, particles, wf::WaveFunction, ham::Hami
     return
 end
 
+struct OneBody <: StatsScheme
+    start::Float64
+    stop::Float64
+    length::Float64
+end
+OneBody(dims, num; start, stop, length, dimsnum) = OneBody(start, stop, length)
+createSampler(scheme::OneBody, wf, sampled_steps) = OneBodySampler(scheme.start, scheme.stop, scheme.length, sampled_steps)
+
 struct OneBodyResult{T} <: Result
     oneBodyDensity::T
 end

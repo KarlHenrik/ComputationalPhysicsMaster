@@ -1,6 +1,3 @@
-using Random
-include("Wavefunctions/wavefunctions.jl")
-
 struct Metropolis
     equil_steps::Int64
     sample_steps::Int64
@@ -12,12 +9,12 @@ function metro_step!(particles, wf, rng, metro::Metropolis)::Bool
     p1 = rand(rng, 1:num)
     old_pos = copy(particles.positions[p1])
 
-    adj_dir = rand(rng, 1:dims)
-    adj_sign = rand(rng, (-1, 1))
+    adj_dir = Random.rand(rng, 1:dims)
+    adj_sign = Random.rand(rng, (-1, 1))
     particles.positions[p1][adj_dir] += metro.step_length * adj_sign
     
     wfratio = ratio(particles, p1, old_pos, wf)
-    if (rand(rng) < wfratio^2)
+    if (Random.rand(rng) < wfratio^2)
         return true
     else
         particles.positions[p1] .= old_pos
@@ -39,7 +36,7 @@ function metro_step!(particles, wf, rng, metro::Importance)::Bool
     oldQF = QF(particles, p1, wf)
 
     temp_vec .= 0.5 * metro.time_step .* oldQF
-    temp_vec .= temp_vec .+ randn(rng, dims) .* sqrt(metro.time_step)
+    temp_vec .= temp_vec .+ Random.randn(rng, dims) .* sqrt(metro.time_step)
     particles.positions[p1] .+= temp_vec
     
     wfratio = ratio(particles, p1, old_pos, wf)
@@ -50,11 +47,10 @@ function metro_step!(particles, wf, rng, metro::Importance)::Bool
     temp_vec .= temp_vec .* (oldQF .+ newQF)
     greensFuncRatio = exp(0.5 * sum(temp_vec))
     
-    if (rand(rng) < greensFuncRatio * wfratio^2)
+    if (Random.rand(rng) < greensFuncRatio * wfratio^2)
         return true
     else
         particles.positions[p1] .= old_pos
         return false
     end
 end
-

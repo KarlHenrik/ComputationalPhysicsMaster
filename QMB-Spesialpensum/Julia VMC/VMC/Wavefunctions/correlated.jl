@@ -1,6 +1,3 @@
-import LinearAlgebra as la
-import StaticArrays as sa
-
 struct Correlated{V} <: WaveFunction
     alpha::Float64
     a::Float64

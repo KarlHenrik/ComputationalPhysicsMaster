@@ -1,6 +1,3 @@
-import LinearAlgebra as la
-import StaticArrays as sa
-
 struct SimpleGaussian{V} <: WaveFunction
     alpha::Float64
     HOshape::V
