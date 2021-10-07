@@ -1,6 +1,7 @@
 import LinearAlgebra as la
 import StaticArrays as sa
 import Random
+import Statistics
 
 # Independent
 include("Wavefunctions/wavefunctions.jl") # Computes ratio, QF, parameter derivative, kinetic energy (WaveFunction)

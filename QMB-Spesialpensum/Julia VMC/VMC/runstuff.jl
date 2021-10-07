@@ -1,5 +1,5 @@
-function run_scheme(wf, ham, metro, dimsnum, nthreads, scheme::StatsScheme)
-    result = vmc(wf, ham, metro, dimsnum, nthreads, scheme)
+function run_scheme(wf, ham, metro, dims, num, nthreads, scheme::StatsScheme)
+    result = vmc(wf, ham, metro, dims, num, nthreads, scheme)
     return result
 end
 
