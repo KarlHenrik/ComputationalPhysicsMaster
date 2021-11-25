@@ -1,0 +1,15 @@
+# Install progress bar
+tqdm
+
+# Install pytest
+pytest
+
+# Install matplotlib for plotting of scripts
+matplotlib
+
+# Install black
+black
+
+# Install spinx
+sphinx
+sphinx_rtd_theme

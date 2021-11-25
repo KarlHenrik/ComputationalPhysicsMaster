@@ -8,7 +8,7 @@ struct RBM <: WaveFunction
 end
 function RBM(visible, hidden, σ, rng::Random.AbstractRNG)
     W = Random.rand(rng, Float64, (visible, hidden))
-    a = Random.rand(rng, Float64, visible)
+    a = Random.rand(rng, Float64, visible) # TODO all zeros
     b = Random.rand(rng, Float64, hidden)
     return RBM(visible, hidden, W, a, b, σ)
 end
