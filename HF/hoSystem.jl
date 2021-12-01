@@ -68,6 +68,7 @@ struct System{T<:Basis}
     function System(n, basis, grid)
         # The basis functions evaluated on the grid
         spfs = [compute.(grid, (ψ_i,)) for ψ_i in basis.funcs]
+        l = length(basis.funcs)
         
         # One body integrals
         h = la.Diagonal([E_n(ψ_i) for ψ_i in basis.funcs])
@@ -77,9 +78,10 @@ struct System{T<:Basis}
         u = outer_int(spfs, grid, inner)
         
         # Adding spin
+        l = l * 2
         h = kron(h, [1 0; 0 1])
         u = add_spin_u(u)
-        l = length(basis.funcs) * 2
+        spfs = [spfs[(i + 1)÷2] for i in 1:l]
         
         # Anti-symmetrizing u
         u = u .- permutedims(u, [1, 2, 4, 3])
@@ -88,7 +90,7 @@ struct System{T<:Basis}
     end
 end
 
-function trapz(f_vals, grid)::Float64
+function trapz(f_vals, grid)::Float64 # TODO simpson!!
     val = sum(f_vals)
     val = val - 0.5 * (f_vals[1] + f_vals[end])
 
