@@ -78,13 +78,13 @@ struct System{T<:Basis}
         u = outer_int(spfs, grid, inner)
         
         # Adding spin
-        l = l * 2
-        h = kron(h, [1 0; 0 1])
-        u = add_spin_u(u)
-        spfs = [spfs[(i + 1)÷2] for i in 1:l]
+        #l = l * 2
+        #h = kron(h, [1 0; 0 1])
+        #u = add_spin_u(u)
+        #spfs = [spfs[(i + 1)÷2] for i in 1:l]
         
         # Anti-symmetrizing u
-        u = u .- permutedims(u, [1, 2, 4, 3])
+        #u = u .- permutedims(u, [1, 2, 4, 3])
         
         return new{typeof(basis)}(n, l, h, u, spfs, basis, grid)
     end
