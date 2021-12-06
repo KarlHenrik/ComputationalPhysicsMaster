@@ -7,21 +7,36 @@ struct HOFunc
     function HOFunc(n, ω)
         factors = Float64[]
         
-        scaling = sqrt( factorial(n) / 2^n ) * (ω / π)^0.25
         ξfac = √ω
         
         for m in n÷2:-1:0
-            factor = scaling * (-1)^m / (factorial(m) * factorial(n - 2m)) * 2^(n - 2m) * ξfac^(n - 2m)
+            factor = (-1)^m * (ω / π)^0.25 * ξfac^(n - 2m) * ho_factor(m, n)
+            
             push!(factors, factor)
         end
         return new(n, factors, n % 2, ω)
     end
 end
 
+function ho_factor(m, n)
+    # The harmonic oscillator basis functions need some factors of medium or very small size.
+    # However, computing these factors requires factorials and exponentials that quickly 
+    # get too large. By taking the logarithm of these factors, we don't need to
+    # compute any large numbers, but can use logarithm tricks to make the computation easy.
+    
+    n_fac = sum([log(i) for i in 1:n])
+    m_fac = sum([log(i) for i in 1:m])
+    n_minus_2m_fac = sum([log(i) for i in 1:(n - 2m)])
+    
+              #√(      n!  /    2^(n)  ) *    2^(n - 2m)     / ( m!   *  (n - 2m)!    )
+    log_fac = 0.5 * (n_fac - n * log(2)) + (n - 2m) * log(2) - (m_fac + n_minus_2m_fac)
+    return exp(log_fac)
+end
+
 function compute(x, ho::HOFunc)
     result = zero(x)
     x2 = x^2
-    xm = (x * ho.parity) + (1 - ho.parity) # xm = 1 if parity == 1 else xm = x
+    xm = (x * ho.parity) + (1.0 - ho.parity) # xm = 1 if parity == 1 else xm = x
     for factor in ho.factors
         result += factor * xm
         xm *= x2
@@ -58,7 +73,7 @@ struct System{T<:Basis}
     n::Int64 # number of particles
     l::Int64   # number of basis functions
     
-    h::Array{Float64}    # one-body integral
+    h::Array{Float64, 2} # one-body integral
     u::Array{Float64, 4} # two-body integral
     spfs::Vector{Vector{Float64}} # the basis functions evaluated on the grid
     
@@ -78,13 +93,13 @@ struct System{T<:Basis}
         u = outer_int(spfs, grid, inner)
         
         # Adding spin
-        #l = l * 2
-        #h = kron(h, [1 0; 0 1])
-        #u = add_spin_u(u)
-        #spfs = [spfs[(i + 1)÷2] for i in 1:l]
+        l = l * 2
+        h = kron(h, [1 0; 0 1])
+        u = add_spin_u(u)
+        spfs = [spfs[(i + 1)÷2] for i in 1:l]
         
         # Anti-symmetrizing u
-        #u = u .- permutedims(u, [1, 2, 4, 3])
+        u = u .- permutedims(u, [1, 2, 4, 3])
         
         return new{typeof(basis)}(n, l, h, u, spfs, basis, grid)
     end
@@ -101,12 +116,12 @@ function inner_ints(spfs::Vector{Vector{T}}, grid, a) where T<:Real
     l = length(spfs)
     inner_int = zeros(l, l, length(spfs[1]))
     f_vals = zero(grid)
-    coloumb = zero(grid)
+    coulomb = zero(grid)
     for (xi, x1) in enumerate(grid)
-        coloumb .= (1 ./ sqrt.( (grid .- x1).^2 .+ a.^2))
+        coulomb .= 1 ./ sqrt.( (grid .- x1).^2 .+ a.^2 )
         for κ in 1:l
             for λ in κ:l
-                f_vals .= spfs[κ] .* coloumb .* spfs[λ]
+                f_vals .= spfs[κ] .* coulomb .* spfs[λ]
                 res = trapz(f_vals, grid)
                 inner_int[κ, λ, xi] = res
                 inner_int[λ, κ, xi] = res
@@ -134,15 +149,18 @@ function inner_ints(spfs::Vector{Vector{T}}, grid, a) where T<:Complex
     return inner_int
 end
 
+
 function outer_int(spfs, grid, inner_ints)
     l = length(spfs)
     outer_int = zeros(l, l, l, l)
     f_vals = zero(grid)
+    
     for κ in 1:l
         for λ in 1:l
+            inner = inner_ints[κ, λ, :]
             for μ in 1:l
                 for ν in 1:l
-                    @views f_vals .= conj.(spfs[μ]) .* inner_ints[κ, λ, :] .* spfs[ν]
+                    f_vals .= conj.(spfs[μ]) .* inner .* spfs[ν]
                     outer_int[μ, κ, ν, λ] = trapz(f_vals, grid)
                 end
             end
