@@ -5,6 +5,9 @@ struct HOFunc
     ω::Float64
 
     function HOFunc(n, ω)
+        if n > 50
+            print("HO functions past n=50 are not accurate enough. Use a recursive definition.")
+        end
         factors = Float64[]
         
         ξfac = √ω
