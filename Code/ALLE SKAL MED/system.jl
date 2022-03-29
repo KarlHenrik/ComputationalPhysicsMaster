@@ -1,15 +1,15 @@
 abstract type System end
 
-struct SpatialSystem{T} <: System
+struct SpatialSystem <: System
     n::Int64 # number of particles
     l::Int64   # number of basis functions
-    a::T # Coulomb shielding
+    a::Float64 # Coulomb shielding
     
-    h::Array{T, 2} # one-body integrals
-    u::Array{T, 4} # two-body integrals
-    spfs::Vector{Vector{T}} # the basis functions evaluated on the grid
+    h::Array{Float64, 2} # one-body integrals
+    u::Array{Float64, 4} # two-body integrals
+    spfs::Vector{Vector{Float64}} # the basis functions evaluated on the grid
     
-    grid::Vector{T}
+    grid::Vector{Float64}
 end
 
 function System(n, basis::SpatialBasis, grid, a)
@@ -30,9 +30,9 @@ function System(n, basis::SpatialBasis, grid, a)
     spfs = [spfs[(i + 1)÷2] for i in 1:l]
 
     # Anti-symmetrizing u
-    u = u .- permutedims(u, [1, 2, 4, 3])
+    u .= u .- permutedims(u, [1, 2, 4, 3])
 
-    return SpatialSystem{typeof(a)}(n, l, a, h, u, spfs, grid)
+    return SpatialSystem(n, l, a, h, u, spfs, grid)
 end
 
 function trapz(f_vals, grid)
@@ -42,16 +42,21 @@ function trapz(f_vals, grid)
     return val * (grid[2] - grid[1])
 end
 
-function inner_ints(spfs::Vector{Vector{T}}, grid, a) where T<:Real
+function inner_ints(spfs, grid, a)
     l = length(spfs)
     inner_int = zeros(l, l, length(spfs[1]))
-    f_vals = zero(grid)
-    coulomb = zero(grid)
-    for (xi, x1) in enumerate(grid)
+    cs = [zero(grid) for i in 1:Threads.nthreads()]
+    fs = [zero(grid) for i in 1:Threads.nthreads()]
+    
+    @inbounds Threads.@threads for xi in eachindex(grid)
+        x1 = grid[xi]
+        f_vals = fs[Threads.threadid()]
+        coulomb = cs[Threads.threadid()]
+        
         coulomb .= 1 ./ sqrt.( (grid .- x1).^2 .+ a.^2 )
         for κ in 1:l
             for λ in κ:l
-                f_vals .= spfs[κ] .* coulomb .* spfs[λ]
+                f_vals .= conj.(spfs[κ]) .* coulomb .* spfs[λ]
                 res = trapz(f_vals, grid)
                 inner_int[κ, λ, xi] = res
                 inner_int[λ, κ, xi] = res
@@ -62,32 +67,19 @@ function inner_ints(spfs::Vector{Vector{T}}, grid, a) where T<:Real
 end
 
 
-function inner_ints(spfs::Vector{Vector{T}}, grid, a) where T<:Complex
-    l = length(spfs)
-    inner_int = zeros(l, l, length(spfs[1]))
-    f_vals = zero(grid)
-    coloumb = zero(grid)
-    for (xi, x1) in enumerate(grid)
-        coloumb .= (1 ./ sqrt.( (grid .- x1).^2 .+ a.^2))
-        for κ in 1:l
-            for λ in κ:l
-                f_vals .= conj.(spfs[κ]) .* coloumb .* spfs[λ]
-                inner_int[κ, λ, xi] = trapz(f_vals, grid)
-            end
-        end
-    end
-    return inner_int
-end
-
-
 function outer_int(spfs, grid, inner_ints)
     l = length(spfs)
     outer_int = zeros(l, l, l, l)
-    f_vals = zero(grid)
     
-    for κ in 1:l
+    fs = [zero(grid) for i in 1:Threads.nthreads()]
+    is = [zero(grid) for i in 1:Threads.nthreads()]
+
+    @inbounds Threads.@threads for κ in 1:l
+        f_vals = fs[Threads.threadid()]
+        inner = is[Threads.threadid()]
+        
         for λ in 1:l
-            inner = inner_ints[κ, λ, :]
+            @views inner .= inner_ints[κ, λ, :]
             for μ in 1:l
                 for ν in 1:l
                     f_vals .= conj.(spfs[μ]) .* inner .* spfs[ν]
@@ -142,19 +134,19 @@ function add_spin_u(u_old)
             
             ν_old = Int( ceil(ν / 2) )
             λ_old = Int( ceil(λ / 2) )
-            u_new[:, :, ν, λ] .= kron(u_old[:, :, ν_old, λ_old], pattern)
+            @views kron!(u_new[:, :, ν, λ], u_old[:, :, ν_old, λ_old], pattern)
         end
     end
     return u_new
 end
 
 
-struct PairingSystem{T} <: System
+struct PairingSystem <: System
     n::Int64 # number of particles
     l::Int64   # number of basis functions
     
-    h::Array{T, 2} # one-body integrals
-    u::Array{T, 4} # two-body integrals
+    h::Array{Float64, 2} # one-body integrals
+    u::Array{Float64, 4} # two-body integrals
 end
 
 function System(n, basis::Pairing)
@@ -178,3 +170,4 @@ function System(n, basis::Pairing)
 
     return PairingSystem(n, l, h, u)
 end
+;

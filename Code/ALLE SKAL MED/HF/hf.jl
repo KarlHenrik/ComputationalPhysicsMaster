@@ -1,7 +1,45 @@
-function getP(C, system)
-    (; n, l) = system
+struct HFState{T}
+    system::T
     
-    P = la.zeros((l, l))
+    C::Matrix{Float64}
+    P::Matrix{Float64}
+    F::Matrix{Float64}
+end
+
+function setup_HF(system)
+    (; l) = system
+    
+    C = la.I(l)
+    P = zeros((l, l))
+    F = zeros((l, l))
+    
+    state = HFState{typeof(system)}(system, C, P, F)
+    P_update!(state)
+    F_update!(state)
+    return state
+end
+
+function HF_update!(state; iters)
+    (; C, F) = state
+    for i in 1:iters
+        P_update!(state)
+        F_update!(state)
+        C .= la.eigvecs(F)
+    end
+    return state
+end
+HF_update!(state) = HF_update!(state, iters = 1)
+
+function P_update!(state)
+    (; P, C) = state
+    (; n, l) = state.system
+    
+    for a in 1:l
+        for b in 1:l
+            @inbounds P[b, a] = 0
+        end
+    end
+    
     for i in 1:n
         for a in 1:l
             for b in 1:l
@@ -12,11 +50,11 @@ function getP(C, system)
     return P
 end
 
-function getF(P, system)
-    (; h, u, n, l) = system
+function F_update!(state)
+    (; P, F) = state
+    (; n, l, h, u) = state.system
     
-    F = la.zeros((l, l))
-    F .+= h
+    F .= h
     for c in 1:l
         for d in 1:l
             @inbounds P_dc = P[d, c]
@@ -30,12 +68,20 @@ function getF(P, system)
     return F
 end
 
-function SCF(C, system, iters)
-    for i in 1:iters
-        P = getP(C, system)
-        F = getF(P, system)
-        C = la.eigvecs(F)
-    end
+function E_HF(state)
+    (; P) = state
+    (; l, h, u) = state.system
     
-    return C
+    energy = 0.0
+    for a in 1:l
+        for b in 1:l
+            @inbounds energy += P[b, a] * h[a, b]
+            for c in 1:l
+                for d in 1:l
+                    @inbounds energy += 0.5 * P[b, a] * P[d, c] * u[a, c, b, d]
+                end
+            end
+        end
+    end
+    return real(energy)
 end

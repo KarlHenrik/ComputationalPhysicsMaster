@@ -15,7 +15,7 @@ function setup_CCSD(system; α)
     (; l, h, u) = system
     
     ϵ = zeros(l)
-    for q in 1:l
+    @inbounds for q in 1:l
         ϵ[q] = h[q, q]
         for i in 1:n
             ϵ[q] += u[q, i, q, i]
@@ -24,7 +24,7 @@ function setup_CCSD(system; α)
     
     t1_new = zeros((l, l))
     t1 = zeros((l, l))
-    for i in 1:n
+    @inbounds for i in 1:n
         for a in n+1:l
             t1[a, i] = h[a, i] / (ϵ[i] - ϵ[a])
         end
@@ -32,7 +32,7 @@ function setup_CCSD(system; α)
     
     t2_new = zeros((l, l, l, l))
     t2 = zeros((l, l, l, l))
-    for i in 1:n
+    @inbounds for i in 1:n
         for j in 1:n
             for a in n+1:l
                 for b in n+1:l
@@ -51,13 +51,13 @@ function E_CCSD(state)
     
     E = 0.0
     
-    for i in 1:n
+    @inbounds for i in 1:n
         for a in n+1:l
             E += h[i, a] * t1[a, i]
         end
     end
     
-    for i in 1:n
+    @inbounds for i in 1:n
         for j in 1:n
             for a in n+1:l
                 for b in n+1:l
@@ -82,8 +82,9 @@ function CCSD_Update!(state)
     """
     The t1 amplitude equations, from page 75 of Crawford & Schaefer
     """
-    for i in 1:n
-        for a in n+1:L
+    
+    @inbounds Threads.@threads for a in n+1:L
+        for i in 1:n
             x = 0.0
 
             x += h[a, i]
@@ -155,9 +156,9 @@ function CCSD_Update!(state)
     """
     The t2 amplitude equations, from page 76 of Crawford & Schaefer
     """
-    for i in 1:n
-        for j in i+1:n
-            for a in n+1:L
+    @inbounds Threads.@threads for a in n+1:L
+        for i in 1:n
+            for j in i+1:n
                 for b in a+1:L
                     s = 0.0
 

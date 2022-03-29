@@ -1,21 +1,18 @@
-struct CCD_System
-    n::Int64
-    l::Int64
+struct CCDState{T}
+    system::T
     α::Float64
     
-    h::Matrix{Float64}
-    u::Array{Float64, 4}
     ϵ::Vector{Float64}
     
     t::Array{Float64, 4}
     t_new::Array{Float64, 4}
 end
 
-function setup_CCD(h, u, n; α)
-    l = size(h)[1]
+function setup_CCD(system; α)
+    (; l, h, u) = system
     
     ϵ = zeros(l)
-    for q in 1:l
+    @inbounds for q in 1:l
         ϵ[q] = h[q, q]
         for i in 1:n
             ϵ[q] += u[q, i, q, i]
@@ -25,7 +22,7 @@ function setup_CCD(h, u, n; α)
     t = zeros((l, l, l, l))
     t_new = zeros((l, l, l, l))
     
-    for i in 1:n
+    @inbounds for i in 1:n
         for j in 1:n
             for a in n+1:l
                 for b in n+1:l
@@ -35,14 +32,15 @@ function setup_CCD(h, u, n; α)
         end
     end
     
-    return CCD_System(n, l, α, h, u, ϵ, t, t_new)
+    return CCDState{typeof(system)}(system, α, ϵ, t, t_new)
 end
 
-function E_CCD(system)
-    (; n, l, u, t) = system
+function E_CCD(state)
+    (; system, t) = state
+    (; n, l, h, u) = system
     
     E = 0.0
-    for i in 1:n
+    @inbounds for i in 1:n
         for j in 1:n
             for a in n+1:l
                 for b in n+1:l
@@ -54,12 +52,13 @@ function E_CCD(system)
     return 0.25 * E
 end
 
-function CCD_Update!(system)
-    (; n, l, u, ϵ, t, t_new, α) = system
+function CCD_Update!(state)
+    (; system, α, ϵ, t, t_new) = state
+    (; n, l, h, u) = system
     
-    for i in 1:n
-        for j in i+1:n
-            for a in n+1:l
+    @inbounds Threads.@threads for a in n+1:l
+        for i in 1:n
+            for j in i+1:n
                 for b in a+1:l
                     # Page 361 of An Advanced Course in Computational Physics
                     s = 0
@@ -117,6 +116,6 @@ function CCD_Update!(system)
         end
     end
     t .= t_new
-    return system
+    return state
 end
 ;
