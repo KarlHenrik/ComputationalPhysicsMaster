@@ -1,6 +1,6 @@
 abstract type System end
 
-struct SpatialSystem <: System
+struct SpatialSystem{T} <: System
     n::Int64 # number of particles
     l::Int64   # number of basis functions
     a::Float64 # Coulomb shielding
@@ -10,6 +10,7 @@ struct SpatialSystem <: System
     spfs::Vector{Vector{Float64}} # the basis functions evaluated on the grid
     
     grid::Vector{Float64}
+    basis::T
 end
 
 function System(n, basis::SpatialBasis, grid, a)
@@ -32,7 +33,7 @@ function System(n, basis::SpatialBasis, grid, a)
     # Anti-symmetrizing u
     u .= u .- permutedims(u, [1, 2, 4, 3])
 
-    return SpatialSystem(n, l, a, h, u, spfs, grid)
+    return SpatialSystem{typeof(basis)}(n, l, a, h, u, spfs, grid, basis)
 end
 
 function trapz(f_vals, grid)

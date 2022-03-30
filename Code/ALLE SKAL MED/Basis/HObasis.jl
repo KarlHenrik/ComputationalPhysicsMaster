@@ -1,17 +1,17 @@
-struct HOBasis{T} <: SpatialBasis
+struct HOBasis <: SpatialBasis
     l::Int64  # number of basis functions
-    ω::T  # strength of harmonic oscillator potential
-    hermites::Vector{T}
+    ω::Float64  # strength of harmonic oscillator potential
+    hermites::Vector{Float64}
     
     function HOBasis(l, ω)
         hermites = zeros(l)
         hermites[1] = 1.0
         
-        return new{typeof(ω)}(l, ω, hermites)
+        return new(l, ω, hermites)
     end
 end
 
-function fast_ho(x, ho)
+function evaluate(x, ho)
     (; ω, hermites) = ho
     hos = zero(hermites)
     
@@ -25,7 +25,7 @@ function fast_ho(x, ho)
     ho_fac *= 1 / √2
     hos[2] = ho_fac * hermites[2]
 
-    for n in 3:length(hos)
+    @inbounds for n in 3:length(hos)
         hermites[n] = 2x * hermites[n-1] - 2(n - 2) * hermites[n-2]
 
         ho_fac *= 1 / sqrt( 2(n - 1) )
@@ -35,7 +35,7 @@ function fast_ho(x, ho)
     return hos
 end
 
-function fast_ho!(hos, x, ho)
+function evaluate!(hos, x, ho)
     (; ω, hermites) = ho
     
     x = √ω * x
@@ -48,11 +48,11 @@ function fast_ho!(hos, x, ho)
     ho_fac *= 1 / √2
     hos[2] = ho_fac * hermites[2]
 
-    for n in 3:length(hos)
-        @inbounds hermites[n] = 2x * hermites[n-1] - 2(n - 2) * hermites[n-2]
+    @inbounds for n in 3:length(hos)
+        hermites[n] = 2x * hermites[n-1] - 2(n - 2) * hermites[n-2]
 
         ho_fac *= 1 / sqrt( 2(n - 1) )
-        @inbounds hos[n] = ho_fac * hermites[n]
+        hos[n] = ho_fac * hermites[n]
     end
     
     return hos
@@ -65,7 +65,7 @@ function spatial(ho::HOBasis, grid)
     res = [zeros(n) for i in 1:l]
     
     for i in 1:n
-        fast_ho!(hos, grid[i], ho)
+        evaluate!(hos, grid[i], ho)
         for j in 1:l
             @inbounds res[j][i] = hos[j]
         end
