@@ -19,7 +19,7 @@ function setup_HF(system)
     return state
 end
 
-function HF_update!(state; iters)
+function HF_update!(state::HFState; iters)
     (; C, F) = state
     for i in 1:iters
         P_update!(state)
@@ -28,9 +28,9 @@ function HF_update!(state; iters)
     end
     return state
 end
-HF_update!(state) = HF_update!(state, iters = 1)
+HF_update!(state::HFState) = HF_update!(state, iters = 1)
 
-function P_update!(state)
+function P_update!(state::HFState)
     (; P, C) = state
     (; n, l) = state.system
     
@@ -50,7 +50,7 @@ function P_update!(state)
     return P
 end
 
-function F_update!(state)
+function F_update!(state::HFState)
     (; P, F) = state
     (; n, l, h, u) = state.system
     
@@ -68,7 +68,7 @@ function F_update!(state)
     return F
 end
 
-function E_HF(state)
+function energy(state::HFState)
     (; P) = state
     (; l, h, u) = state.system
     

@@ -35,7 +35,7 @@ function setup_CCD(system; α)
     return CCDState{typeof(system)}(system, α, ϵ, t, t_new)
 end
 
-function E_CCD(state)
+function energy(state::CCDState)
     (; system, t) = state
     (; n, l, h, u) = system
     
@@ -52,7 +52,7 @@ function E_CCD(state)
     return 0.25 * E
 end
 
-function CCD_Update!(state)
+function CCD_Update!(state::CCDState)
     (; system, α, ϵ, t, t_new) = state
     (; n, l, h, u) = system
     

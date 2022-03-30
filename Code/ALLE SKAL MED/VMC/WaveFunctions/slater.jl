@@ -6,19 +6,13 @@ end
 function Slater(state::HFState)
     (; C, system) = state
     (; l, basis) = system
-    if system.l == 2 * basis.l
-        basis = SpinBasis(basis)
-    end
+    
     return Slater(C, l, basis)
 end
 
 function evaluate!(walker, x, wf::Slater{Basis})
     (; basis_eval) = walker.wf_mut
     basis_eval .= evaluate!(basis_eval, x, wf.basis) # the basis functions evaluated at x
-end
-
-struct SpinBasis{T}
-    base::T
 end
 
 function evaluate!(walker, x, wf::Slater{SpinBasis})

@@ -45,7 +45,13 @@ function setup_CCSD(system; α)
     return CCSDState(system, ϵ, α, t1, t1_new, t2, t2_new)
 end
 
-function E_CCSD(state)
+function energy(state::CCSDState)
+    #=
+    Returns E_CCSD - E_0
+    
+    where E_0 is the energy of the reference determinant
+    =#
+    
     (; system, t1, t2) = state
     (; n, l, h, u) = system
     
@@ -73,7 +79,7 @@ end
 
 
 
-function CCSD_Update!(state)
+function CCSD_Update!(state::CCSDState)
     (; system, α, ϵ, t1, t1_new, t2, t2_new) = state
     (; n, l, h, u) = system
     

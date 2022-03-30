@@ -11,7 +11,7 @@ struct HOBasis <: SpatialBasis
     end
 end
 
-function evaluate(x, ho)
+function evaluate(x, ho::HOBasis)
     (; ω, hermites) = ho
     hos = zero(hermites)
     
@@ -35,7 +35,7 @@ function evaluate(x, ho)
     return hos
 end
 
-function evaluate!(hos, x, ho)
+function evaluate!(hos, x, ho::HOBasis)
     (; ω, hermites) = ho
     
     x = √ω * x
@@ -60,7 +60,7 @@ end
 
 function spatial(ho::HOBasis, grid)
     n = length(grid)
-    l = length(ho.hermites)
+    l = ho.l
     hos = zeros(l)
     res = [zeros(n) for i in 1:l]
     
