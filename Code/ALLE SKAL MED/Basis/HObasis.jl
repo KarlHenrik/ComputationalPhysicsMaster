@@ -11,6 +11,8 @@ struct HOBasis <: SpatialBasis
     end
 end
 
+
+
 function evaluate(x, ho::HOBasis)
     (; ω, hermites) = ho
     hos = zero(hermites)

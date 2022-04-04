@@ -3,10 +3,11 @@ struct Slater{T}
     l::Int64
     basis::T
 end
+
 function Slater(state::HFState)
     (; C, system) = state
-    (; l, basis) = system
-    
+    (; l, basis, transform) = system
+    C = transform * C
     return Slater(C, l, basis)
 end
 

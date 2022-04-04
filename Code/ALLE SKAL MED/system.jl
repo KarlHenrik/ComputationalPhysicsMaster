@@ -11,6 +11,7 @@ struct SpatialSystem{T} <: System
     
     grid::Vector{Float64}
     basis::T
+    transform::Matrix{Float64}
 end
 
 function System(n, basis::SpatialBasis, grid, a)
@@ -20,7 +21,8 @@ function System(n, basis::SpatialBasis, grid, a)
     u = twobody(basis, grid, a) # Two body integrals
     u .= u .- permutedims(u, [1, 2, 4, 3]) # Anti-symmetrizing u
 
-    return SpatialSystem{typeof(basis)}(n, l, a, h, u, spfs, grid, basis)
+    transform = la.I(l)
+    return SpatialSystem{typeof(basis)}(n, l, a, h, u, spfs, grid, basis, transform)
 end
 
 struct PairingSystem <: System
