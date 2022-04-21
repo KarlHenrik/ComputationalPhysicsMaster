@@ -43,3 +43,8 @@ struct Tanh <: Layer end
 function layerEval(x, layer::Tanh)
     return tanh.(x)
 end
+
+struct Sigmoid <: Layer end
+function layerEval(x, layer::Sigmoid)
+    return 1 ./ (1 .+ exp.(-x))
+end

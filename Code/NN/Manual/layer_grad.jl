@@ -25,12 +25,10 @@ end
 function backprop!(layer_grad::Dense_Grad, delta, layer)
     (; W_g, b_g, input) = layer_grad
     
-    println(size(delta))
-    println(size(input))
     W_g .= delta * transpose(input)
-    b_g .= sum(delta, dims = 1) # TODO
+    b_g .= delta
     
-    delta = transpose(delta) * transpose(layer.W)
+    delta = transpose(layer.W) * delta
     return delta
 end
 
@@ -47,9 +45,17 @@ function setOutput!(layer_grad::Sigmoid_Grad, output)
 end
 function backprop!(layer_grad::Sigmoid_Grad, delta)
     (; output) = layer_grad
-    delta .= delta.* output .* (1 .- output)
+    delta .= delta .* output .* (1 .- output)
 end
 
 
 # ------------------------ DeArray ------------------------------
-
+struct DeArray_Grad <: Layer_Grad
+    theOnes::Vector{Float64}
+end
+function Layer_Grad(layer::DeArray, input)
+    return DeArray_Grad(zero(input) .+ 1.0)
+end
+function backprop!(layer_grad::DeArray_Grad, delta)
+    delta = layer_grad.theOnes * delta
+end

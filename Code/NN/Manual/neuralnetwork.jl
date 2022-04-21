@@ -35,9 +35,9 @@ function gradient!(nn::NeuralNetwork, x)
         setOutput!(layer_grad, x)
     end
     
-    delta = x
+    delta = zero(x) .+ 1.0
     for (layer, layer_grad) in zip(reverse(nn.layers), reverse(nn.layer_grads))
-        backprop!(layer_grad, delta, layer)
+        delta = backprop!(layer_grad, delta, layer)
     end
     
     return nn
