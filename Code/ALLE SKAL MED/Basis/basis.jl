@@ -2,6 +2,10 @@ abstract type Basis end
 
 abstract type SpatialBasis <: Basis end
 
+include("pairing.jl")
+include("HOBasis.jl")
+include("SpinBasis.jl")
+
 function twobody(basis::SpatialBasis, grid, a)
     spfs = spatial(basis, grid)
     inner = inner_ints(spfs, grid, a)
