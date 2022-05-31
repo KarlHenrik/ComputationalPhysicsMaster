@@ -11,10 +11,10 @@ end
 
 function outer_int(spfs, grid, inner_ints)
     l = length(spfs)
-    outer_int = zeros(l, l, l, l)
+    outer_int = zeros(typeof(spfs[1][1]), l, l, l, l)
     
-    fs = [zero(grid) for i in 1:Threads.nthreads()]
-    is = [zero(grid) for i in 1:Threads.nthreads()]
+    fs = [similar(spfs[1]) for i in 1:Threads.nthreads()]
+    is = [similar(spfs[1]) for i in 1:Threads.nthreads()]
 
     @inbounds Threads.@threads for κ in 1:l
         f_vals = fs[Threads.threadid()]
@@ -35,9 +35,9 @@ end
 
 function inner_ints(spfs, grid, a)
     l = length(spfs)
-    inner_int = zeros(l, l, length(spfs[1]))
-    cs = [zero(grid) for i in 1:Threads.nthreads()]
-    fs = [zero(grid) for i in 1:Threads.nthreads()]
+    inner_int = zeros(typeof(spfs[1][1]), l, l, length(spfs[1]))
+    cs = [similar(grid) for i in 1:Threads.nthreads()]
+    fs = [similar(spfs[1]) for i in 1:Threads.nthreads()]
     
     @inbounds Threads.@threads for xi in eachindex(grid)
         x1 = grid[xi]
@@ -50,7 +50,7 @@ function inner_ints(spfs, grid, a)
                 f_vals .= conj.(spfs[κ]) .* coulomb .* spfs[λ]
                 res = trapz(f_vals, grid)
                 inner_int[κ, λ, xi] = res
-                inner_int[λ, κ, xi] = res
+                inner_int[λ, κ, xi] = res'
             end
         end
     end
