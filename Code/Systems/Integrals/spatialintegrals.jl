@@ -1,14 +1,11 @@
-abstract type Basis end
+function onebody(ho::HOBasis, grid)
+    (; l, ω) = ho
+    return la.Diagonal([(n + 0.5) * ω for n in 0:l-1])
+end
 
-abstract type SpatialBasis <: Basis end
-
-include("pairing.jl")
-include("HOBasis.jl")
-include("SpinBasis.jl")
-
-function twobody(basis::SpatialBasis, grid, a)
+function twobody(basis::SpatialBasis, grid, V::Interaction)
     spfs = spatial(basis, grid)
-    inner = inner_ints(spfs, grid, a)
+    inner = inner_ints(spfs, grid, V)
     u = outer_int(spfs, grid, inner)
     return u
 end
@@ -37,27 +34,33 @@ function outer_int(spfs, grid, inner_ints)
     return outer_int
 end
 
-function inner_ints(spfs, grid, a)
+function inner_ints(spfs, grid, V::Interaction)
     l = length(spfs)
     inner_int = zeros(typeof(spfs[1][1]), l, l, length(spfs[1]))
-    cs = [similar(grid) for i in 1:Threads.nthreads()]
+    interactions = [similar(grid) for i in 1:Threads.nthreads()]
     fs = [similar(spfs[1]) for i in 1:Threads.nthreads()]
     
     @inbounds Threads.@threads for xi in eachindex(grid)
         x1 = grid[xi]
         f_vals = fs[Threads.threadid()]
-        coulomb = cs[Threads.threadid()]
+        interaction = interactions[Threads.threadid()]
         
-        coulomb .= 1 ./ sqrt.( (grid .- x1).^2 .+ a.^2 )
+        interaction = interaction_over_grid!(interaction, x1, grid, V)
         for κ in 1:l
             for λ in κ:l
-                f_vals .= conj.(spfs[κ]) .* coulomb .* spfs[λ]
+                f_vals .= conj.(spfs[κ]) .* interaction .* spfs[λ]
                 res = trapz(f_vals, grid)
                 inner_int[κ, λ, xi] = res
                 inner_int[λ, κ, xi] = res'
             end
         end
     end
+    return inner_int
+end
+
+function inner_ints(spfs, grid, V::NonInteracting)
+    l = length(spfs)
+    inner_int = zeros(typeof(spfs[1][1]), l, l, length(spfs[1]))
     return inner_int
 end
 

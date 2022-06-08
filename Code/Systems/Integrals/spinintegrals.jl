@@ -1,37 +1,11 @@
-struct SpinBasis{T} <: SpatialBasis
-    base::T # The basis with no spin
-    l::Int64
-    function SpinBasis(base::SpatialBasis)
-        return new{typeof(base)}(base, 2 * base.l)
-    end
-end
-
-function spatial(basis::SpinBasis, grid)
-    n = length(grid)
-    l = basis.l
-    res = [zeros(n) for i in 1:l]
-    
-    nospin = zeros(l÷2)
-    
-    @inbounds for i in 1:n
-        evaluate!(nospin, grid[i], basis.base) # the basis functions evaluated at x
-        for j in 1:l÷2
-            res[2j-1][i] = nospin[j]
-            res[2j][i] = nospin[j]
-        end
-    end
-    
-    return res
-end
-
 function onebody(basis::SpinBasis, grid)
     h = onebody(basis.base, grid)
     h = kron(h, [1 0; 0 1])
     return h
 end
 
-function twobody(basis::SpinBasis, grid, a)
-    u = twobody(basis.base, grid, a)
+function twobody(basis::SpinBasis, grid, V::Interaction)
+    u = twobody(basis.base, grid, V)
     u = add_spin_u(u)
     return u
 end

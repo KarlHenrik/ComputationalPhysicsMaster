@@ -11,8 +11,6 @@ struct HOBasis <: SpatialBasis
     end
 end
 
-
-
 function evaluate(x, ho::HOBasis)
     (; ω, hermites) = ho
     hos = zero(hermites)
@@ -74,9 +72,4 @@ function spatial(ho::HOBasis, grid)
     end
     
     return res
-end
-
-function onebody(ho::HOBasis, grid)
-    (; l, ω) = ho
-    return la.Diagonal([(n + 0.5) * ω for n in 0:l-1])
 end

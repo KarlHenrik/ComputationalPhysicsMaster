@@ -1,16 +1,12 @@
-function System(state::HFState)
-    return System(state.system, state.C)
-end
-
 function System(system::SpatialSystem, C)
-    (; n, l, a, h, u, spfs, grid, basis, transform) = system
+    (; n, l, h, u, spfs, grid, basis, transform, V) = system
     spfs = transform_spfs(spfs, C)
     h = transform_onebody(h, C)
     u = transform_twobody(u, C)
     grid = copy(grid)
     
     transform = transform * C
-    return SpatialSystem{typeof(basis)}(n, l, a, h, u, spfs, grid, basis, transform)
+    return SpatialSystem{typeof(basis)}(n, l, h, u, spfs, grid, basis, transform, V)
 end
 
 function System(system::PairingSystem, C)
@@ -48,5 +44,3 @@ function transform_twobody(u, C)
     end
     return u3
 end
-
-;

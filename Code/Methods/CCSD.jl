@@ -14,13 +14,7 @@ end
 function setup_CCSD(system; α)
     (; l, h, u) = system
     
-    ϵ = zeros(l)
-    @inbounds for q in 1:l
-        ϵ[q] = h[q, q]
-        for i in 1:n
-            ϵ[q] += u[q, i, q, i]
-        end
-    end
+    ϵ = sp_energies(system)
     
     t1_new = zeros((l, l))
     t1 = zeros((l, l))
@@ -58,6 +52,7 @@ function energy(state::CCSDState)
     E = 0.0
     
     @inbounds for i in 1:n
+        E += h[i, i]
         for a in n+1:l
             E += h[i, a] * t1[a, i]
         end
@@ -65,6 +60,7 @@ function energy(state::CCSDState)
     
     @inbounds for i in 1:n
         for j in 1:n
+            E += 0.5 * u[i, j, i, j]
             for a in n+1:l
                 for b in n+1:l
                     E += 0.25 * u[i, j, a, b] * t2[a, b, i, j]
@@ -266,10 +262,10 @@ function CCSD_Update!(state::CCSDState)
                                 s -= 0.5 * u[k, b, c, d] * t1[a, k] * t2[c, d, i, j] # -1
                                 s += 0.5 * u[k, a, c, d] * t1[b, k] * t2[c, d, i, j] # Pab
                                 
-                                s -= u[k, b, c, d] * t1[c, i] * t1[a, k] * t1[d, j] # -1
-                                s += u[k, b, c, d] * t1[c, j] * t1[a, k] * t1[d, i] # Pij
-                                s += u[k, a, c, d] * t1[c, i] * t1[b, k] * t1[d, j] # Pab
-                                s -= u[k, a, c, d] * t1[c, j] * t1[b, k] * t1[d, i] # -Pij Pab
+                                s -= 0.5 * u[k, b, c, d] * t1[c, i] * t1[a, k] * t1[d, j] # -1
+                                s += 0.5 * u[k, b, c, d] * t1[c, j] * t1[a, k] * t1[d, i] # Pij
+                                s += 0.5 * u[k, a, c, d] * t1[c, i] * t1[b, k] * t1[d, j] # Pab
+                                s -= 0.5 * u[k, a, c, d] * t1[c, j] * t1[b, k] * t1[d, i] # -Pij Pab
                             end
                         end
                     end

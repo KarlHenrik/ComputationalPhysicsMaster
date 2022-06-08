@@ -68,11 +68,10 @@ function pairing_exact(g)
          -g/2 -g/2   0    6-g -g/2 -g/2
          -g/2  0    -g/2 -g/2  8-g -g/2
           0   -g/2  -g/2 -g/2 -g/2  10-g]
-    return la.eigvals(H)[1] - (2 - g)
+    return la.eigvals(H)[1]
 end
 
 function pairing_MBPT2(g)
-    return -g^2 / 4 * ( 1 / (4+g) + 1/(6+g) + 1/(2+g) + 1/(4+g) )
+    return -g^2 / 4 * ( 1 / (4+g) + 1/(6+g) + 1/(2+g) + 1/(4+g) ) + (2 - g)
 end
-
 ;

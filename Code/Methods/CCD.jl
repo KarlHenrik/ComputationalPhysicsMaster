@@ -11,13 +11,7 @@ end
 function setup_CCD(system; α)
     (; l, h, u) = system
     
-    ϵ = zeros(l)
-    @inbounds for q in 1:l
-        ϵ[q] = h[q, q]
-        for i in 1:n
-            ϵ[q] += u[q, i, q, i]
-        end
-    end
+    ϵ = sp_energies(system)
     
     t = zeros((l, l, l, l))
     t_new = zeros((l, l, l, l))
@@ -41,15 +35,17 @@ function energy(state::CCDState)
     
     E = 0.0
     @inbounds for i in 1:n
+        E += h[i, i]
         for j in 1:n
+            E += 0.5 * u[i, j, i, j]
             for a in n+1:l
                 for b in n+1:l
-                    E += u[i, j, a, b] * t[a, b, i, j]
+                    E += 0.25 * u[i, j, a, b] * t[a, b, i, j]
                 end
             end
         end
     end
-    return 0.25 * E
+    return E
 end
 
 function CCD_Update!(state::CCDState)
