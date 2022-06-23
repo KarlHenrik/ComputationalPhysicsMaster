@@ -21,7 +21,7 @@ struct Pairing <: Basis
     states::Vector{Pairing_State}
 end
 
-function Pairing(l, g)
+function Pairing(l::Int64, g::Float64)
     states = [Pairing_State(label, g) for label in 1:l]
     
     return Pairing(l, states)

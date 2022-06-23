@@ -19,7 +19,7 @@ function setup_HF(system)
     return state
 end
 
-function HF_update!(state::HFState; iters)
+function HF_update!(state::HFState; iters = 1)
     (; C, F) = state
     for i in 1:iters
         P_update!(state)
@@ -28,7 +28,6 @@ function HF_update!(state::HFState; iters)
     end
     return state
 end
-HF_update!(state::HFState) = HF_update!(state, iters = 1)
 
 function P_update!(state::HFState)
     (; P, C) = state

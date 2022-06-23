@@ -11,8 +11,8 @@ struct CCSDState{T}
     t2_new::Array{Float64, 4}
 end
 
-function setup_CCSD(system; α)
-    (; l, h, u) = system
+function setup_CCSD(system; α = 0.5)
+    (; l, h, u, n) = system
     
     ϵ = sp_energies(system)
     
@@ -61,6 +61,38 @@ function energy(state::CCSDState)
     @inbounds for i in 1:n
         for j in 1:n
             E += 0.5 * u[i, j, i, j]
+            for a in n+1:l
+                for b in n+1:l
+                    E += 0.25 * u[i, j, a, b] * t2[a, b, i, j]
+                    E += 0.5 * u[i, j, a, b] * t1[a, i] * t1[b, j]
+                end
+            end
+        end
+    end
+    
+    return E
+end
+
+function corr_energy(state::CCSDState)
+    #=
+    Returns E_CCSD - E_0
+    
+    where E_0 is the energy of the reference determinant
+    =#
+    
+    (; system, t1, t2) = state
+    (; n, l, h, u) = system
+    
+    E = 0.0
+    
+    @inbounds for i in 1:n
+        for a in n+1:l
+            E += h[i, a] * t1[a, i]
+        end
+    end
+    
+    @inbounds for i in 1:n
+        for j in 1:n
             for a in n+1:l
                 for b in n+1:l
                     E += 0.25 * u[i, j, a, b] * t2[a, b, i, j]

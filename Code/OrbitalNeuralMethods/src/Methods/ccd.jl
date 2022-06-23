@@ -8,8 +8,8 @@ struct CCDState{T}
     t_new::Array{Float64, 4}
 end
 
-function setup_CCD(system; α)
-    (; l, h, u) = system
+function setup_CCD(system; α = 0.5)
+    (; l, h, u, n) = system
     
     ϵ = sp_energies(system)
     
@@ -38,6 +38,23 @@ function energy(state::CCDState)
         E += h[i, i]
         for j in 1:n
             E += 0.5 * u[i, j, i, j]
+            for a in n+1:l
+                for b in n+1:l
+                    E += 0.25 * u[i, j, a, b] * t[a, b, i, j]
+                end
+            end
+        end
+    end
+    return E
+end
+
+function corr_energy(state::CCDState)
+    (; system, t) = state
+    (; n, l, h, u) = system
+    
+    E = 0.0
+    @inbounds for i in 1:n
+        for j in 1:n
             for a in n+1:l
                 for b in n+1:l
                     E += 0.25 * u[i, j, a, b] * t[a, b, i, j]
