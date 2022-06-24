@@ -11,6 +11,7 @@ export Interaction, CalogeroSutherland, ShieldedCoulomb, Coulomb, NonInteracting
 # Orbital system solvers
 export energy, corr_energy
 export HFState, setup_HF, HF_update!
+export RHFState, setup_RHF, RHF_update!
 export CCDState, setup_CCD, CCD_Update!
 export CCSDState, setup_CCSD, CCSD_Update!
 
@@ -33,7 +34,7 @@ import LinearAlgebra as la
 include("Systems/system.jl")
 
 include("Methods/hf.jl")
-#include("Methods/rhf.jl")
+include("Methods/rhf.jl")
 include("Methods/ccd.jl")
 include("Methods/ccsd.jl")
 

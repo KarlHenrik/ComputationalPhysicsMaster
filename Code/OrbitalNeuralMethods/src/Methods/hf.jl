@@ -51,7 +51,7 @@ end
 
 function F_update!(state::HFState)
     (; P, F) = state
-    (; n, l, h, u) = state.system
+    (; l, h, u) = state.system
     
     F .= h
     for c in 1:l

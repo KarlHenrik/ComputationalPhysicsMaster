@@ -1,16 +1,21 @@
 struct RHFState{T}
     system::SpatialSystem{SpinBasis{T}}
     
-    h_r::Matrix{Float64} # compact one-body integrals
-    u_r::Array{Float64, 4} # compact two-body integrals
+    # Restricted system
+    l::Int64
+    h::Matrix{Float64} # compact one-body integrals
+    u::Array{Float64, 4} # compact two-body integrals
+    
+    # Hartree-Fock related coefficients
     C::Matrix{Float64}
     P::Matrix{Float64}
     F::Matrix{Float64}
 end
 
-function setup_RHF(system::SpatialSystem{SpinBasis{T}})
+function setup_RHF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
     (; transform, basis, h, grid, V) = system
     
+    @assert system.n % 2 == 0 "Closed shell restricted systems only accept an even number of electrons"
     @assert la.I(size(transform)[1]) == transform "Cannot use transformed system in RHF"
     
     l = basis.base.l
@@ -24,12 +29,13 @@ function setup_RHF(system::SpatialSystem{SpinBasis{T}})
     P = zeros((l, l))
     F = zeros((l, l))
     
-    state = RHFState{typeof(system)}(system, h, u, C, P, F)
+    state = RHFState{typeof(system.basis.base)}(system, l, h, u, C, P, F)
     P_update!(state)
     F_update!(state)
+    return state
 end
 
-function HF_update!(state::HFState; iters)
+function RHF_update!(state::RHFState; iters = 1)
     (; C, F) = state
     for i in 1:iters
         P_update!(state)
@@ -38,11 +44,11 @@ function HF_update!(state::HFState; iters)
     end
     return state
 end
-HF_update!(state::HFState) = HF_update!(state, iters = 1)
 
-function P_update!(state::HFState)
-    (; P, C) = state
-    (; n, l) = state.system
+# Szabo p.139
+function P_update!(state::RHFState)
+    (; P, C, l) = state
+    (; n) = state.system
     
     for a in 1:l
         for b in 1:l
@@ -50,19 +56,19 @@ function P_update!(state::HFState)
         end
     end
     
-    for i in 1:n
+    for i in 1:n÷2
         for a in 1:l
             for b in 1:l
-                @inbounds P[b, a] += conj(C[a, i]) * C[b, i]
+                @inbounds P[b, a] += 2 * conj(C[a, i]) * C[b, i]
             end
         end
     end
     return P
 end
 
-function F_update!(state::HFState)
-    (; P, F) = state
-    (; n, l, h, u) = state.system
+# Szabo p.141
+function F_update!(state::RHFState)
+    (; P, F, l, h, u) = state
     
     F .= h
     for c in 1:l
@@ -70,7 +76,7 @@ function F_update!(state::HFState)
             @inbounds P_dc = P[d, c]
             for a in 1:l
                 for b in 1:l
-                    @inbounds F[a, b] += P_dc * u[a, c, b, d]
+                    @inbounds F[a, b] += P_dc * 0.5 * u[a, c, b, d]
                 end
             end
         end
@@ -78,28 +84,32 @@ function F_update!(state::HFState)
     return F
 end
 
-function energy(state::HFState)
-    (; P) = state
-    (; l, h, u) = state.system
+# Szabo p.150
+function energy(state::RHFState)
+    (; P, F, l ,h, u) = state
     
     energy = 0.0
     for a in 1:l
         for b in 1:l
-            @inbounds energy += P[b, a] * h[a, b]
-            for c in 1:l
-                for d in 1:l
-                    @inbounds energy += 0.5 * P[b, a] * P[d, c] * u[a, c, b, d]
-                end
-            end
+            @inbounds energy += 0.5 * P[b, a] * (h[a, b] + F[a, b])
         end
     end
     return real(energy)
 end
 
-function System(state::HFState)
-    return System(state.system, state.C)
+function System(state::RHFState)
+    return System(state.system, expand_restricted(state.C))
 end
 
+#=
+[A_11 0    A_12 0
+ 0    A_11 0    A_12
+ A_21 0    A_22 0
+ 0    A_21 0    A_22]
+=>
+[A_11 A_12
+ A_21 A_22]
+=#
 function shrink_restricted(A)
     l = size(A)[1] ÷ 2
     
@@ -112,6 +122,29 @@ function shrink_restricted(A)
     return S
 end
 
+#=
+[A_11 A_12
+ A_21 A_22]
+=>
+[A_11 0    A_12 0
+ 0    A_11 0    A_12
+ A_21 0    A_22 0
+ 0    A_21 0    A_22]
+=#
+function expand_restricted(A)
+    l = size(A)[1]
+    
+    S = zeros(2 * l, 2 * l)
+    for i in 1:l
+        for j in 1:l
+            S[2*i-1, 2*j-1] = A[i, j]
+            S[2*i, 2*j] = A[i, j]
+        end
+    end
+    return S
+end
+
+# Not in use
 function check_restricted(C)
     l = size(C)[1]
     
