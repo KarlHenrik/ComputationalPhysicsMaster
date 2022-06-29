@@ -38,13 +38,9 @@ function energy(state::CCDState)
         E += h[i, i]
         for j in 1:n
             E += 0.5 * u[i, j, i, j]
-            for a in n+1:l
-                for b in n+1:l
-                    E += 0.25 * u[i, j, a, b] * t[a, b, i, j]
-                end
-            end
         end
     end
+    E += corr_energy(state)
     return E
 end
 
@@ -54,9 +50,9 @@ function corr_energy(state::CCDState)
     
     E = 0.0
     @inbounds for i in 1:n
-        for j in 1:n
+        for j in i+1:n
             for a in n+1:l
-                for b in n+1:l
+                for b in a+1:l
                     E += 0.25 * u[i, j, a, b] * t[a, b, i, j]
                 end
             end

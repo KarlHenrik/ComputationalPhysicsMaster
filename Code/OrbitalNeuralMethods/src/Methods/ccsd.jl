@@ -27,7 +27,7 @@ function setup_CCSD(system; α = 0.5)
     t2_new = zeros((l, l, l, l))
     t2 = zeros((l, l, l, l))
     @inbounds for i in 1:n
-        for j in 1:n
+        for j in 1:n 
             for a in n+1:l
                 for b in n+1:l
                     t2[a, b, i, j] = u[a, b, i, j] / (ϵ[i] + ϵ[j] - ϵ[a] - ϵ[b])
@@ -46,29 +46,22 @@ function energy(state::CCSDState)
     where E_0 is the energy of the reference determinant
     =#
     
-    (; system, t1, t2) = state
-    (; n, l, h, u) = system
+    (; system) = state
+    (; n, h, u) = system
     
     E = 0.0
     
     @inbounds for i in 1:n
         E += h[i, i]
-        for a in n+1:l
-            E += h[i, a] * t1[a, i]
-        end
     end
     
     @inbounds for i in 1:n
         for j in 1:n
             E += 0.5 * u[i, j, i, j]
-            for a in n+1:l
-                for b in n+1:l
-                    E += 0.25 * u[i, j, a, b] * t2[a, b, i, j]
-                    E += 0.5 * u[i, j, a, b] * t1[a, i] * t1[b, j]
-                end
-            end
         end
     end
+    
+    E += corr_energy(state)
     
     return E
 end
@@ -92,9 +85,9 @@ function corr_energy(state::CCSDState)
     end
     
     @inbounds for i in 1:n
-        for j in 1:n
+        for j in i+1:n
             for a in n+1:l
-                for b in n+1:l
+                for b in a+1:l
                     E += 0.25 * u[i, j, a, b] * t2[a, b, i, j]
                     E += 0.5 * u[i, j, a, b] * t1[a, i] * t1[b, j]
                 end
