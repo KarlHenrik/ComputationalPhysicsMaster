@@ -17,9 +17,9 @@ function spatial(basis::SpinBasis, grid)
         evaluate!(nospin, grid[i], basis.base) # the basis functions evaluated at x
         for j in 1:l÷2
             
-            if j % 4 == 0 || (j + 1)%4 == 0
-                nospin[j] = -nospin[j]
-            end
+            #if j % 4 == 0 || (j + 1)%4 == 0 # In case I need the same spfs as ODQD from quantum_systems
+            #    nospin[j] = -nospin[j]
+            #end
             
             res[2j-1][i] = nospin[j]
             res[2j][i] = nospin[j]

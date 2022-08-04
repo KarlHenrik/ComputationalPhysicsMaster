@@ -7,9 +7,11 @@ struct CCSDState{T, M}
     
     t1::Matrix{Float64}
     Δt1::Matrix{Float64}
+    err_1::Matrix{Float64}
     
     t2::Array{Float64, 4}
     Δt2::Array{Float64, 4}
+    err_3::Matrix{Float64}
 end
 
 function setup_CCSD(system)
@@ -48,12 +50,6 @@ function setup_CCSD(system, mixer)
 end
 
 function energy(state::CCSDState)
-    #=
-    Returns E_CCSD - E_0
-    
-    where E_0 is the energy of the reference determinant
-    =#
-    
     (; system) = state
     E = reference_energy(system)
     E += corr_energy(state)
@@ -104,18 +100,13 @@ function CCSD_Update!(state::CCSDState)
     The t1 amplitude equations, from page 75 of Crawford & Schaefer
     """
     err_1 = zero(t1)
+    err_2 = zero(t2)
     #@inbounds Threads.@threads 
     for a in n+1:L
         for i in 1:n
             Ω_1 = 0.0
 
             Ω_1 += f[a, i]
-            #=
-            # Terms that were moved over
-            Ω_1 -= f[a, a] * t1[a, i]
-            Ω_1 += f[i, i] * t1[a, i]
-            =#
-            
             
             for c in n+1:L
                 Ω_1 += f[a, c] * t1[c, i]
@@ -140,17 +131,8 @@ function CCSD_Update!(state::CCSDState)
                     for d in n+1:L
                         Ω_1 += 0.5 * u[k, a, c, d] * t2[c, d, k, i]
 
-                        #Ω_1 -= u[k, a, c, d] * t1[c, k] * t1[d, i]
-                        #Ω_1 += u[a, k, c, d] * t1[c, i] * t1[d, k] #DIFF
-                        
-                        v1 = -u[k, a, c, d] * t1[c, k] * t1[d, i]
-                        v2 = u[a, k, c, d] * t1[c, i] * t1[d, k]
-                        Ω_1 += v2
-                        #if abs(v1) > 1e-10 || abs(v2) > 1e-10
-                        #    println(v1)
-                        #    println(v2)
-                        #    println()
-                        #end
+                        #Ω_1 -= u[k, a, c, d] * t1[c, k] * t1[d, i] # This is from C&S, but does not work
+                        Ω_1 += u[a, k, c, d] * t1[c, i] * t1[d, k] # From Øyvind, works
                     end
                 end
             end
@@ -186,11 +168,11 @@ function CCSD_Update!(state::CCSDState)
             err_1[a, i] = Ω_1
         end
     end
-    display(err_1[n+1:end, :])
+
     """
     The t2 amplitude equations, from page 76 of Crawford & Schaefer
     """
-    err_2 = zero(t2)
+    
     @inbounds Threads.@threads for a in n+1:L
         for i in 1:n
             for j in i+1:n
@@ -198,13 +180,7 @@ function CCSD_Update!(state::CCSDState)
                     Ω_2 = 0.0
 
                     Ω_2 += u[a, b, i, j]
-                    #=
-                    # Terms that were moved over TODO remove
-                    Ω_2 -= f[b, b] * t2[a, b, i, j] # -δbc
-                    Ω_2 += f[a, a] * t2[b, a, i, j] # Pab δbc
-                    Ω_2 += f[j, j] * t2[a, b, i, j] # δkj
-                    Ω_2 -= f[i, i] * t2[a, b, j, i] # -Pij δkj
-                    =# 
+                    
                     for c in n+1:L
                         Ω_2 += f[b, c] * t2[a, c, i, j] # 1
                         Ω_2 -= f[a, c] * t2[b, c, i, j] # -Pab

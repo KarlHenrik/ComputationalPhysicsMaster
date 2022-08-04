@@ -1,14 +1,15 @@
 abstract type Interaction end
 
 struct CalogeroSutherland <: Interaction
-    beta_kinda::Float64
+    ββ_1::Float64
     function CalogeroSutherland(beta)
-        return new(beta * (beta - 1))
+        ββ_1 = beta * (beta - 1)
+        return new(ββ_1)
     end
 end
 
 function interaction_over_grid!(interaction, x1, grid, V::CalogeroSutherland)
-    interaction .= V.beta_kinda ./ (grid .- x1).^2
+    interaction .= V.ββ_1 ./ (grid .- x1).^2
 end
 
 struct ShieldedCoulomb <: Interaction

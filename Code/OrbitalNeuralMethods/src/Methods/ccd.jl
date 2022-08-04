@@ -7,6 +7,7 @@ struct CCDState{T, M}
     
     t::Array{Float64, 4}
     Δt::Array{Float64, 4}
+    err::Array{Float64, 4}
 end
 
 function setup_CCD(system)
@@ -63,12 +64,11 @@ function corr_energy(state::CCDState)
 end
 
 function CCD_Update!(state::CCDState)
-    (; system, mixer, ϵ, f, t, Δt) = state
+    (; system, mixer, ϵ, f, t, Δt, err) = state
     (; n, l, u) = system
     
-    err = zero(t)
-    #Threads.@threads 
-    for a in n+1:l
+    err .= zero(Float64)
+    Threads.@threads for a in n+1:l
         for i in 1:n
             for j in i+1:n
                 for b in a+1:l

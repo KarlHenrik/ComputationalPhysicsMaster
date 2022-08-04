@@ -71,11 +71,11 @@ function spatial(ho::HOBasis, grid)
         end
     end
     
-    for i in 1:l
-        if i % 4 == 0 || (i + 1)%4 == 0
-            res[i] = -res[i]
-        end
-    end
+    #for i in 1:l # In case I need the same spfs as ODQD from quantum_systems
+    #    if i % 4 == 0 || (i + 1)%4 == 0
+    #        res[i] = -res[i]
+    #    end
+    #end
     
     return res
 end
