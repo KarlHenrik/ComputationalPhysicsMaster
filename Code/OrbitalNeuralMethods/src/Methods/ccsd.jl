@@ -1,31 +1,39 @@
-struct CCSDState{T}
+struct CCSDState{T, M}
     system::T
-    ϵ::Vector{Float64}
+    mixer::M
     
-    α::Float64
+    ϵ::Vector{Float64}
+    f::Matrix{Float64}
     
     t1::Matrix{Float64}
-    t1_new::Matrix{Float64}
+    Δt1::Matrix{Float64}
     
     t2::Array{Float64, 4}
-    t2_new::Array{Float64, 4}
+    Δt2::Array{Float64, 4}
 end
 
-function setup_CCSD(system; α = 0.5)
+function setup_CCSD(system)
+    (; l, n) = system
+    mixer = DIIS(l*l*n*n + l*n)
+    setup_CCSD(system, mixer)
+end
+
+function setup_CCSD(system, mixer)
     (; l, h, u, n) = system
     
     ϵ = sp_energies(system)
+    f = fock_matrix(system)
     
-    t1_new = zeros((l, l))
-    t1 = zeros((l, l))
+    Δt1 = zeros((l, n))
+    t1 = zeros((l, n))
     @inbounds for i in 1:n
         for a in n+1:l
-            t1[a, i] = h[a, i] / (ϵ[i] - ϵ[a])
+            t1[a, i] = f[a, i] / (ϵ[i] - ϵ[a])
         end
     end
     
-    t2_new = zeros((l, l, l, l))
-    t2 = zeros((l, l, l, l))
+    Δt2 = zeros((l, l, n, n))
+    t2 = zeros((l, l, n, n))
     @inbounds for i in 1:n
         for j in 1:n 
             for a in n+1:l
@@ -36,7 +44,7 @@ function setup_CCSD(system; α = 0.5)
         end
     end
     
-    return CCSDState(system, ϵ, α, t1, t1_new, t2, t2_new)
+    return CCSDState{typeof(system), typeof(mixer)}(system, mixer, ϵ, f, t1, Δt1, t2, Δt2)
 end
 
 function energy(state::CCSDState)
@@ -47,22 +55,8 @@ function energy(state::CCSDState)
     =#
     
     (; system) = state
-    (; n, h, u) = system
-    
-    E = 0.0
-    
-    @inbounds for i in 1:n
-        E += h[i, i]
-    end
-    
-    @inbounds for i in 1:n
-        for j in 1:n
-            E += 0.5 * u[i, j, i, j]
-        end
-    end
-    
+    E = reference_energy(system)
     E += corr_energy(state)
-    
     return E
 end
 
@@ -73,21 +67,21 @@ function corr_energy(state::CCSDState)
     where E_0 is the energy of the reference determinant
     =#
     
-    (; system, t1, t2) = state
-    (; n, l, h, u) = system
+    (; system, f, t1, t2) = state
+    (; n, l, u) = system
     
     E = 0.0
     
     @inbounds for i in 1:n
         for a in n+1:l
-            E += h[i, a] * t1[a, i]
+            E += f[i, a] * t1[a, i]
         end
     end
     
     @inbounds for i in 1:n
-        for j in i+1:n
+        for j in 1:n
             for a in n+1:l
-                for b in a+1:l
+                for b in n+1:l
                     E += 0.25 * u[i, j, a, b] * t2[a, b, i, j]
                     E += 0.5 * u[i, j, a, b] * t1[a, i] * t1[b, j]
                 end
@@ -101,49 +95,62 @@ end
 
 
 function CCSD_Update!(state::CCSDState)
-    (; system, α, ϵ, t1, t1_new, t2, t2_new) = state
-    (; n, l, h, u) = system
+    (; system, mixer, ϵ, f, t1, Δt1, t2, Δt2) = state
+    (; n, u) = system
     
     L = system.l # There is a collision of notation. In here, L is the number of basis functions
     
     """
     The t1 amplitude equations, from page 75 of Crawford & Schaefer
     """
-    
-    @inbounds Threads.@threads for a in n+1:L
+    err_1 = zero(t1)
+    #@inbounds Threads.@threads 
+    for a in n+1:L
         for i in 1:n
-            x = 0.0
+            Ω_1 = 0.0
 
-            x += h[a, i]
-
+            Ω_1 += f[a, i]
+            #=
             # Terms that were moved over
-            x -= h[a, a] * t1[a, i]
-            x += h[i, i] * t1[a, i]
-
+            Ω_1 -= f[a, a] * t1[a, i]
+            Ω_1 += f[i, i] * t1[a, i]
+            =#
+            
+            
             for c in n+1:L
-                x += h[a, c] * t1[c, i]
+                Ω_1 += f[a, c] * t1[c, i]
             end
-
+            
             for k in 1:n
-                x -= h[k, i] * t1[a, k]
+                Ω_1 -= f[k, i] * t1[a, k]
             end
 
             for k in 1:n
                 for c in n+1:L
-                    x += u[k, a, c, i] * t1[c, k]
+                    Ω_1 += u[k, a, c, i] * t1[c, k]
 
-                    x += h[k, c] * t2[a, c, i, k]
+                    Ω_1 += f[k, c] * t2[a, c, i, k]
 
-                    x -= h[k, c] * t1[c, i] * t1[a, k]
+                    Ω_1 -= f[k, c] * t1[c, i] * t1[a, k]
                 end
             end
 
             for k in 1:n
                 for c in n+1:L
                     for d in n+1:L
-                        x += 0.5 * u[k, a, c, d] * t2[c, d, k, i]
+                        Ω_1 += 0.5 * u[k, a, c, d] * t2[c, d, k, i]
 
-                        x -= u[k, a, c, d] * t1[c, k] * t1[d, i]
+                        #Ω_1 -= u[k, a, c, d] * t1[c, k] * t1[d, i]
+                        #Ω_1 += u[a, k, c, d] * t1[c, i] * t1[d, k] #DIFF
+                        
+                        v1 = -u[k, a, c, d] * t1[c, k] * t1[d, i]
+                        v2 = u[a, k, c, d] * t1[c, i] * t1[d, k]
+                        Ω_1 += v2
+                        #if abs(v1) > 1e-10 || abs(v2) > 1e-10
+                        #    println(v1)
+                        #    println(v2)
+                        #    println()
+                        #end
                     end
                 end
             end
@@ -151,9 +158,9 @@ function CCSD_Update!(state::CCSDState)
             for k in 1:n
                 for l in 1:n
                     for c in n+1:L
-                        x -= 0.5 * u[k, l, c, i] * t2[c, a, k, l]
+                        Ω_1 -= 0.5 * u[k, l, c, i] * t2[c, a, k, l]
 
-                        x -= u[k, l, c, i] * t1[c, k] * t1[a, l]
+                        Ω_1 -= u[k, l, c, i] * t1[c, k] * t1[a, l]
                     end
                 end
             end
@@ -162,113 +169,114 @@ function CCSD_Update!(state::CCSDState)
                 for l in 1:n
                     for c in n+1:L
                         for d in n+1:L
-                            x -= u[k, l, c, d] * t1[c, k] * t1[d, i] * t1[a, l]
+                            Ω_1 -= u[k, l, c, d] * t1[c, k] * t1[d, i] * t1[a, l]
 
-                            x += u[k, l, c, d] * t1[c, k] * t2[d, a, l, i]
+                            Ω_1 += u[k, l, c, d] * t1[c, k] * t2[d, a, l, i]
 
-                            x -= 0.5 * u[k, l, c, d] * t2[c, d, k, i] * t1[a, l]
+                            Ω_1 -= 0.5 * u[k, l, c, d] * t2[c, d, k, i] * t1[a, l]
 
-                            x -= 0.5 * u[k, l, c, d] * t2[c, a, k, l] * t1[d, i]
+                            Ω_1 -= 0.5 * u[k, l, c, d] * t2[c, a, k, l] * t1[d, i]
                         end
                     end
                 end
             end
-
+            
             ϵ_ai = ϵ[i] - ϵ[a]
-            x = α * t1[a, i] + (1 - α) * x / ϵ_ai
-            t1_new[a, i] = x
+            Δt1[a, i] = Ω_1 / ϵ_ai
+            err_1[a, i] = Ω_1
         end
     end
-    
+    display(err_1[n+1:end, :])
     """
     The t2 amplitude equations, from page 76 of Crawford & Schaefer
     """
+    err_2 = zero(t2)
     @inbounds Threads.@threads for a in n+1:L
         for i in 1:n
             for j in i+1:n
                 for b in a+1:L
-                    s = 0.0
+                    Ω_2 = 0.0
 
-                    s += u[a, b, i, j]
-                    
-                    # Terms that were moved over
-                    s -= h[b, b] * t2[a, b, i, j] # -δbc
-                    s += h[a, a] * t2[b, a, i, j] # Pab δbc
-                    s += h[j, j] * t2[a, b, i, j] # δkj
-                    s -= h[i, i] * t2[a, b, j, i] # -Pij δkj
-
+                    Ω_2 += u[a, b, i, j]
+                    #=
+                    # Terms that were moved over TODO remove
+                    Ω_2 -= f[b, b] * t2[a, b, i, j] # -δbc
+                    Ω_2 += f[a, a] * t2[b, a, i, j] # Pab δbc
+                    Ω_2 += f[j, j] * t2[a, b, i, j] # δkj
+                    Ω_2 -= f[i, i] * t2[a, b, j, i] # -Pij δkj
+                    =# 
                     for c in n+1:L
-                        s += h[b, c] * t2[a, c, i, j] # 1
-                        s -= h[a, c] * t2[b, c, i, j] # -Pab
+                        Ω_2 += f[b, c] * t2[a, c, i, j] # 1
+                        Ω_2 -= f[a, c] * t2[b, c, i, j] # -Pab
                         
-                        s += u[a, b, c, j] * t1[c, i] # 1
-                        s -= u[a, b, c, i] * t1[c, j] # -Pij
+                        Ω_2 += u[a, b, c, j] * t1[c, i] # 1
+                        Ω_2 -= u[a, b, c, i] * t1[c, j] # -Pij
                     end
                     
                     for k in 1:n
-                        s -= h[k, j] * t2[a, b, i, k] # -1
-                        s += h[k, i] * t2[a, b, j, k] # Pij
+                        Ω_2 -= f[k, j] * t2[a, b, i, k] # -1
+                        Ω_2 += f[k, i] * t2[a, b, j, k] # Pij
                         
-                        s -= u[k, b, i, j] * t1[a, k] # -1
-                        s += u[k, a, i, j] * t1[b, k] # Pab
+                        Ω_2 -= u[k, b, i, j] * t1[a, k] # -1
+                        Ω_2 += u[k, a, i, j] * t1[b, k] # Pab
                     end
                     
                     for k in 1:n
                         for l in 1:n
-                            s += 0.5 * u[k, l, i, j] * t2[a, b, k, l]
+                            Ω_2 += 0.5 * u[k, l, i, j] * t2[a, b, k, l]
                             
-                            s += 0.5 * u[k, l, i, j] * t1[a, k] * t1[b, l] # 1
-                            s -= 0.5 * u[k, l, i, j] * t1[b, k] * t1[a, l] # -Pab
+                            Ω_2 += 0.5 * u[k, l, i, j] * t1[a, k] * t1[b, l] # 1
+                            Ω_2 -= 0.5 * u[k, l, i, j] * t1[b, k] * t1[a, l] # -Pab
                         end
                     end
                     
                     for c in n+1:L
                         for d in n+1:L
-                            s += 0.5 * u[a, b, c, d] * t2[c, d, i, j]
+                            Ω_2 += 0.5 * u[a, b, c, d] * t2[c, d, i, j]
                             
-                            s += 0.5 * u[a, b, c, d] * t1[c, i] * t1[d, j] # 1
-                            s -= 0.5 * u[a, b, c, d] * t1[c, j] * t1[d, i] # -Pij
+                            Ω_2 += 0.5 * u[a, b, c, d] * t1[c, i] * t1[d, j] # 1
+                            Ω_2 -= 0.5 * u[a, b, c, d] * t1[c, j] * t1[d, i] # -Pij
                         end
                     end
                     
                     for k in 1:n
                         for c in n+1:L
-                            s += u[k, b, c, j] * t2[a, c, i, k] # 1
-                            s -= u[k, b, c, i] * t2[a, c, j, k] # -Pij
-                            s -= u[k, a, c, j] * t2[b, c, i, k] # -Pab
-                            s += u[k, a, c, i] * t2[b, c, j, k] # Pij Pab
+                            Ω_2 += u[k, b, c, j] * t2[a, c, i, k] # 1
+                            Ω_2 -= u[k, b, c, i] * t2[a, c, j, k] # -Pij
+                            Ω_2 -= u[k, a, c, j] * t2[b, c, i, k] # -Pab
+                            Ω_2 += u[k, a, c, i] * t2[b, c, j, k] # Pij Pab
                             
-                            s -= u[k, b, i, c] * t1[a, k] * t1[c, j] # -1
-                            s += u[k, b, j, c] * t1[a, k] * t1[c, i] # Pij
-                            s += u[k, a, i, c] * t1[b, k] * t1[c, j] # Pab
-                            s -= u[k, a, j, c] * t1[b, k] * t1[c, i] # -Pij Pab
+                            Ω_2 -= u[k, b, i, c] * t1[a, k] * t1[c, j] # -1
+                            Ω_2 += u[k, b, j, c] * t1[a, k] * t1[c, i] # Pij
+                            Ω_2 += u[k, a, i, c] * t1[b, k] * t1[c, j] # Pab
+                            Ω_2 -= u[k, a, j, c] * t1[b, k] * t1[c, i] # -Pij Pab
                             
-                            s += h[k, c] * t1[a, k] * t2[b, c, i, j] # 1
-                            s -= h[k, c] * t1[b, k] * t2[a, c, i, j] # -Pab
+                            Ω_2 += f[k, c] * t1[a, k] * t2[b, c, i, j] # 1
+                            Ω_2 -= f[k, c] * t1[b, k] * t2[a, c, i, j] # -Pab
                             
-                            s += h[k, c] * t1[c, i] * t2[a, b, j, k] # 1
-                            s -= h[k, c] * t1[c, j] * t2[a, b, i, k] # -Pij
+                            Ω_2 += f[k, c] * t1[c, i] * t2[a, b, j, k] # 1
+                            Ω_2 -= f[k, c] * t1[c, j] * t2[a, b, i, k] # -Pij
                         end
                     end
                     
                     for k in 1:n
                         for l in 1:n
                             for c in n+1:L
-                                s -= u[k, l, c, i] * t1[c, k] * t2[a, b, l, j] # -1
-                                s += u[k, l, c, j] * t1[c, k] * t2[a, b, l, i] # Pij
+                                Ω_2 -= u[k, l, c, i] * t1[c, k] * t2[a, b, l, j] # -1
+                                Ω_2 += u[k, l, c, j] * t1[c, k] * t2[a, b, l, i] # Pij
                                 
-                                s += u[k, l, i, c] * t1[a, l] * t2[b, c, j, k] # 1
-                                s -= u[k, l, j, c] * t1[a, l] * t2[b, c, i, k] # -Pij
-                                s -= u[k, l, i, c] * t1[b, l] * t2[a, c, j, k] # -Pab
-                                s += u[k, l, j, c] * t1[b, l] * t2[a, c, i, k] # Pij Pab
+                                Ω_2 += u[k, l, i, c] * t1[a, l] * t2[b, c, j, k] # 1
+                                Ω_2 -= u[k, l, j, c] * t1[a, l] * t2[b, c, i, k] # -Pij
+                                Ω_2 -= u[k, l, i, c] * t1[b, l] * t2[a, c, j, k] # -Pab
+                                Ω_2 += u[k, l, j, c] * t1[b, l] * t2[a, c, i, k] # Pij Pab
                                 
-                                s += 0.5 * u[k, l, c, j] * t1[c, i] * t2[a, b, k, l] # 1
-                                s -= 0.5 * u[k, l, c, i] * t1[c, j] * t2[a, b, k, l] # -Pij
+                                Ω_2 += 0.5 * u[k, l, c, j] * t1[c, i] * t2[a, b, k, l] # 1
+                                Ω_2 -= 0.5 * u[k, l, c, i] * t1[c, j] * t2[a, b, k, l] # -Pij
                                 
-                                s += 0.5 * u[k, l, c, j] * t1[c, i] * t1[a, k] * t1[b, l] # 1
-                                s -= 0.5 * u[k, l, c, i] * t1[c, j] * t1[a, k] * t1[b, l] # -Pij
-                                s -= 0.5 * u[k, l, c, j] * t1[c, i] * t1[b, k] * t1[a, l] # -Pab
-                                s += 0.5 * u[k, l, c, i] * t1[c, j] * t1[b, k] * t1[a, l] # Pij Pab
+                                Ω_2 += 0.5 * u[k, l, c, j] * t1[c, i] * t1[a, k] * t1[b, l] # 1
+                                Ω_2 -= 0.5 * u[k, l, c, i] * t1[c, j] * t1[a, k] * t1[b, l] # -Pij
+                                Ω_2 -= 0.5 * u[k, l, c, j] * t1[c, i] * t1[b, k] * t1[a, l] # -Pab
+                                Ω_2 += 0.5 * u[k, l, c, i] * t1[c, j] * t1[b, k] * t1[a, l] # Pij Pab
                             end
                         end
                     end
@@ -276,21 +284,21 @@ function CCSD_Update!(state::CCSDState)
                     for k in 1:n
                         for c in n+1:L
                             for d in n+1:L
-                                s += u[k, a, c, d] * t1[c, k] * t2[d, b, i, j] # 1
-                                s -= u[k, b, c, d] * t1[c, k] * t2[d, a, i, j] # -Pab
+                                Ω_2 += u[k, a, c, d] * t1[c, k] * t2[d, b, i, j] # 1
+                                Ω_2 -= u[k, b, c, d] * t1[c, k] * t2[d, a, i, j] # -Pab
                                 
-                                s += u[a, k, d, c] * t1[d, i] * t2[b, c, j, k] # 1
-                                s -= u[a, k, d, c] * t1[d, j] * t2[b, c, i, k] # -Pij
-                                s -= u[b, k, d, c] * t1[d, i] * t2[a, c, j, k] # -Pab
-                                s += u[b, k, d, c] * t1[d, j] * t2[a, c, i, k] # Pij Pab
+                                Ω_2 += u[a, k, d, c] * t1[d, i] * t2[b, c, j, k] # 1
+                                Ω_2 -= u[a, k, d, c] * t1[d, j] * t2[b, c, i, k] # -Pij
+                                Ω_2 -= u[b, k, d, c] * t1[d, i] * t2[a, c, j, k] # -Pab
+                                Ω_2 += u[b, k, d, c] * t1[d, j] * t2[a, c, i, k] # Pij Pab
                                 
-                                s -= 0.5 * u[k, b, c, d] * t1[a, k] * t2[c, d, i, j] # -1
-                                s += 0.5 * u[k, a, c, d] * t1[b, k] * t2[c, d, i, j] # Pab
+                                Ω_2 -= 0.5 * u[k, b, c, d] * t1[a, k] * t2[c, d, i, j] # -1
+                                Ω_2 += 0.5 * u[k, a, c, d] * t1[b, k] * t2[c, d, i, j] # Pab
                                 
-                                s -= 0.5 * u[k, b, c, d] * t1[c, i] * t1[a, k] * t1[d, j] # -1
-                                s += 0.5 * u[k, b, c, d] * t1[c, j] * t1[a, k] * t1[d, i] # Pij
-                                s += 0.5 * u[k, a, c, d] * t1[c, i] * t1[b, k] * t1[d, j] # Pab
-                                s -= 0.5 * u[k, a, c, d] * t1[c, j] * t1[b, k] * t1[d, i] # -Pij Pab
+                                Ω_2 -= 0.5 * u[k, b, c, d] * t1[c, i] * t1[a, k] * t1[d, j] # -1
+                                Ω_2 += 0.5 * u[k, b, c, d] * t1[c, j] * t1[a, k] * t1[d, i] # Pij
+                                Ω_2 += 0.5 * u[k, a, c, d] * t1[c, i] * t1[b, k] * t1[d, j] # Pab
+                                Ω_2 -= 0.5 * u[k, a, c, d] * t1[c, j] * t1[b, k] * t1[d, i] # -Pij Pab
                             end
                         end
                     end
@@ -299,58 +307,69 @@ function CCSD_Update!(state::CCSDState)
                         for l in 1:n
                             for c in n+1:L
                                 for d in n+1:L
-                                    s += 0.5 * u[k, l, c, d] * t2[a, c, i, k] * t2[d, b, l, j] # 1
-                                    s -= 0.5 * u[k, l, c, d] * t2[a, c, j, k] * t2[d, b, l, i] # -Pij
-                                    s -= 0.5 * u[k, l, c, d] * t2[b, c, i, k] * t2[d, a, l, j] # -Pab
-                                    s += 0.5 * u[k, l, c, d] * t2[b, c, j, k] * t2[d, a, l, i] # Pij Pab
+                                    Ω_2 += 0.5 * u[k, l, c, d] * t2[a, c, i, k] * t2[d, b, l, j] # 1
+                                    Ω_2 -= 0.5 * u[k, l, c, d] * t2[a, c, j, k] * t2[d, b, l, i] # -Pij
+                                    Ω_2 -= 0.5 * u[k, l, c, d] * t2[b, c, i, k] * t2[d, a, l, j] # -Pab
+                                    Ω_2 += 0.5 * u[k, l, c, d] * t2[b, c, j, k] * t2[d, a, l, i] # Pij Pab
                                     
-                                    s += 0.25 * u[k, l, c, d] * t2[c, d, i, j] * t2[a, b, k, l]
+                                    Ω_2 += 0.25 * u[k, l, c, d] * t2[c, d, i, j] * t2[a, b, k, l]
 
-                                    s -= 0.5 * u[k, l, c, d] * t2[a, c, i, j] * t2[b, d, k, l] # -1
-                                    s += 0.5 * u[k, l, c, d] * t2[b, c, i, j] * t2[a, d, k, l] # Pab
+                                    Ω_2 -= 0.5 * u[k, l, c, d] * t2[a, c, i, j] * t2[b, d, k, l] # -1
+                                    Ω_2 += 0.5 * u[k, l, c, d] * t2[b, c, i, j] * t2[a, d, k, l] # Pab
                                     
-                                    s -= 0.5 * u[k, l, c, d] * t2[a, b, i, k] * t2[c, d, j, l] # -1
-                                    s += 0.5 * u[k, l, c, d] * t2[a, b, j, k] * t2[c, d, i, l] # Pij
+                                    Ω_2 -= 0.5 * u[k, l, c, d] * t2[a, b, i, k] * t2[c, d, j, l] # -1
+                                    Ω_2 += 0.5 * u[k, l, c, d] * t2[a, b, j, k] * t2[c, d, i, l] # Pij
                                     
-                                    s -= u[k, l, c, d] * t1[c, k] * t1[d, i] * t2[a, b, l, j] # -1
-                                    s += u[k, l, c, d] * t1[c, k] * t1[d, j] * t2[a, b, l, i] # Pij
+                                    Ω_2 -= u[k, l, c, d] * t1[c, k] * t1[d, i] * t2[a, b, l, j] # -1
+                                    Ω_2 += u[k, l, c, d] * t1[c, k] * t1[d, j] * t2[a, b, l, i] # Pij
                                     
-                                    s -= u[k, l, c, d] * t1[c, k] * t1[a, l] * t2[d, b, i, j] # -1
-                                    s += u[k, l, c, d] * t1[c, k] * t1[b, l] * t2[d, a, i, j] # Pab
+                                    Ω_2 -= u[k, l, c, d] * t1[c, k] * t1[a, l] * t2[d, b, i, j] # -1
+                                    Ω_2 += u[k, l, c, d] * t1[c, k] * t1[b, l] * t2[d, a, i, j] # Pab
                                     
-                                    s += 0.25 * u[k, l, c, d] * t1[c, i] * t1[d, j] * t2[a, b, k, l] # 1
-                                    s -= 0.25 * u[k, l, c, d] * t1[c, j] * t1[d, i] * t2[a, b, k, l] # -Pij
+                                    Ω_2 += 0.25 * u[k, l, c, d] * t1[c, i] * t1[d, j] * t2[a, b, k, l] # 1
+                                    Ω_2 -= 0.25 * u[k, l, c, d] * t1[c, j] * t1[d, i] * t2[a, b, k, l] # -Pij
                                     
-                                    s += 0.25 * u[k, l, c, d] * t1[a, k] * t1[b, l] * t2[c, d, i, j] # 1
-                                    s -= 0.25 * u[k, l, c, d] * t1[b, k] * t1[a, l] * t2[c, d, i, j] # -Pab
+                                    Ω_2 += 0.25 * u[k, l, c, d] * t1[a, k] * t1[b, l] * t2[c, d, i, j] # 1
+                                    Ω_2 -= 0.25 * u[k, l, c, d] * t1[b, k] * t1[a, l] * t2[c, d, i, j] # -Pab
                                     
-                                    s += u[k, l, c, d] * t1[c, i] * t1[b, l] * t2[a, d, k, j] # 1
-                                    s -= u[k, l, c, d] * t1[c, j] * t1[b, l] * t2[a, d, k, i] # -Pij
-                                    s -= u[k, l, c, d] * t1[c, i] * t1[a, l] * t2[b, d, k, j] # -Pab
-                                    s += u[k, l, c, d] * t1[c, j] * t1[a, l] * t2[b, d, k, i] # Pij Pab
+                                    Ω_2 += u[k, l, c, d] * t1[c, i] * t1[b, l] * t2[a, d, k, j] # 1
+                                    Ω_2 -= u[k, l, c, d] * t1[c, j] * t1[b, l] * t2[a, d, k, i] # -Pij
+                                    Ω_2 -= u[k, l, c, d] * t1[c, i] * t1[a, l] * t2[b, d, k, j] # -Pab
+                                    Ω_2 += u[k, l, c, d] * t1[c, j] * t1[a, l] * t2[b, d, k, i] # Pij Pab
                                     
-                                    s += 0.25 * u[k, l, c, d] * t1[c, i] * t1[a, k] * t1[d, j] * t1[b, l] # 1
-                                    s -= 0.25 * u[k, l, c, d] * t1[c, j] * t1[a, k] * t1[d, i] * t1[b, l] # -Pij
-                                    s -= 0.25 * u[k, l, c, d] * t1[c, i] * t1[b, k] * t1[d, j] * t1[a, l] # -Pab
-                                    s += 0.25 * u[k, l, c, d] * t1[c, j] * t1[b, k] * t1[d, i] * t1[a, l] # Pij Pab
+                                    Ω_2 += 0.25 * u[k, l, c, d] * t1[c, i] * t1[a, k] * t1[d, j] * t1[b, l] # 1
+                                    Ω_2 -= 0.25 * u[k, l, c, d] * t1[c, j] * t1[a, k] * t1[d, i] * t1[b, l] # -Pij
+                                    Ω_2 -= 0.25 * u[k, l, c, d] * t1[c, i] * t1[b, k] * t1[d, j] * t1[a, l] # -Pab
+                                    Ω_2 += 0.25 * u[k, l, c, d] * t1[c, j] * t1[b, k] * t1[d, i] * t1[a, l] # Pij Pab
                                 end
                             end
                         end
                     end
                     
                     ϵ_abij = ϵ[i] + ϵ[j] - ϵ[a] - ϵ[b]
-                    s = α * t2[a, b, i, j] + (1 - α) * s / ϵ_abij
-                    t2_new[a, b, i, j] = s
-                    t2_new[a, b, j, i] = -s
-                    t2_new[b, a, i, j] = -s
-                    t2_new[b, a, j, i] = s
+                    Δt2_abij = Ω_2 / ϵ_abij
+                    
+                    Δt2[a, b, i, j] = Δt2_abij
+                    Δt2[a, b, j, i] = -Δt2_abij
+                    Δt2[b, a, i, j] = -Δt2_abij
+                    Δt2[b, a, j, i] = Δt2_abij
+                    
+                    err_2[a, b, i, j] = Ω_2
+                    err_2[a, b, j, i] = -Ω_2
+                    err_2[b, a, i, j] = -Ω_2
+                    err_2[b, a, j, i] = Ω_2 
                 end
             end
         end
     end
     
-    t1 .= t1_new
-    t2 .= t2_new
+    trial = vcat(vec(t1), vec(t2))
+    direction = vcat(vec(Δt1), vec(Δt2))
+    err = vcat(vec(err_1), vec(err_2))
+    
+    new_ts = compute_new_vector(mixer, trial, direction, err)
+    t1 .= reshape(new_ts[1:L*n], size(t1))
+    t2 .= reshape(new_ts[L*n+1:end], size(t2))
     
     return state
 end

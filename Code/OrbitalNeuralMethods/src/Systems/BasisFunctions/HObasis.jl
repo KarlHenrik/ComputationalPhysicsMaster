@@ -71,5 +71,11 @@ function spatial(ho::HOBasis, grid)
         end
     end
     
+    for i in 1:l
+        if i % 4 == 0 || (i + 1)%4 == 0
+            res[i] = -res[i]
+        end
+    end
+    
     return res
 end

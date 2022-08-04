@@ -31,14 +31,48 @@ function System(n, basis::SpatialBasis, grid, V::Interaction)
     return SpatialSystem{typeof(basis)}(n, l, h, u, spfs, grid, basis, transform, V)
 end
 
+function reference_energy(system)
+    (; h, n, u) = system
+    E = 0.0
+    @inbounds for i in 1:n
+        E += h[i, i]
+        for j in 1:n
+            E += 0.5 * u[i, j, i, j]
+        end
+    end
+    return E
+end
+
 function sp_energies(system)
-    (; l, h) = system
+    (; l) = system
     
+    f = fock_matrix(system)
     ϵ = zeros(l)
     @inbounds for q in 1:l
-        ϵ[q] = h[q, q]
+        ϵ[q] = f[q, q]
     end
     return ϵ
+end
+
+function fock_matrix(system::System)
+    (; n, l, h, u) = system
+
+
+    P = Float64.(la.diagm( vcat( repeat([1], n) , repeat([0], l-n) ) ))
+    
+    F = zeros(l, l)
+    F += h
+    for c in 1:l
+        for d in 1:l
+            @inbounds P_dc = P[d, c]
+            for a in 1:l
+                for b in 1:l
+                    @inbounds F[a, b] += P_dc * u[a, c, b, d]
+                end
+            end
+        end
+    end
+    return F
 end
 
 struct PairingSystem <: System
@@ -78,11 +112,13 @@ function sp_energies(system::PairingSystem)
     @inbounds for q in 1:l
         ϵ[q] = h[q, q]
         for i in 1:n
-            ϵ[q] += u[q, i, q, i] # I don't know why this is the setup in the book benchmark. See p.364 of An AdvancedCourse in Computational Nuclear Physics
+            ϵ[q] += u[q, i, q, i]
         end
     end
     return ϵ
 end
+
+
 
 include("Integrals/transform.jl")
 ;

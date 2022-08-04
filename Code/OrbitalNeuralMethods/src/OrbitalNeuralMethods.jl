@@ -14,6 +14,7 @@ export HFState, setup_HF, HF_update!
 export RHFState, setup_RHF, RHF_update!
 export CCDState, setup_CCD, CCD_Update!
 export CCSDState, setup_CCSD, CCSD_Update!
+export DIIS
 
 # VMC
 
@@ -33,9 +34,12 @@ import LinearAlgebra as la
 
 include("Systems/system.jl")
 
+include("Methods/mixer.jl")
+
 include("Methods/hf.jl")
 include("Methods/rhf.jl")
 include("Methods/ccd.jl")
 include("Methods/ccsd.jl")
+
 
 end
