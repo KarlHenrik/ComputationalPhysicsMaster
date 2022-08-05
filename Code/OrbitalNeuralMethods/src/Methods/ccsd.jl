@@ -11,7 +11,7 @@ struct CCSDState{T, M}
     
     t2::Array{Float64, 4}
     Δt2::Array{Float64, 4}
-    err_3::Matrix{Float64}
+    err_2::Array{Float64, 4}
 end
 
 function setup_CCSD(system)
@@ -28,6 +28,7 @@ function setup_CCSD(system, mixer)
     
     Δt1 = zeros((l, n))
     t1 = zeros((l, n))
+    err_1 = zeros((l, n))
     @inbounds for i in 1:n
         for a in n+1:l
             t1[a, i] = f[a, i] / (ϵ[i] - ϵ[a])
@@ -36,6 +37,7 @@ function setup_CCSD(system, mixer)
     
     Δt2 = zeros((l, l, n, n))
     t2 = zeros((l, l, n, n))
+    err_2 = zeros((l, l, n, n))
     @inbounds for i in 1:n
         for j in 1:n 
             for a in n+1:l
@@ -46,7 +48,7 @@ function setup_CCSD(system, mixer)
         end
     end
     
-    return CCSDState{typeof(system), typeof(mixer)}(system, mixer, ϵ, f, t1, Δt1, t2, Δt2)
+    return CCSDState{typeof(system), typeof(mixer)}(system, mixer, ϵ, f, t1, Δt1, err_1, t2, Δt2, err_2)
 end
 
 function energy(state::CCSDState)
@@ -88,9 +90,7 @@ function corr_energy(state::CCSDState)
     return E
 end
 
-
-
-function CCSD_Update!(state::CCSDState)
+function update!(state::CCSDState)
     (; system, mixer, ϵ, f, t1, Δt1, t2, Δt2) = state
     (; n, u) = system
     

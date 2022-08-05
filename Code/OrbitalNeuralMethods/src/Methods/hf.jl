@@ -29,6 +29,16 @@ function HF_update!(state::HFState; iters = 1)
     return state
 end
 
+function update!(state::HFState)
+    (; C, F) = state
+    
+    C .= la.eigvecs(F)
+    P_update!(state)
+    F_update!(state)
+        
+    return state
+end
+
 function P_update!(state::HFState)
     (; P, C) = state
     (; n, l) = state.system

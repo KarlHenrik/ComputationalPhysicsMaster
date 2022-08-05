@@ -24,6 +24,7 @@ function setup_CCD(system, mixer)
     
     t = zeros((l, l, n, n))
     Δt = zeros((l, l, n, n))
+    err = zeros((l, l, n, n))
     
     @inbounds for i in 1:n
         for j in 1:n
@@ -35,7 +36,7 @@ function setup_CCD(system, mixer)
         end
     end
     
-    return CCDState{typeof(system), typeof(mixer)}(system, mixer, ϵ, f, t, Δt)
+    return CCDState{typeof(system), typeof(mixer)}(system, mixer, ϵ, f, t, Δt, err)
 end
 
 function energy(state::CCDState)
@@ -63,7 +64,7 @@ function corr_energy(state::CCDState)
     return E
 end
 
-function CCD_Update!(state::CCDState)
+function update!(state::CCDState)
     (; system, mixer, ϵ, f, t, Δt, err) = state
     (; n, l, u) = system
     
@@ -143,7 +144,9 @@ function CCD_Update!(state::CCDState)
             end
         end
     end
+    
     t .= compute_new_vector(mixer, t, Δt, err)
+    
     return state
 end
 ;

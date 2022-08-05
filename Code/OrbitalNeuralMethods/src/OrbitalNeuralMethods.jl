@@ -3,7 +3,7 @@ module OrbitalNeuralMethods
 # ------------ Exports ---------------
 
 # Orbital systems
-export System, Basis
+export System, Basis, reference_energy
 export SpatialSystem, SpatialBasis, HOBasis, SpinBasis
 export PairingSystem, pairing_exact, pairing_MBPT2, Pairing
 export Interaction, CalogeroSutherland, ShieldedCoulomb, Coulomb, NonInteracting
@@ -14,7 +14,7 @@ export HFState, setup_HF, HF_update!
 export RHFState, setup_RHF, RHF_update!
 export CCDState, setup_CCD, CCD_Update!
 export CCSDState, setup_CCSD, CCSD_Update!
-export DIIS
+export Alpha, DIIS, compute_ground_state!
 
 # VMC
 
@@ -35,6 +35,7 @@ import LinearAlgebra as la
 include("Systems/system.jl")
 
 include("Methods/mixer.jl")
+include("Methods/util.jl")
 
 include("Methods/hf.jl")
 include("Methods/rhf.jl")

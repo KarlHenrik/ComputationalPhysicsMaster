@@ -35,13 +35,13 @@ function setup_RHF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
     return state
 end
 
-function RHF_update!(state::RHFState; iters = 1)
+function update!(state::RHFState)
     (; C, F) = state
-    for i in 1:iters
-        P_update!(state)
-        F_update!(state)
-        C .= la.eigvecs(F)
-    end
+    
+    C .= la.eigvecs(F)
+    P_update!(state)
+    F_update!(state)
+        
     return state
 end
 

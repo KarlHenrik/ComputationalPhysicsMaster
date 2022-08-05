@@ -9,7 +9,7 @@ struct CalogeroSutherland <: Interaction
 end
 
 function interaction_over_grid!(interaction, x1, grid, V::CalogeroSutherland)
-    interaction .= V.ββ_1 ./ (grid .- x1).^2
+    interaction .= V.ββ_1 ./ ((grid .- x1).^2 .+ 0.1)
 end
 
 struct ShieldedCoulomb <: Interaction
