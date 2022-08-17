@@ -9,12 +9,12 @@ export PairingSystem, pairing_exact, pairing_MBPT2, Pairing
 export Interaction, CalogeroSutherland, ShieldedCoulomb, Coulomb, NonInteracting
 
 # Orbital system solvers
-export energy, corr_energy
-export HFState, setup_HF, HF_update!
-export RHFState, setup_RHF, RHF_update!
-export CCDState, setup_CCD, CCD_Update!
-export CCSDState, setup_CCSD, CCSD_Update!
-export Alpha, DIIS, compute_ground_state!
+export energy, corr_energy, update!, compute_ground_state!
+export HFState, setup_HF
+export RHFState, setup_RHF
+export CCDState, setup_CCD
+export CCSDState, setup_CCSD
+export Alpha, DIIS
 
 # VMC
 

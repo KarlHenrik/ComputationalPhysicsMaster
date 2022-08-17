@@ -125,14 +125,14 @@ function update!(state::CCSDState)
                     Ω_1 -= f[k, c] * t1[c, i] * t1[a, k]
                 end
             end
-
+            øy = 0
+            te = 0
             for k in 1:n
                 for c in n+1:L
                     for d in n+1:L
                         Ω_1 += 0.5 * u[k, a, c, d] * t2[c, d, k, i]
-
                         #Ω_1 -= u[k, a, c, d] * t1[c, k] * t1[d, i] # This is from C&S, but does not work
-                        Ω_1 += u[a, k, c, d] * t1[c, i] * t1[d, k] # From Øyvind, works
+                        Ω_1 += u[k, a, c, d] * t1[c, k] * t1[d, i] # Sign error corrected
                     end
                 end
             end
@@ -172,8 +172,8 @@ function update!(state::CCSDState)
     """
     The t2 amplitude equations, from page 76 of Crawford & Schaefer
     """
-    
-    @inbounds Threads.@threads for a in n+1:L
+    #@inbounds Threads.@threads 
+    for a in n+1:L
         for i in 1:n
             for j in i+1:n
                 for b in a+1:L
@@ -338,7 +338,6 @@ function update!(state::CCSDState)
             end
         end
     end
-    
     trial = vcat(vec(t1), vec(t2))
     direction = vcat(vec(Δt1), vec(Δt2))
     err = vcat(vec(err_1), vec(err_2))

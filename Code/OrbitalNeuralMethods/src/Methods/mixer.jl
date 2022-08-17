@@ -10,8 +10,7 @@ end
 
 function compute_new_vector(mixer::Alpha, t, Δt, error)
     (; α) = mixer
-    new_t = t .+ Δt
-    return α * t + (1 - α) * new_t
+    return t .+ Δt .* α
 end
 
 mutable struct DIIS <: Mixer

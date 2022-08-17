@@ -1,0 +1,6 @@
+\delta_{is} \delta_{ad} \delta_{pl} \delta_{qk} \delta_{rc}  + \delta_{is} \delta_{ad} \delta_{pk} \delta_{ql} \delta_{rc}  + \delta_{is} \delta_{ac} \delta_{pl} \delta_{qk} \delta_{rd}  \\
+&+ \delta_{is} \delta_{ac} \delta_{pk} \delta_{ql} \delta_{rd}  + \delta_{ir} \delta_{ad} \delta_{pl} \delta_{qk} \delta_{sc}  + \delta_{ir} \delta_{ad} \delta_{pk} \delta_{ql} \delta_{sc}  \\
+&+ \delta_{ir} \delta_{ac} \delta_{pl} \delta_{qk} \delta_{sd}  + \delta_{ir} \delta_{ac} \delta_{pk} \delta_{ql} \delta_{sd}  + \delta_{il} \delta_{ap} \delta_{qk} \delta_{sd} \delta_{rc}  \\
+&+ \delta_{il} \delta_{ap} \delta_{qk} \delta_{sc} \delta_{rd}  + \delta_{il} \delta_{aq} \delta_{pk} \delta_{sd} \delta_{rc}  + \delta_{il} \delta_{aq} \delta_{pk} \delta_{sc} \delta_{rd}  \\
+&+ \delta_{ik} \delta_{ap} \delta_{ql} \delta_{sd} \delta_{rc}  + \delta_{ik} \delta_{ap} \delta_{ql} \delta_{sc} \delta_{rd}  + \delta_{ik} \delta_{aq} \delta_{pl} \delta_{sd} \delta_{rc}  \\
+&+ \delta_{ik} \delta_{aq} \delta_{pl} \delta_{sc} \delta_{rd}  + 

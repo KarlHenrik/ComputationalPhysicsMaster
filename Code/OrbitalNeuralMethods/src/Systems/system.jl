@@ -106,7 +106,7 @@ function System(n, basis::Pairing)
 end
 
 function sp_energies(system::PairingSystem)
-    (; l, h, u) = system
+    (; l, h, u, n) = system
     
     ϵ = zeros(l)
     @inbounds for q in 1:l
