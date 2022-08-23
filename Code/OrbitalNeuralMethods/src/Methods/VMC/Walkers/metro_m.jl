@@ -10,7 +10,7 @@ function get_metro_m(positions, wf, metro::Metropolis)
     return Metro_m_basic()
 end
 
-mutable struct Metro_m_imp <: Metro_m
+mutable struct Importance_m <: Metro_m
     move::Vector{Float64}
     greens::Vector{Float64}
     

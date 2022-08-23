@@ -1,14 +1,11 @@
-include("metro_m.jl")
-include("sample_m.jl")
-include("wf_m.jl")
-
-struct Walker{W<:Wf_m, M<:Metro_m, S<:Sample_m}
-    positions::Vector{Float64}
-    rng::Random.MersenneTwister
+mutable struct Walker{W<:Wf_m, M<:Metro_m, S<:Sample_m}
+    const positions::Vector{Float64}
+    accepted::Bool
+    const rng::Random.MersenneTwister
     
-    wf_m::W
-    metro_m::M
-    sample_m::S
+    const wf_m::W
+    const metro_m::M
+    const sampler_m::S
 end
 
 function EquilWalker(system, metro)
@@ -35,16 +32,6 @@ function SampledWalker(walker, system, metro, scheme)
     return Walker{typeof(wf_m), typeof(metro_m), typeof(sample_m)}(positions, rng, wf_m, metro_m, sample_m)
 end
 
-function SampledWalker(system, metro, scheme)
-    wf = system.wf
-    rng = Random.MersenneTwister()
-    positions = getPositions(rng, wf)
-
-    wf_m  = get_wf_m(positions, wf)
-    metro_m = get_metro_m(positions, wf, metro)
-    sample_m = get_sample_m(positions, wf, scheme)
-
-    return Walker{typeof(wf_m), typeof(metro_m), typeof(sample_m)}(positions, rng, wf_m, metro_m, sample_m)
 end
 
 function getPositions(rng, wf)

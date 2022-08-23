@@ -14,7 +14,7 @@ function get_no_sample()
     return Sample_m_pass()
 end
 
-mutable struct Sample_m_gradient{T} <: Sample_m
+mutable struct Gradient_m{T} <: Sample_m
     kinetic::Float64
     paramDer::T
 end
@@ -22,16 +22,16 @@ end
 function get_sample_m(positions, wf, scheme::OptimizerScheme)
     kinetic_ = kinetic(positions, wf)
     paramDer_ = paramDer(positions, wf)
-    return Sample_m_gradient(kinetic_, paramDer_)
+    return Gradient_m(kinetic_, paramDer_)
 end
 
-mutable struct Sample_m_blocking <: Sample_m
+mutable struct Blocking_m <: Sample_m
     kinetic::Float64
 end
 
 function get_sample_m(positions, wf, scheme::Blocking)
     kinetic_ = kinetic(positions, wf)
-    return Sample_m_blocking(kinetic_)
+    return Blocking_m(kinetic_)
 end
 
 abstract type Sample_m_energy_slater <: Sample_m end

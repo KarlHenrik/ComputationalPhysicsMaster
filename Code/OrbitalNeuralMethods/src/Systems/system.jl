@@ -118,7 +118,5 @@ function sp_energies(system::PairingSystem)
     return ϵ
 end
 
-
-
 include("Integrals/transform.jl")
 ;

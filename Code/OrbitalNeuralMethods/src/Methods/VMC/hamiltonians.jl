@@ -40,17 +40,18 @@ function potential(positions, ham::HORepulsion)::Float64
     """
     V = Σ 0.5 * ω^2 * r_i^2 + ΣΣ 1 / r_{i,j}
     """
+    (;dims, num, ω2) = ham
     pot = 0.0
-    for p1 in 1:ham.num
-        idx1 = (p1-1) * ham.dims
-        for d in 1:ham.dims
-            pot += 0.5 * ham.ω2 * positions[idx1 + d]^2
+    for p1 in 1:num
+        idx1 = (p1-1) * dims
+        for d in 1:dims
+            pot += 0.5 * ω2 * positions[idx1 + d]^2
         end
         
-        for p2 in p1+1:ham.num
-            idx2 = (p2-1) * ham.dims
+        for p2 in p1+1:num
+            idx2 = (p2-1) * dims
             r12 = 0.0
-            for d in 1:ham.dims
+            for d in 1:dims
                 r12 += (positions[idx2 + d] - positions[idx1 + d])^2
             end
             pot += 1 / sqrt(r12)

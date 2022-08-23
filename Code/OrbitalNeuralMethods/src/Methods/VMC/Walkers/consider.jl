@@ -7,18 +7,29 @@ function consider!(walker, system, new_idx::Int64, move)
     return ratio(walker.positions, new_idx, new_pos, wf)
 end
 
-function consider!(walker::Walker{W, M, S}, system, new_idx, move) where W where M <: Metro_m_imp where S
-    walker.metro_m.old_pos .= walker.positions[new_idx]
-    walker.metro_m.new_pos .= walker.positions[new_idx] .+ move
+# 
+function consider!(walker::Walker{W, M, S}, wf, new_idx, move) where W where M <: Metro_m_imp where S
+    (; positions, metro_m, wf_m) = walker
+    metro_m.old_pos .= positions[new_idx]
     
-    ratio_ = ratio(walker.positions, new_idx, walker.metro_m.new_pos, wf)
-    walker.positions[new_idx] .= walker.metro_m.new_pos
-    QF!(walker.metro_m.newQF, walker.positions, new_idx, wf)
-    return ratio_
+    positions[new_idx] .= positions[new_idx] .+ move
+    
+    wf_m.new_amp = amplitude(wf, positions)
+    QF!(metro_m.newQF, wf, positions, new_idx)
+    
+    ratio = wf_m.new_amp / wf_m.old_amp
+    return ratio, metro_m.newQF
 end
 
-function accept!(walker, system, new_idx, move)
-    walker.positions[new_idx] += move
+function accept!(walker)
+    walker.wf_m.old_amp = wf_m.new_amp
+    walker.accepted = true
+    return walker
+end
+
+function deny!(walker, new_idx)
+    walker.positions[new_idx] .= walker.metro_m.old_pos
+    walker.accepted = false
     return walker
 end
 
