@@ -8,16 +8,14 @@ end
 GradientSampler(wf::SimpleGaussian, sampled_steps) = GradientSampler(0.0, 0.0, 0.0, 0.0, sampled_steps)
 GradientSampler(wf::RBM, sampled_steps) = GradientSampler(0.0, 0.0, zero.((wf.a, wf.b, wf.W)), zero.((wf.a, wf.b, wf.W)), sampled_steps)
 
-function sample!(sampler::GradientSampler, walker, ham)
-    (;positions, accepted, sample_m) = walker
-    if accepted
-        sample_m.potential = potential(positions, ham)
-    end
-    E = sample_m.potential + sample_m.kinetic
+function sample!(sampler::GradientSampler, walker)
+    (;positions, accepted, samp_muts) = walker
     
-    ∇Ψ = sample_m.paramDer
+    E = samp_muts.E
+    
+    ∇Ψ = samp_muts.paramDer
     sampler.E   += E
-    sampler.E2  += E^2
+    sampler.E2  += samp_muts.E2
     sampler.∇Ψ  = sampler.∇Ψ .+ ∇Ψ
     sampler.∇ΨE = sampler.∇ΨE .+ ∇Ψ .* E
     return sampler

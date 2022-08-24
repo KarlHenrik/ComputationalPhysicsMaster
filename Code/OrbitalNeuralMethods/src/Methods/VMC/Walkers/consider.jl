@@ -1,31 +1,82 @@
-function consider!(walker, system, new_idx::Int64, move)
-    start_idx = new_idx - (new_idx-1)%wf.dims
-    dim = 
-    
-    new_idx = start_idx:start_idx + wf.dims - 1
-    new_pos = walker.positions[new_idx]
-    return ratio(walker.positions, new_idx, new_pos, wf)
-end
+# --------------- Considering moves ----------------------
 
-# 
-function consider!(walker::Walker{W, M, S}, wf, new_idx, move) where W where M <: Metro_m_imp where S
-    (; positions, metro_m, wf_m) = walker
-    metro_m.old_pos .= positions[new_idx]
+# Metropolis + Gaussian/Correlated/NeuralNetwork + ParamDer is set up for NN
+function consider!(walker::Walker{S, Q}, wf, new_idx, move) where S where Q <: No_muts
+    (; positions, qf_muts) = walker
+    qf_muts.old_pos .= positions[new_idx]
     
     positions[new_idx] .= positions[new_idx] .+ move
     
-    wf_m.new_amp = amplitude(wf, positions)
-    QF!(metro_m.newQF, wf, positions, new_idx)
+    walker.new_amp = amplitude(wf, positions)
     
-    ratio = wf_m.new_amp / wf_m.old_amp
-    return ratio, metro_m.newQF
+    ratio = walker.new_amp / walker.old_amp
+    return ratio
 end
 
-function accept!(walker)
-    walker.wf_m.old_amp = wf_m.new_amp
+# Importance + Gaussian/Correlated
+function consider!(newQF, walker::Walker{S, Q}, wf, new_idx, move) where S where Q <: QF_muts
+    (; positions, qf_muts) = walker
+    qf_muts.old_pos .= positions[new_idx]
+    
+    positions[new_idx] .= positions[new_idx] .+ move
+    
+    walker.new_amp = amplitude(wf, positions)
+    newQF = QF!(newQF, wf, positions, new_idx)
+    
+    ratio = walker.new_amp / walker.old_amp
+    return ratio, newQF
+end
+
+# Importance + NeuralNetwork + ParamDer is set up
+function consider!(newQF, walker::Walker{S, Q}, wf::NeuralNetwork, new_idx, move) where S where Q <: QF_muts
+    (; positions, qf_muts) = walker
+    qf_muts.old_pos .= positions[new_idx]
+    
+    positions[new_idx] .= positions[new_idx] .+ move
+    
+    walker.new_amp = amplitude(wf, positions)
+    qf_all!(wf)
+    newQF .= wf.QF_all[new_idx]
+    
+    ratio = walker.new_amp / walker.old_amp
+    return ratio, newQF
+end
+
+# --------------- Accepting moves --------------------
+
+function accept!(walker, wf, ham)
+    (; samp_muts, position) = walker
+    walker.old_amp = wf_m.new_amp
     walker.accepted = true
+    
+    update_sample!(samp_muts, positions, wf, ham)
+    update_wf_olds!(wf) #NN QF_all
+    
     return walker
 end
+
+function update_sample!(samp_muts::E_muts, positions, wf, ham)
+    samp_muts.kinetic = kinetic(positions, wf)
+    samp_muts.potential = potential(positions, ham)
+    samp_muts.E = samp_muts.kinetic + samp_muts.potential
+    samp_muts.E2 = samp_muts.E^2
+    
+    return samp_muts
+end
+
+function update_sample!(samp_muts::Grad_muts, positions, wf, ham)
+    samp_muts.kinetic = kinetic(positions, wf)
+    samp_muts.potential = potential(positions, ham)
+    samp_muts.E = samp_muts.kinetic + samp_muts.potential
+    samp_muts.E2 = samp_muts.E^2
+    
+    samp_muts.paramDer = paramDer!(samp_muts.paramDer, wf)
+    
+    return samp_muts
+end
+
+
+# ------------------ Denying moves -------------------
 
 function deny!(walker, new_idx)
     walker.positions[new_idx] .= walker.metro_m.old_pos
@@ -33,16 +84,10 @@ function deny!(walker, new_idx)
     return walker
 end
 
-function accept!(walker::Walker{W, M, S}, system) where W where M where S <: Sample_m_blocking
-    #walker.positions[walker.metro_m.new_idx] = walker.metro_m.new_pos
-    walker.sample_m.kinetic = kinetic(walker.positions, system.wf)
-    return walker
-end
-
-function accept!(walker::Walker{W, M, S}, system) where W where M where S <: Sample_m_gradient
-    #walker.positions[walker.metro_m.new_idx] = walker.metro_m.new_pos
-    walker.sample_m.kinetic = kinetic(walker.positions, system.wf)
-    walker.sample_m.paramDer = paramDer(walker.positions, system.wf)
+# Slater needs to reset some columns
+function deny!(walker, new_idx)
+    walker.positions[new_idx] .= walker.metro_m.old_pos
+    walker.accepted = false
     return walker
 end
 
