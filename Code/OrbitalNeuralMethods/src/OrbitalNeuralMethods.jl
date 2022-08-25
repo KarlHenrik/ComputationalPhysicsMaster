@@ -17,7 +17,10 @@ export CCSDState, setup_CCSD
 export Alpha, DIIS
 
 # VMC
-
+export HarmonicOscillator
+export SimpleGaussian
+export Metropolis, Importance
+export GradientDescent, optimize
 
 # ------------ Imports ---------------
 
@@ -42,5 +45,6 @@ include("Methods/rhf.jl")
 include("Methods/ccd.jl")
 include("Methods/ccsd.jl")
 
+include("Methods/VMC/vmc.jl")
 
 end

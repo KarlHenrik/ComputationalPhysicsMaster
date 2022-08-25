@@ -10,7 +10,7 @@ struct OneBodySampler{T} <: Sampler
 end
 OneBodySampler(start, stop, length, dims, num, sampled_steps) = OneBodySampler(zeros(Int64, length), start, stop, length, (stop - start) / (length - 1), dims, num, sampled_steps)
 
-function sample!(sampler::OneBodySampler, state, system)
+function sample!(sampler::OneBodySampler, walker, wf)
     for pos in state.positions
         for dim in 1:sampler.dims
             distance = abs(pos[dim])

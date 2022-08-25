@@ -1,10 +1,12 @@
 struct No_Muts end
+
 mutable struct E_Muts
     kinetic::Float64
     potential::Float64
     E::Float64
     E2::Float64
 end
+
 mutable struct Grad_Muts{T}
     kinetic::Float64
     potential::Float64
@@ -19,7 +21,11 @@ function Sample_Muts(wf, sampler::GradientSampler)
     return Grad_Muts{typeof(paramDer)}(0, 0, 0, 0, paramDer)
 end
 
-struct QF_Muts
+mutable struct Metro_Muts
+    old_pos::Float64
+end
+
+struct Imp_Muts
     move::Vector{Float64}
     greens::Vector{Float64}
     
@@ -28,5 +34,5 @@ struct QF_Muts
     oldQF::Vector{Float64}
     newQF::Vector{Float64}
 end
-QF_Muts(wf, metro::Metropolis) = No_Muts()
-QF_Muts(wf, metro::Importance) = QF_Muts(zeros(wf.dims), zeros(wf.dims), zeros(wf.dims), zeros(wf.dims), zeros(wf.dims), zeros(wf.dims))
+Metro_Muts(wf, metro::Metropolis) = Metro_Muts(0.0)
+Metro_Muts(wf, metro::Importance) = Imp_Muts(zeros(wf.dims), zeros(wf.dims), zeros(wf.dims), zeros(wf.dims), zeros(wf.dims), zeros(wf.dims))

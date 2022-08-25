@@ -6,37 +6,37 @@ mutable struct Walker{S, Q}
     old_amp::Float64
     
     const samp_muts::S
-    const qf_muts::Q
+    const metro_muts::Q
 end
 
-function Walker(wf, metro) # A walker for equilibrium steps
+function EquilWalker(wf, metro) # A walker for equilibrium steps
     rng = Random.MersenneTwister()
     positions = getPositions(rng, wf)
     
     samp_muts = No_Muts()
-    qf_muts = QF_Muts(wf, metro)
+    metro_muts = Metro_Muts(wf, metro)
     
-    return Walker{typeof(e_muts), typeof(qf_muts)}(positions, false, rng, 0, 0, e_muts, qf_muts)
+    return Walker{typeof(samp_muts), typeof(metro_muts)}(positions, false, rng, 0, 0, samp_muts, metro_muts)
 end
 
-function Walker(wf, metro, sampler, walker) # A walker using the position of a previous walker
+function SampledWalker(wf, metro, sampler, walker) # A walker using the position of a previous walker
     rng = Random.MersenneTwister()
     positions = walker.positions
     
     samp_muts = Sample_Muts(wf, sampler)
-    qf_muts = QF_Muts(wf, metro)
+    metro_muts = Metro_Muts(wf, metro)
     
-    return Walker{typeof(e_muts), typeof(qf_muts)}(positions, false, rng, 0, 0, e_muts, qf_muts)
+    return Walker{typeof(samp_muts), typeof(metro_muts)}(positions, false, rng, 0, 0, samp_muts, metro_muts)
 end
 
-function Walker(wf, metro, sampler)
+function SampledWalker(wf, metro, sampler)
     rng = Random.MersenneTwister()
     positions = getPositions(rng, wf)
     
     samp_muts = Sample_Muts(wf, sampler)
-    qf_muts = QF_Muts(wf, metro)
+    metro_muts = Metro_Muts(wf, metro)
     
-    return Walker{typeof(e_muts), typeof(qf_muts)}(positions, false, rng, 0, 0, e_muts, qf_muts)
+    return Walker{typeof(samp_muts), typeof(metro_muts)}(positions, false, rng, 0, 0, samp_muts, metro_muts)
 end
 
 function getPositions(rng, wf)
@@ -78,5 +78,3 @@ function getPositions(rng, wf::Correlated)
     end
     return vec(positions)
 end
-
-include("walker_updating.jl")

@@ -1,17 +1,15 @@
 abstract type Hamiltonian end
 
 struct HarmonicOscillator <: Hamiltonian
-    ω2::Float64
     dims::Int64
     num::Int64
+    ω2::Float64
     HOshape::Vector{Float64}
-    function HarmonicOscillator(HOshape, num, ω)
-        return new(ω^2, length(HOshape), num, HOshape)
+    function HarmonicOscillator(dims, num; ω, HOshape=ones(dims))
+        @assert dims == length(HOshape)
+        return new(dims, num, ω^2, HOshape)
     end
 end
-HarmonicOscillator(HOshape, num; ω) = HarmonicOscillator(HOshape, num, ω)
-HarmonicOscillator(dims::Int64, num; ω) = HarmonicOscillator(ones(dims), num, ω)
-
 
 function potential(positions, ham::HarmonicOscillator)::Float64
     """

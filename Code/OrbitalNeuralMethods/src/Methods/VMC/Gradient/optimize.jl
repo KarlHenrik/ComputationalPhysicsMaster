@@ -4,22 +4,25 @@ struct GradientDescent <: Optimizer
     lr::Float64
     max_iter::Int64
     tol::Float64
+    function GradientDescent(;lr, max_iter, tol)
+        return new(lr, max_iter, tol)
+    end
 end
 
 function update_gradient(gradient, optimizer::GradientDescent)
     return gradient .* optimizer.lr
 end
 
-function optimize(wf, ham, metro, optimizer; threads)
+function optimize(wf, ham, metro, optimizer; nthreads=1)
     (;max_iter, tol) = optimizer
     
-    grad_results = Vector{GradientResult}(undef, maxiter) # The sampled values and wavefunctions from each step
+    grad_results = Vector{GradientResult}(undef, max_iter) # The sampled values and wavefunctions from each step
     grad_norm = 0
-    for i in 1:maxiter
-        grad_result = compute_gradient(wf, ham, metro) # Running the vmc calculation the get the gradient for this wavefunction
+    for i in 1:max_iter
+        grad_result = compute_gradient(wf, ham, metro, nthreads) # Running the vmc calculation the get the gradient for this wavefunction
         grad_results[i] = grad_result
         
-        grad = update_gradient!(optimizer, grad_result.gradient)
+        grad = update_gradient(grad_result.gradient, optimizer)
         
         grad_norm = la.norm(grad)
         if grad_norm < tol
@@ -28,19 +31,19 @@ function optimize(wf, ham, metro, optimizer; threads)
         end
         
         wf = applyGradient(wf, grad)
-        print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(maxiter)                       ")
+        print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter)           ")
     end
     println("No convergence reached, final norm of gradient was $(grad_norm)")
     return wf, grad_results
 end
 
 function compute_gradient(wf, ham, metro, nthreads)
-    distr_steps = distribute_steps(metro.sampled_steps, nthreads)
+    distr_steps = distribute_steps(metro.sample_steps, nthreads)
     samplers = [GradientSampler(wf, distr_steps[i]) for i in 1:nthreads]
     
-    samplers = vmc!(samplers, wf, ham, metro)
+    samplers = steps!(samplers, wf, ham, metro)
     
-    grad_result = CreateResult(samplers)
+    grad_result = createResult(samplers)
     return grad_result
 end
 

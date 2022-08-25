@@ -71,6 +71,32 @@ function gradient!(nn::NeuralNetwork)
     return nn
 end
 
+struct Layer_Grad
+    W_g::Matrix{Float64}
+    b_g::Vector{Float64}
+    function Layer_Grad(layer::Dense)
+        return new(zero(layer.W_g), zero(layer.b_g))
+    end
+end
+
+struct Layer_Grad_Skip end
+Layer_Grad(layer) = Layer_Grad_Skip()
+
+function paramDerHolder(nn)
+    layer_grads = []
+    for layer in layers
+        push!(layer_grads, Layer_Grad(layer))
+    end
+    return layer_grads
+end
+
+function paramDer(positions, nn)
+    
+    for (layer, layer_grad) in zip(layers, layer_grads)
+        add_gradient!(layer_grad, layer)
+    end
+end
+
 function QF(nn)
     # TODO make this inplace?
     return 2 .* nn.input_der ./ nn.output[1]

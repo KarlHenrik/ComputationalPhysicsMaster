@@ -1,3 +1,11 @@
+abstract type WaveFunction end
+include("Wavefunctions/simplegaussian.jl")
+include("Wavefunctions/correlated.jl")
+
+include("hamiltonians.jl")
+include("metropolis.jl")
+include("steps.jl")
+
 # Sampler and Result setups
 abstract type Sampler end
 abstract type Result end
@@ -13,13 +21,9 @@ include("OneBody/ob_sampler.jl")
 include("OneBody/onebody.jl")
 
 # 
-include("Walker/muts.jl")
+include("Walkers/muts.jl")
 include("Walkers/walker.jl")
 include("Walkers/consider.jl")
+include("Walkers/consider_SG_C.jl")
 
-abstract type WaveFunction end
-include("Wavefunctions/simplegaussian.jl")
 
-include("hamiltonians.jl")
-include("metropolis.jl")
-include("steps.jl")
