@@ -1,5 +1,5 @@
-struct OneBodySampler{T} <: Sampler
-    oneBodyDensity::T
+struct OneBodySampler <: Sampler
+    oneBodyDensity::Vector{Int64}
     start::Float64
     stop::Float64
     length::Int64
@@ -8,18 +8,18 @@ struct OneBodySampler{T} <: Sampler
     num::Int64
     sampled_steps::Int64
 end
-OneBodySampler(start, stop, length, dims, num, sampled_steps) = OneBodySampler(zeros(Int64, length), start, stop, length, (stop - start) / (length - 1), dims, num, sampled_steps)
+function OneBodySampler(start, stop, length, dims, num, sampled_steps)
+    return OneBodySampler(zeros(Int64, length), Float64(start), Float64(stop), length, (stop - start) / (length - 1), dims, num, sampled_steps)
+end
 
 function sample!(sampler::OneBodySampler, walker, wf)
-    for pos in state.positions
-        for dim in 1:sampler.dims
-            distance = abs(pos[dim])
-            bin = 1
-            while (distance > bin * sampler.step) && (bin <= sampler.length - 1)
-                bin += 1
-            end
-            sampler.oneBodyDensity[bin] += 1
+    for pos in walker.positions
+        distance = abs(pos)
+        bin = 1
+        while (distance > bin * sampler.step) && (bin <= sampler.length - 1)
+            bin += 1
         end
+        sampler.oneBodyDensity[bin] += 1
     end
     return sampler
 end

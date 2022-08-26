@@ -1,12 +1,14 @@
 mutable struct BlockingSampler <: Sampler
-    savedEnergies::Vector{Float64}
-    sampled_steps::Int64
+    const savedEnergies::Vector{Float64}
+    const sampled_steps::Int64
     E_index::Int64
-    BlockingSampler(sampled_steps) = new(Vector{Float64}(undef, sampled_steps), sampled_steps, 1)
+    function BlockingSampler(sampled_steps)
+        return new(Vector{Float64}(undef, sampled_steps), sampled_steps, 1)
+    end
 end
 
 function sample!(sampler::BlockingSampler, walker, wf)
-    E = potential(state.positions, system.ham) + state.sample_m.kinetic
+    E = walker.samp_muts.E
     sampler.savedEnergies[sampler.E_index] = E
     sampler.E_index += 1
     return sampler

@@ -20,7 +20,7 @@ export Alpha, DIIS
 export HarmonicOscillator
 export SimpleGaussian
 export Metropolis, Importance
-export GradientDescent, optimize
+export blocking, onebody, optimize, GradientDescent
 
 # ------------ Imports ---------------
 

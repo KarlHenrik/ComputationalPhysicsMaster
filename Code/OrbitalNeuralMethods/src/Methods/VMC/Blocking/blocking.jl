@@ -1,10 +1,10 @@
-function blocking(wf, ham, metro, nthreads)
-    distr_steps = distribute_steps(metro.sampled_steps, nthreads)
+function blocking(wf, ham, metro; nthreads=1)
+    distr_steps = distribute_steps(metro.sample_steps, nthreads)
     samplers = [BlockingSampler(distr_steps[i]) for i in 1:nthreads]
     
-    samplers = vmc!(samplers, wf, ham, metro)
+    samplers = steps!(samplers, wf, ham, metro)
     
-    block_result = CreateResult(samplers)
+    block_result = createResult(samplers)
     return block_result
 end
 
@@ -17,7 +17,9 @@ end
 function createResult(samplers::Vector{BlockingSampler})
     savedEnergies = vcat([s.savedEnergies for s in samplers]...)
     
-    E, E_err, std = block(savedEnergies)
+    E = Statistics.mean(savedEnergies)
+    E_err = sqrt(block(savedEnergies))
+    std = Statistics.std(savedEnergies, corrected=false) / sqrt(length(savedEnergies))
     
     return BlockingResult(E, E_err, std)
 end

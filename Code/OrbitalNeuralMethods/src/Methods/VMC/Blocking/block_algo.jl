@@ -1,48 +1,42 @@
+# Returns an estimate for the sample variance of the mean which corrects for correlation in the data
 function block(x)
-    n0 = length(x)
     n = length(x)
     d = log2(n)
-    d_int = Int(floor(d))
-    s = zeros(d_int)
-    gamma = zeros(d_int)
+    if d%1 != 0
+        d = Int(floor(d))
+        println("Length of data = $(n) is not a power of 2, truncating to $(Int(round((2^d),digits=0))) elements")
+        n = 2^d
+        x = x[1:n]
+    else
+        d = Int(d)
+    end
+    
+    s, gamma = zeros(d), zeros(d)
     mu = Statistics.mean(x)
-    std = Statistics.std(x)
 
     # Auto-covariance and variances for each blocking transformation
-    for i in 1:d_int
+    for i in 1:d
         # n changes in length
         n = length(x)
 
-        # Autocovariance of x
+        # Estimate autocovariance of x
         gamma[i] = (1 / n) * sum((x[1:n-1] .- mu) .* (x[2:n] .- mu))
 
-        # Variance of x
-        s[i] = Statistics.var(x)
+        # Estimate variance of x
+        s[i] = Statistics.var(x, corrected=false)
 
-        # We might get a situaion where the array is not easily split in two equal sizes
+        # Blocking transformation
         x_1 = x[1:2:end] # Extracting all numbers at odd positions
         x_2 = x[2:2:end] # Numbers at even positions
-        # If length is not equal, remove highest number
-        if (length(x_1) > length(x_2))
-            x_1 = x_1[1:end-1]
-        elseif (length(x_2) > length(x_1))
-            x_2 = x_2[1:end-1]
-        end
-        # Blocking transformation
+        
         x = 0.5 .* (x_1 .+ x_2)
     end
-
+    
     # Test observator from theorem (chi^2-distributed)
     factor_1 = (gamma ./ s).^2
-    factor_2 = 2 .^[i for i in 1:d_int]
-    # Do the same length check again
-    if (length(factor_1) > length(factor_2))
-        factor_1 = factor_1[1:end-1]
-    elseif (length(factor_2) > length(factor_1))
-        factor_2 = factor_2[1:end-1]
-    end
-
-    M = (cumsum((factor_1 .* factor_2[end:-1:1])[end:-1:1]))[end:-1:1]
+    factor_2 = 2 .^[i for i in 1:d]
+    
+    M = (cumsum( ( factor_1 .* factor_2[end:-1:1] )[end:-1:1]))[end:-1:1]
 
     # Test percentiles
     q = [6.634897,  9.210340, 11.344867, 13.276704, 15.086272,
@@ -54,17 +48,16 @@ function block(x)
 
     # The actual Chi squared test - should we have stopped blocking?
     k_end = 1
-    for k in 1:d_int
+    for k in 1:d
         k_end = k
         if (M[k] < q[k])
             break
         end
-        if (k >= d)
-            print("More data is needed!")
-        end
     end
-    
+    if (k_end >= d)
+        print("More data is needed!")
+    end
     result = s[k_end] / 2^(d-(k_end-1))
 
-    return mu, result^0.5 * n0^0.5, std
+    return result
 end

@@ -14,7 +14,7 @@ mutable struct Grad_Muts{T}
     E2::Float64
     paramDer::T
 end
-Sample_Muts(wf, sampler::OneBodySampler) = No_Muts()
+#Sample_Muts(wf, sampler::OneBodySampler) = No_Muts()
 Sample_Muts(wf, sampler::BlockingSampler) = E_Muts(0, 0, 0, 0)
 function Sample_Muts(wf, sampler::GradientSampler)
     paramDer = paramDerHolder(wf)
