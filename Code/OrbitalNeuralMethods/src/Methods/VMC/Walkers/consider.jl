@@ -26,7 +26,7 @@ end
 # ------------------ Denying moves -------------------
 
 # Importance + Anything but Slater
-function deny!(walker, wf, new_idx::Vector{Int64})
+function deny!(walker, wf, new_idx::UnitRange{Int64})
     walker.positions[new_idx] .= walker.metro_muts.old_pos
     walker.accepted = false
     return walker

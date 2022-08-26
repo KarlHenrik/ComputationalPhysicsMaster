@@ -18,7 +18,7 @@ export Alpha, DIIS
 
 # VMC
 export HarmonicOscillator
-export SimpleGaussian
+export SimpleGaussian, Correlated
 export Metropolis, Importance
 export blocking, onebody, optimize, GradientDescent
 

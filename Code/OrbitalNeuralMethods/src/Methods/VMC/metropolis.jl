@@ -41,7 +41,7 @@ function Importance(;equils, samples, step)
 end
 
 function metro_step!(walker, wf, metro::Importance, ham)
-    (; move, greens, newQF, oldQF) = walker.qf_muts
+    (; move, greens, newQF, oldQF) = walker.metro_muts
     (; dims, num) = wf
     
     # Choosing particle to move

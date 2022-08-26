@@ -5,7 +5,7 @@ mutable struct GradientSampler{T} <: Sampler
     ∇ΨE::T
     const sampled_steps::Int64
 end
-GradientSampler(wf::SimpleGaussian, sampled_steps) = GradientSampler(0.0, 0.0, 0.0, 0.0, sampled_steps)
+GradientSampler(wf::Union{SimpleGaussian, Correlated}, sampled_steps) = GradientSampler(0.0, 0.0, 0.0, 0.0, sampled_steps)
 #GradientSampler(wf::RBM, sampled_steps) = GradientSampler(0.0, 0.0, zero.((wf.a, wf.b, wf.W)), zero.((wf.a, wf.b, wf.W)), sampled_steps)
 
 function sample!(sampler::GradientSampler{T}, walker, wf) where T
