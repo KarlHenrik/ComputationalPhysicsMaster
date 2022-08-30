@@ -12,7 +12,7 @@ import LinearAlgebra as la
 @testset "SimpleGaussian" begin
     positions = [0.0  1.0]
     wf = SimpleGaussian(0.5, [1, 1, 1])
-    @test kinetic(positions, wf, temp_arr) == 
+    @test kinetic(positions, wf, temp_arr) == 0
 end
 
 
