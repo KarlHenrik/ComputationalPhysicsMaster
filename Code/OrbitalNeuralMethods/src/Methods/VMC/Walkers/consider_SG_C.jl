@@ -12,9 +12,11 @@ end
 # Importance + Gaussian/Correlated
 function consider!(newQF, walker::Walker{S, M}, wf::Union{SimpleGaussian, Correlated}, new_idx, move) where S where M <: Imp_Muts
     (; positions, metro_muts) = walker
-    metro_muts.old_pos .= positions[new_idx]
     
-    positions[new_idx] .= positions[new_idx] .+ move
+    for (j, new_i) in enumerate(new_idx)
+        metro_muts.old_pos[j] = positions[new_i]
+        positions[new_i] += move[j]
+    end
     
     ratio = ratio_direct(wf, positions, new_idx, metro_muts.old_pos)
     newQF = QF!(newQF, positions, new_idx, wf)

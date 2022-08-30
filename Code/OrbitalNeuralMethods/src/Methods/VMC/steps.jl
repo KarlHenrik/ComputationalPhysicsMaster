@@ -6,22 +6,22 @@ end
 
 function steps!(samplers, wf, ham, metro)
     Threads.@threads for i = 1:length(samplers)
-        wf = private_wf(wf)
-        
+        wf_priv = private_wf(wf)
         # Move particles for a while to end up in a more likely state than the initial random state
-        equil_walker = EquilWalker(wf, metro)
-        equil_steps!(equil_walker, wf, ham, metro)
+        equil_walker = EquilWalker(wf_priv, metro)
+        equil_steps!(equil_walker, wf_priv, ham, metro)
         
         # Move particles and record the values of interest
         sampler = samplers[i]
-        walker = SampledWalker(wf, metro, sampler, equil_walker)
-        sampler, walker = sampled_steps!(sampler, walker, wf, ham, metro)
+        walker = SampledWalker(wf_priv, metro, sampler, equil_walker)
+        sampler, walker = sampled_steps!(sampler, walker, wf_priv, ham, metro)
     end
     
     return samplers
 end
 
 function equil_steps!(walker, wf, ham, metro)
+    #wf = private_wf(wf)
     for i in 1:metro.equil_steps
         walker = metro_step!(walker, wf, metro, ham)
     end
@@ -29,6 +29,7 @@ function equil_steps!(walker, wf, ham, metro)
 end
 
 function sampled_steps!(sampler, walker, wf, ham, metro)
+    #wf = private_wf(wf)
     for i in 1:sampler.sampled_steps
         walker = metro_step!(walker, wf, metro, ham)
         sampler = sample!(sampler, walker, wf)

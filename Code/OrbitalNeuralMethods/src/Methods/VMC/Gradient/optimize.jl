@@ -31,7 +31,7 @@ function optimize(wf, ham, metro, optimizer; nthreads=1)
         end
         
         wf = applyGradient(wf, grad)
-        print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter)           ")
+        print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter) alpha = $(wf.α)          ")
     end
     println("No convergence reached, final norm of gradient was $(grad_norm)")
     return wf, grad_results

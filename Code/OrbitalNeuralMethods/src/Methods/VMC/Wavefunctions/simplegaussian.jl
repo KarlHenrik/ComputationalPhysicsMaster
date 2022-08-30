@@ -9,7 +9,7 @@ struct SimpleGaussian <: WaveFunction
         return new(α, dims, num, HOshape, HOshape.^2)
     end
 end
-private_wf(wf::SimpleGaussian) = SimpleGaussian(wf.dims, wf.num, α=wf.α, HOshape=wf.HOshape)
+private_wf(wf::SimpleGaussian) = SimpleGaussian(wf.dims, wf.num, α=wf.α, HOshape=copy(wf.HOshape))
 
 # Index from metro does not cover all dimentions
 function ratio_direct(wf::SimpleGaussian, positions, new_idx::Int64, old_pos)
@@ -19,7 +19,7 @@ function ratio_direct(wf::SimpleGaussian, positions, new_idx::Int64, old_pos)
     All other terms are the same and cancel. Since they are both exponentials, we can subtract the exponents
     """
     d = (new_idx-1)%wf.dims +1
-    ratio_sum = (old_pos^2 - positions[new_idx]^2) * wf.HOshape2[d]
+    ratio_sum = (old_pos^2 - positions[new_idx]^2) * wf.HOshape[d]
     return exp(wf.α * ratio_sum)
 end
 
@@ -32,7 +32,7 @@ function ratio_direct(wf::SimpleGaussian, positions, new_idx, old_pos)
     """
     ratio_sum = 0.0
     for d in 1:wf.dims
-        ratio_sum += (old_pos[d]^2 - positions[new_idx[d]]^2) * wf.HOshape2[d]
+        ratio_sum += (old_pos[d]^2 - positions[new_idx[d]]^2) * wf.HOshape[d]
     end
     return exp(wf.α * ratio_sum)
 end
