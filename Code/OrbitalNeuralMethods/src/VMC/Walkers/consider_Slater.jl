@@ -1,5 +1,16 @@
+function consider!(walker::Walker{S, M}, wf::Slater, new_idx::Int64, move) where S where M <: Metro_Muts
+    (; positions, metro_muts) = walker
+    metro_muts.old_pos = positions[new_idx]    
+    positions[new_idx] += move
+    
+    walker.new_amp = amplitude(wf, positions, new_idx)
+    ratio = walker.new_amp / walker.old_amp
+    
+    return ratio
+end
+
 function accept!(walker, wf::Slater, new_idx, ham)
-    (; samp_muts, position) = walker
+    (; samp_muts, positions) = walker
     walker.old_amp = wf_m.new_amp
     walker.accepted = true
     

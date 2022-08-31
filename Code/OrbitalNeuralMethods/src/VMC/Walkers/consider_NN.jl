@@ -1,5 +1,5 @@
 # Importance + NeuralNetwork + ParamDer is set up
-function consider!(newQF, walker::Walker{S, Q}, wf::NeuralNetwork, new_idx, move) where S where Q <: QF_muts
+function consider!(newQF, walker::Walker{S, M}, wf::NeuralNetwork, new_idx, move) where S where M <: Imp_Muts
     (; positions, qf_muts) = walker
     qf_muts.old_pos .= positions[new_idx]
     

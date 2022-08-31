@@ -13,7 +13,7 @@ function update_gradient(gradient, optimizer::GradientDescent)
     return gradient .* optimizer.lr
 end
 
-function optimize(wf, ham, metro, optimizer; nthreads=1)
+function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
     (;max_iter, tol) = optimizer
     
     grad_results = Vector{GradientResult}(undef, max_iter) # The sampled values and wavefunctions from each step
@@ -31,9 +31,14 @@ function optimize(wf, ham, metro, optimizer; nthreads=1)
         end
         
         wf = applyGradient(wf, grad)
-        print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter) alpha = $(wf.α)          ")
+        if verbose
+            print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter) alpha = $(wf.α)          ")
+        end
     end
-    println("No convergence reached, final norm of gradient was $(grad_norm)")
+    if verbose
+        println("No convergence reached, final norm of gradient was $(grad_norm)")
+    end
+    
     return wf, grad_results
 end
 
