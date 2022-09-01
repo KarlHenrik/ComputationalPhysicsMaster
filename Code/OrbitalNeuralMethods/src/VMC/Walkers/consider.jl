@@ -25,14 +25,14 @@ end
 
 # ------------------ Denying moves -------------------
 
-# Importance + Anything but Slater
+# Importance
 function deny!(walker, wf, new_idx::UnitRange{Int64})
     walker.positions[new_idx] .= walker.metro_muts.old_pos
     walker.accepted = false
     return walker
 end
 
-# Metropolis + Anything but Slater
+# Metropolis
 function deny!(walker, wf, new_idx::Int64)
     walker.positions[new_idx] = walker.metro_muts.old_pos
     walker.accepted = false

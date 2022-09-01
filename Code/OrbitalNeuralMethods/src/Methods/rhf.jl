@@ -144,7 +144,35 @@ function expand_restricted(A)
     return S
 end
 
-# Not in use
+function checkRestricted(C)
+    l = size(C)[1]
+    if l%2 != 0
+        return false
+    end
+    # Only nonzero values at even rows at odd columns and odd columns at even rows
+    for i in 2:2:l
+        for j in 1:2:l
+            if C[i, j] != 0
+                return false
+            end
+            if C[j, i] != 0
+                return false
+            end
+        end
+    end
+    # Every value reappears at its index +1 +1
+    for i in 1:2:l
+        for j in 1:2:l
+            if C[i, j] != C[i+1, j+1]
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
+#= Not in use
 function check_restricted(C)
     l = size(C)[1]
     
@@ -161,3 +189,4 @@ function check_restricted(C)
     end
     return restricted
 end
+=#

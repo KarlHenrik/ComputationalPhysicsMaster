@@ -1,145 +1,127 @@
-struct Slater{T} <: WaveFunction
-    C::Matrix{Float64}
-    l::Int64
-    basis::T
-
+struct Slater <: WaveFunction
     dims::Int64
     num::Int64
 
-    new_row::Vector{Float64}
+    # This is the basis and C transform that defines how we evaluate the slater determinant
+    C::Matrix{Float64} # lxl matrix from RHF which we use the num first columns of to produce our determinant
+    basis::HObasis # The basis we will spin double
 
-    amp_mat::Matrix{Float64}
-    der_mat::Matrix{Float64}
-    kin_mat::Matrix{Float64}
+    # Here we store the candidate values for the matrices below
+    new_eval::Vector{Float64} # new row in slater determinant matrix
+    new_der::Vector{Float64}
+    new_kin::Vector{Float64}
+
+    # These hold the current state of the wavefunction. When a particle move is accepted, we update them
+    amp_up::Fast_Det # n/2 x n/2 matrix that will be used to compute determinants when a spin-up particle is moved
+    amp_down::Fast_Det # same as above, but for spin-down
+    der_mat::Matrix{Float64} # n x n/2 matrix which holds the derivative of our slater determinant functions
+    kin_mat::Matrix{Float64} # same as above, but double derivatives
 
     function Slater(num, dims, C, basis)
-        l = basis.l
+        @assert num%2 == 0
+        @assert dims == 1
 
-        amp_mat = zero(C)
-        der_mat = zero(C)
-        kin_mat = zero(C)
+        amp_up, amp_down = setupSlaterMatrix(basis.base, C, num)
+        
 
-        return new(C, l, basis, dims, num, amp_mat, der_mat, kin_mat)
+        return new(dims, num, C, basis, new_eval, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
     end
 end
 
-function Slater(state::HFState)
+function Slater(state::RHFState)
     (; C, system) = state
-    (; basis, transform) = system
-    C = transform * C
+    (; basis) = system
     return Slater(C, basis)
 end
 
 function Slater(system::System)
     (; basis, transform) = system
     C = transform
+    @assert checkResticted(C)
     return Slater(C, basis)
 end
 
-function evaluate!(wf::Slater{Basis}, x)
-    (; basis_eval, basis) = wf
-    basis_eval .= evaluate!(basis_eval, x, basis) # the basis functions evaluated at x
-end
+function setupSlaterMatrix(basis::SpinBasis, C, positions)
+    l = basis.base.l
+    n = length(positions)
 
-function evaluate!(wf::Slater{SpinBasis}, x)
-    (; basis_eval, nospin, basis) = wf
-    
-    nospin .= evaluate!(nospin, x, basis.base) # the basis functions evaluated at x
-    @inbounds for i in eachindex(nospin) # doubling the basis functions to include spin
-        basis_eval[2i-1] = nospin[i]
-        basis_eval[2i] = nospin[i]
-    end
-end
+    #TODO these sizes are wrong!
+    amp_up = zeros(n, n)
+    amp_down = zeros(n, n)
+    der_mat = zeros(n, n)
+    kin_mat = zeros(n, n)
 
-function amplitude(wf, positions, new_idx)
-    (; C, l, basis_eval, amp_mat, num, new_row) = wf
-    x = positions[new_idx]
-    basis_eval = evaluate!(wf, x) # the basis functions evaluated at x
-    
-    for row in 1:num
-        ϕ_col_x = 0.0
-        for j in 1:l
-            ϕ_col_x += C[j, row] * basis_eval[j]
+    for ϕ_i in 1:num # loop over the orbitals in the determinant
+        for p_i in 1:num÷2
+            amp = 0.0
+            der = 0.0
+            dder = 0.0
+            for bs_i in 1:l # loop over the basis used to construct the orbitals 
+                amp += C[bs_i, ϕ_i] * bs_eval[bs_i]
+                der += C[bs_i, ϕ_i] * bs_der[bs_i]
+                dder += C[bs_i, ϕ_i] * bs_dder[bs_i]
+            end
+            amp_up[ϕ, p_i] = 1
+            amp_down[ϕ, p_i] = 1
+            der_mat[ϕ, p_i] = 1
+            kin_mat[ϕ, p_i] = 1
         end
-        new_row[i, row] = ϕ_col_x
     end
-    
-    return det_new_row(amp_mat, new_row, new_idx)
+end
+
+function computeNewRows!(wf, walker::Walker{S, M}, x::Float64)  where S <: Union{E_Muts, Grad_Muts} where M <: Imp_Muts
+    (; basis, new_eval, new_der, new_dder) = wf
+
+    bs_eval, bs_der, bs_dder = fast_ho_all!(x, basis)
+
+    for ϕ_i in 1:num # loop over the orbitals in the determinant
+        amp = 0.0
+        der = 0.0
+        dder = 0.0
+        for bs_i in 1:l # loop over the basis used to construct the orbitals 
+            amp += C[bs_i, ϕ_i] * bs_eval[bs_i]
+            der += C[bs_i, ϕ_i] * bs_der[bs_i]
+            dder += C[bs_i, ϕ_i] * bs_dder[bs_i]
+        end
+        new_eval[ϕ_i] = amp
+        new_der[ϕ_i] = der
+        new_dder[ϕ_i] = dder
+    end
+end
+
+function setNewRows!(wf, walker::Walker{S, M}, new_idx::Int64)  where S <: Union{E_Muts, Grad_Muts} where M <: Metro_Muts
+    (; num, new_eval, new_der, new_dder, amp_up, amp_down, der_mat, kin_mat) = wf
+    if new_idx < num÷2
+        change_row!(amp_up, new_eval, new_idx)
+    else
+        change_row!(amp_down, new_eval, new_idx-num÷2)
+    end
+    der_mat[new_idx, :] .= new_der
+    kin_mat[new_idx, :] .= new_dder
 end
 
 function kinetic(positions, wf::Slater)::Float64
-    (; amp_mat, kin_mat, num) = wf
+    (; amp_up, amp_down, kin_mat, num) = wf
     kin = 0.0
-    for row in 1:num
-        kin += ratio_new_old_det(amp_mat, kin_mat[row, :], row)
+    for row in 1:num÷2
+        kin += ratio_new_old_det(amp_up, kin_mat[row, :], row)
+    end
+    for (i, row) in enumerate(num÷2:num)
+        kin += ratio_new_old_det(amp_down, kin_mat[row, :], i)
     end
     return kin
 end
 
-# ------------------ Functinality for computing the change in determinant when changing only one row ---------------------
+# Only used for the old qf
+function QF!(qf, positions, idx, wf::SimpleGaussian)
+    (; amp_up, amp_down, num) = wf
 
-mutable struct Fast_Det
-    const D::Matrix{Float64}
-    const D_inv::Matrix{Float64}
-    const n::Int64
-    det::Float64
-
-    
-    function Fast_Det(D)
-        D_inv = la.inv(D)
-        det = la.det(D)
-        n = size(D)[1]
-        return new(copy(D), D_inv, n, det)
-    end
-end
-
-function det(fd::Fast_Det)
-    return fd.det
-end
-
-function det_new_row(fd::Fast_Det, new_row::Vector{Float64}, i)
-    (; D_inv, n, det) = fd
-    R = 0.0
-    for j in 1:n
-        R += new_row[j] * D_inv[j, i]
-    end
-    return det * R
-end
-
-function ratio_new_old_det(fd::Fast_Det, new_row::Vector{Float64}, i)
-    (; D_inv, n) = fd
-    R = 0.0
-    for j in 1:n
-        R += new_row[j] * D_inv[j, i]
-    end
-    return R
-end
-
-function change_row!(fd, new_row, i)
-    (; D, D_inv, n) = fd
-    R = 0.0
-    for j in 1:n
-        R += new_row[j] * D_inv[j, i]
-    end
-    fd.det = fd.det * R
-
-    for j in 1:n
-        if j != i
-            S = 0.0
-            for l in 1:n
-                S += new_row[l] * D_inv[l, j]
-            end
-        
-            for k in 1:n
-                D_inv[k, j] = D_inv[k, j] - S / R * D_inv[k, i]
-            end
-        end
-    end
-
-    for k in 1:n
-        D[i, k] = new_row[k]
-        D_inv[k, i] /= R
+    if new_idx < num÷2
+        qf .+= ratio_new_old_det(amp_up, der_mat[idx, :], idx)
+    else
+        qf .+= ratio_new_old_det(amp_down, der_mat[idx, :], idx-num÷2)
     end
     
-    return fd
+    return qf
 end
+
