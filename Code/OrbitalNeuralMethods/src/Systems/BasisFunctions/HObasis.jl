@@ -92,15 +92,15 @@ function fast_ho_all!(x, ho::HOBasis)
     #hermites[1] = 1.0
     ho_fac = (ω / π)^0.25 * exp(-ξ^2 / 2)
     
-    hos[1] = ho_fac * hermites[1]
+    hos[1] =     ho_fac * hermites[1]
     ho_der[1] = -ω * x * hos[1]
     ho_dder[1] = ω * (ω * x^2 - 1) * hos[1]
     
     hermites[2] = 2ξ
     ho_fac *= 1 / √2
 
-    hos[2] = ho_fac * hermites[2]
-    ho_der[2] =  ho_fac * (√ω * 4 * hermites[1] - ω * x * hermites[2])
+    hos[2] =     ho_fac * hermites[2]
+    ho_der[2] =  ho_fac * (√ω * 2 * hermites[1] - ω * x * hermites[2])
     ho_dder[2] = ho_fac * ω * ((ω * x^2 - 1) * hermites[2] - √ω * x * 4 * hermites[1])
 
     @inbounds for n in 2:length(hos)-1

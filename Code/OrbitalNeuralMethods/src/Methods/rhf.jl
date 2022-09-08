@@ -10,9 +10,19 @@ struct RHFState{T}
     C::Matrix{Float64}
     P::Matrix{Float64}
     F::Matrix{Float64}
+
+    mixer::Mixer
+    trial::Matrix{Float64}
+    direction::Matrix{Float64}
+    error::Matrix{Float64}
 end
 
 function setup_RHF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
+    mixer = DIIS( system.basis.base.l^2 )
+    return setup_RHF(system, mixer)
+end
+
+function setup_RHF(system::SpatialSystem{SpinBasis{T}}, mixer) where T <: SpatialBasis
     (; transform, basis, h, grid, V) = system
     
     @assert system.n % 2 == 0 "Closed shell restricted systems only accept an even number of electrons"
@@ -29,7 +39,7 @@ function setup_RHF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
     P = zeros((l, l))
     F = zeros((l, l))
     
-    state = RHFState{typeof(system.basis.base)}(system, l, h, u, C, P, F)
+    state = RHFState{typeof(system.basis.base)}(system, l, h, u, C, P, F, mixer, zeros((l, l)), zeros((l, l)), zeros((l, l)))
     P_update!(state)
     F_update!(state)
     return state
@@ -68,19 +78,23 @@ end
 
 # Szabo p.141
 function F_update!(state::RHFState)
-    (; P, F, l, h, u) = state
-    
-    F .= h
+    (; P, F, l, h, u, mixer, trial, error, direction) = state
+    trial .= F
+    error .= F * P - P * F
+    direction .= -trial
+
+    direction .+= h
     for c in 1:l
         for d in 1:l
             @inbounds P_dc = P[d, c]
             for a in 1:l
                 for b in 1:l
-                    @inbounds F[a, b] += P_dc * 0.5 * u[a, c, b, d]
+                    @inbounds direction[a, b] += P_dc * 0.5 * u[a, c, b, d]
                 end
             end
         end
     end
+    F .= compute_new_vector(mixer, trial, direction, error)
     return F
 end
 
@@ -171,22 +185,3 @@ function checkRestricted(C)
 
     return true
 end
-
-#= Not in use
-function check_restricted(C)
-    l = size(C)[1]
-    
-    restricted = true
-    for func in 1:2:l
-        for coef in 1:2:l
-            orthogonal = (C[coef, func] == C[coef+1, func+1]) # Up coefficient == down coefficient
-            odd_up = C[coef+1, func] == 0 # Function 1 has no down part
-            even_down = C[coef, func+1] == 0 # Function 2 has no up part
-            if !(orthogonal & odd_up & even_down)
-                restricted = false
-            end
-        end
-    end
-    return restricted
-end
-=#

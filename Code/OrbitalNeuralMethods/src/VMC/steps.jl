@@ -5,10 +5,10 @@ function distribute_steps(steps, nthreads)
 end
 
 function steps!(samplers, wf, ham, metro)
-    Threads.@threads for i = 1:length(samplers)
-        wf_priv = private_wf(wf)
+    Threads.@threads for i = eachindex(samplers)
         # Move particles for a while to end up in a more likely state than the initial random state
-        equil_walker = EquilWalker(wf_priv, metro)
+        equil_walker = EquilWalker(wf, metro)
+        wf_priv = private_wf(wf, equil_walker.positions) # Creating a wf for this thread and these starting positions
         equil_steps!(equil_walker, wf_priv, ham, metro)
         
         # Move particles and record the values of interest
@@ -21,7 +21,6 @@ function steps!(samplers, wf, ham, metro)
 end
 
 function equil_steps!(walker, wf, ham, metro)
-    #wf = private_wf(wf)
     for i in 1:metro.equil_steps
         walker = metro_step!(walker, wf, metro, ham)
     end
@@ -29,7 +28,6 @@ function equil_steps!(walker, wf, ham, metro)
 end
 
 function sampled_steps!(sampler, walker, wf, ham, metro)
-    #wf = private_wf(wf)
     for i in 1:sampler.sampled_steps
         walker = metro_step!(walker, wf, metro, ham)
         sampler = sample!(sampler, walker, wf)

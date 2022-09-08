@@ -1,6 +1,8 @@
 abstract type WaveFunction end
 include("Wavefunctions/simplegaussian.jl")
 include("Wavefunctions/correlated.jl")
+include("Wavefunctions/fastDeterminant.jl")
+include("Wavefunctions/slater.jl")
 
 include("hamiltonians.jl")
 include("metropolis.jl")
@@ -25,5 +27,6 @@ include("Walkers/muts.jl")
 include("Walkers/walker.jl")
 include("Walkers/consider.jl")
 include("Walkers/consider_SG_C.jl")
+include("Walkers/consider_Slater.jl")
 
 

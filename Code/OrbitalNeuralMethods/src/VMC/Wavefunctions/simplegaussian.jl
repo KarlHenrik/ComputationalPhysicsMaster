@@ -9,7 +9,7 @@ struct SimpleGaussian <: WaveFunction
         return new(α, dims, num, HOshape, HOshape.^2)
     end
 end
-private_wf(wf::SimpleGaussian) = SimpleGaussian(wf.dims, wf.num, α=wf.α, HOshape=copy(wf.HOshape))
+private_wf(wf::SimpleGaussian, positions) = SimpleGaussian(wf.dims, wf.num, α=wf.α, HOshape=copy(wf.HOshape))
 
 # Index from metro does not cover all dimentions
 function ratio_direct(wf::SimpleGaussian, positions, new_idx::Int64, old_pos)

@@ -13,7 +13,7 @@ struct Correlated <: WaveFunction
         return new(α, a, dims, num, HOshape, HOshape.^2, HOshape.*0, HOshape.*0, HOshape.*0)
     end
 end
-private_wf(wf::Correlated) = Correlated(wf.dims, wf.num, α=wf.α, a=wf.a, HOshape=copy(wf.HOshape))
+private_wf(wf::Correlated, positions) = Correlated(wf.dims, wf.num, α=wf.α, a=wf.a, HOshape=copy(wf.HOshape))
 
 # Metropolis version
 function ratio_direct(wf::Correlated, positions, new_idx::Int64, old_pos_i)

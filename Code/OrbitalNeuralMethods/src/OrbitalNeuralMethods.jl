@@ -17,15 +17,15 @@ export CCSDState, setup_CCSD
 export Alpha, DIIS
 
 # VMC
-export HarmonicOscillator
-export SimpleGaussian, Correlated
+export HarmonicOscillator, HORepulsion
+export SimpleGaussian, Correlated, Slater
 export Metropolis, Importance
 export blocking, onebody, optimize, GradientDescent
+export private_wf
 
 # ------------ Imports ---------------
 
 import LinearAlgebra as la
-import StaticArrays as sa
 import Random
 import Statistics
 using TensorOperations: @tensor
