@@ -23,6 +23,9 @@ export Metropolis, Importance
 export blocking, onebody, optimize, GradientDescent
 export private_wf
 
+# Other
+export Fast_Det
+
 # ------------ Imports ---------------
 
 import LinearAlgebra as la

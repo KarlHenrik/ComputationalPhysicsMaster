@@ -39,7 +39,7 @@ function potential(positions, ham::HORepulsion)::Float64
     """
     V = Σ 0.5 * ω^2 * r_i^2 + ΣΣ 1 / r_{i,j}
     """
-    (; dims, num, shielding, ω2) = ham
+    (; dims, num, shielding2, ω2) = ham
     pot = 0.0
     for p1 in 1:num
         idx1 = (p1-1) * dims

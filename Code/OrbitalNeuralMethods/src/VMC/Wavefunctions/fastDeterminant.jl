@@ -28,10 +28,9 @@ function det_new_row(fd::Fast_Det, new_row::Vector{Float64}, i)
     return det * R
 end
 
-function ratio_new_old_det(fd::Fast_Det, new_row::Vector{Float64}, i)
+function ratio_new_old_det(fd::Fast_Det, new_row, i)
     (; D_inv, n) = fd
     R = 0.0
-    println(i)
     for j in 1:n
         R += new_row[j] * D_inv[j, i]
     end
