@@ -9,9 +9,9 @@ end
 
 function metro_step!(walker, wf, metro::Metropolis, ham)
     (; rng) = walker
-    (; dims, num) = wf
+    (; n) = wf
     # Choosing particle to move and dimension to move it in
-    new_idx = rand(rng, 1:num*dims)
+    new_idx = rand(rng, 1:n)
     
     # The direction and length to move the chosen particle
     move = Random.rand(rng, (-1.0, 1.0)) * metro.step_length
@@ -41,31 +41,27 @@ function Importance(;equils, samples, step)
 end
 
 function metro_step!(walker, wf, metro::Importance, ham)
-    (; rng) = walker
-    (; move, greens, newQF, oldQF) = walker.metro_muts
-    (; dims, num) = wf
+    (; rng, positions) = walker
+    (; n) = wf
     
     # Choosing particle to move
-    idx_start = rand(rng, 0:num-1) * dims + 1
-    new_idx = idx_start:(idx_start + dims - 1)
+    new_idx = rand(rng, 1:n)
     
     # Computing the quantum force for the given particle
-    oldQF = QF!(oldQF, walker.positions, new_idx, wf)
+    oldQF = QF(positions, new_idx, wf)
     
     # The direction and length to move the chosen particle
-    move .= 0.5 * metro.time_step .* oldQF
-    for i in 1:dims
-        move[i] += Random.randn(rng) * sqrt(metro.time_step)
-        greens[i] = -move[i]
-    end
+    move = 0.5 * metro.time_step * oldQF
+    move += Random.randn(rng) * sqrt(metro.time_step)
+    greens = -move
 
     # Compute the values needed to consider accepting the move
-    ratio, newQF = consider!(newQF, walker, wf, new_idx, move)
+    ratio, newQF = consider!(walker, wf, new_idx, move)
 
     # Evaluating the greens function
-    greens .= greens .+ metro.time_step .* (oldQF .- newQF)
-    greens .= greens .* (oldQF .+ newQF)
-    greensFuncRatio = exp(0.5 * sum(greens))
+    greens = greens + metro.time_step * (oldQF - newQF)
+    greens = greens * (oldQF + newQF)
+    greensFuncRatio = exp(0.5 * greens)
     
     # Accepting/Denyting new walker
     if (Random.rand(rng) < greensFuncRatio * ratio^2)

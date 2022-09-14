@@ -1,4 +1,18 @@
-abstract type Interaction end
+abstract type Hamiltonian end
+
+abstract type Interaction <: Hamiltonian end
+
+struct HOCoulomb <: Interaction
+    ω2::Float64
+    shielding2::Float64
+    HOCoulomb(ω, shielding) = new(ω^2, shielding^2)
+end
+HOCoulomb(ω; shielding) = HOCoulomb(ω, shielding)
+
+function interaction_over_grid!(interaction, x1, grid, V::HOCoulomb)
+    interaction .= 1 ./ sqrt.( (grid .- x1).^2 .+ V.shielding2 )
+    return interaction
+end
 
 struct CalogeroSutherland <: Interaction
     ββ_1::Float64
@@ -12,20 +26,9 @@ function interaction_over_grid!(interaction, x1, grid, V::CalogeroSutherland)
     interaction .= V.ββ_1 ./ ((grid .- x1).^2 .+ 0.1)
 end
 
-struct ShieldedCoulomb <: Interaction
-    shielding::Float64
+abstract type NonInteracting <: Interaction end
+
+struct HarmonicOscillator <: NonInteracting
+    ω2::Float64
+    HarmonicOscillator(ω) = new(ω^2)
 end
-
-function interaction_over_grid!(interaction, x1, grid, V::ShieldedCoulomb)
-    interaction .= 1 ./ sqrt.( (grid .- x1).^2 .+ V.shielding.^2 )
-    return interaction
-end
-
-struct Coulomb <: Interaction end
-
-function interaction_over_grid!(interaction, x1, grid, V::Coulomb)
-    interaction .= 1 ./ sqrt.( (grid .- x1).^2 )
-    return interaction
-end
-
-struct NonInteracting <: Interaction end

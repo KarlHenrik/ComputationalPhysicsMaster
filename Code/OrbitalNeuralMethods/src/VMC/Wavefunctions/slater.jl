@@ -1,6 +1,5 @@
 struct Slater <: WaveFunction
-    dims::Int64
-    num::Int64
+    n::Int64
 
     # This is the basis and C transform that defines how we evaluate the slater determinant
     C::Matrix{Float64} # l x n/2 matrix from RHF which we use the columns of to produce our determinant
@@ -20,33 +19,32 @@ end
 
 #* INITIALIZES A USABLE SLATER, since the saved values depend on the positions of the electons 
 function initSlater(wf::Slater, positions)
-    (; dims, num, C, basis) = wf
+    (; n, C, basis) = wf
 
     amp_up, amp_down, der_mat, kin_mat = setupSlaterMatrix(basis, C, positions)
 
-    new_amp, new_der, new_kin = zeros(num÷2), zeros(num÷2), zeros(num÷2)
+    new_amp, new_der, new_kin = zeros(n÷2), zeros(n÷2), zeros(n÷2)
     
-    return Slater(dims, num, C, basis, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
+    return Slater(n, C, basis, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
 end
 
 function private_wf(wf::Slater, positions)
     return initSlater(wf, positions)
 end
 
-#* MAIN CONSTRUCTOR OF AN UNUSABLE SLATER TEMPLATE: Sets up dims, num and the required C columns
+#* MAIN CONSTRUCTOR OF AN UNUSABLE SLATER TEMPLATE: Sets up n and the required C columns
 # C must be only lxl, where l is the number of unique spatial functions
 # The spin basis requirement is for theoretical coherence, we actually include spin, even if we don't use the spinbasis
-function Slater(num, C, basis::SpinBasis)
-    @assert num%2 == 0
+function Slater(n, C, basis::SpinBasis)
+    @assert n%2 == 0
 
-    dims = 1
-    C = C[:, 1:num÷2]
+    C = C[:, 1:n÷2]
 
     # These are placeholder values, private_wf gives an actual usable Slater
     amp_up, amp_down, der_mat, kin_mat = Fast_Det(zeros(0,0)), Fast_Det(zeros(0,0)), zeros(0, 0), zeros(0, 0)
     new_amp, new_der, new_kin = zeros(0), zeros(0), zeros(0)
 
-    return Slater(dims, num, C, basis.base, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
+    return Slater(n, C, basis.base, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
 end
 
 # Different ways of making a Slater template
@@ -68,12 +66,12 @@ function Slater(system::SpatialSystem{SpinBasis})
     return Slater(n, C, basis)
 end
 
-function Slater(num, basis::SpinBasis)
+function Slater(n, basis::SpinBasis)
     (; l) = basis.base
-    @assert num%2 == 0
+    @assert n%2 == 0
     C = Matrix(Float64.(la.I(l)))
 
-    return Slater(num, C, basis)
+    return Slater(n, C, basis)
 end
 
 
@@ -113,11 +111,11 @@ function setupSlaterMatrix(basis::HOBasis, C, positions)
 end
 
 function computeNewRows!(wf::Slater, x::Float64)
-    (; basis, new_amp, new_der, new_kin, num, C) = wf
+    (; basis, new_amp, new_der, new_kin, n, C) = wf
     l = size(C)[1]
     bs_eval, bs_der, bs_dder = fast_ho_all!(x, basis)
 
-    for ϕ_i in 1:num÷2 # loop over the orbitals in the determinant
+    for ϕ_i in 1:n÷2 # loop over the orbitals in the determinant
         amp = 0.0
         der = 0.0
         dder = 0.0
@@ -136,22 +134,22 @@ end
 
 #* This only makes sence after computeNewRows! has been called
 function ratio_direct(wf::Slater, new_idx)
-    (; num, amp_up, amp_down, new_amp) = wf
+    (; n, amp_up, amp_down, new_amp) = wf
 
-    if new_idx <= num÷2
+    if new_idx <= n÷2
         ratio = ratio_new_old_det(amp_up, new_amp, new_idx)
     else
-        ratio = ratio_new_old_det(amp_down, new_amp, new_idx-num÷2)
+        ratio = ratio_new_old_det(amp_down, new_amp, new_idx-n÷2)
     end
     return ratio
 end
 
 function setNewRows!(wf::Slater, new_idx::Int64)
-    (; num, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat) = wf
-    if new_idx <= num÷2
+    (; n, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat) = wf
+    if new_idx <= n÷2
         change_row!(amp_up, new_amp, new_idx)
     else
-        change_row!(amp_down, new_amp, new_idx-num÷2)
+        change_row!(amp_down, new_amp, new_idx-n÷2)
     end
     der_mat[new_idx, :] .= new_der
     kin_mat[new_idx, :] .= new_kin
@@ -160,26 +158,26 @@ function setNewRows!(wf::Slater, new_idx::Int64)
 end
 
 function kinetic(positions, wf::Slater)::Float64
-    (; amp_up, amp_down, kin_mat, num) = wf
+    (; amp_up, amp_down, kin_mat, n) = wf
     kin = 0.0
     #TODO maybe find faster way of doing this than slices
-    for row in 1:num÷2
+    for row in 1:n÷2
         @views kin += ratio_new_old_det(amp_up, kin_mat[row, :], row)
     end
-    for (i, row) in enumerate(num÷2+1:num)
+    for (i, row) in enumerate(n÷2+1:n)
         @views kin += ratio_new_old_det(amp_down, kin_mat[row, :], i)
     end
     return -0.5 * kin
 end
 
 #* Only used for the old qf
-function QF!(qf, positions, idx, wf::Slater)
-    (; amp_up, amp_down, der_mat, num) = wf
-    new_idx = idx[1]
-    if new_idx <= num÷2
-        @views qf .+= ratio_new_old_det(amp_up, der_mat[new_idx, :], new_idx)
+function QF(positions, new_idx::Int64, wf::Slater)
+    (; amp_up, amp_down, der_mat, n) = wf
+
+    if new_idx <= n÷2
+        @views qf = ratio_new_old_det(amp_up, der_mat[new_idx, :], new_idx)
     else
-        @views qf .+= ratio_new_old_det(amp_down, der_mat[new_idx, :], new_idx-num÷2)
+        @views qf = ratio_new_old_det(amp_down, der_mat[new_idx, :], new_idx-n÷2)
     end
     
     return qf

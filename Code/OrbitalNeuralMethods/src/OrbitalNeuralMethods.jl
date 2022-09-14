@@ -6,7 +6,7 @@ module OrbitalNeuralMethods
 export System, Basis, reference_energy
 export SpatialSystem, SpatialBasis, HOBasis, SpinBasis
 export PairingSystem, pairing_exact, pairing_MBPT2, Pairing
-export Interaction, CalogeroSutherland, ShieldedCoulomb, Coulomb, NonInteracting
+export CalogeroSutherland, HOCoulomb, HarmonicOscillator
 
 # Orbital system solvers
 export energy, corr_energy, update!, compute_ground_state!
@@ -17,7 +17,6 @@ export CCSDState, setup_CCSD
 export Alpha, DIIS
 
 # VMC
-export HarmonicOscillator, HORepulsion
 export SimpleGaussian, Correlated, Slater
 export Metropolis, Importance
 export blocking, onebody, optimize, GradientDescent

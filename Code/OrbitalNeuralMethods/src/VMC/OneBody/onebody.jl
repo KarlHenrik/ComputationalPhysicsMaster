@@ -1,8 +1,8 @@
 
 function onebody(wf, ham, metro; start, stop, length, nthreads = 1)
-    (; dims, num) = wf
+    (; n) = wf
     distr_steps = distribute_steps(metro.sample_steps, nthreads)
-    samplers = [OneBodySampler(start, stop, length, dims, num, distr_steps[i]) for i in 1:nthreads]
+    samplers = [OneBodySampler(start, stop, length, dims, n, distr_steps[i]) for i in 1:nthreads]
     
     samplers = steps!(samplers, wf, ham, metro)
     
@@ -17,12 +17,12 @@ struct OneBodyResult{T} <: Result
 end
 
 function createResult(sampler::OneBodySampler)
-    (; oneBodyDensity, sample_steps, num, dims, step, start, stop) = sampler
-    return OneBodyResult(oneBodyDensity ./ sample_steps ./ num ./ dims ./ step, [i for i in start:step:stop])
+    (; oneBodyDensity, sample_steps, n, step, start, stop) = sampler
+    return OneBodyResult(oneBodyDensity ./ sample_steps ./ n ./ step, [i for i in start:step:stop])
 end
 
 function createResult(samplers::Vector{OneBodySampler})
-    (; length, num, dims, step, start, stop) = samplers[1]
+    (; length, n, step, start, stop) = samplers[1]
     oneBodyDensity = zeros(Float64, length)
     
     totalSteps = 0
@@ -31,7 +31,7 @@ function createResult(samplers::Vector{OneBodySampler})
     end
     
     for sampler in samplers
-        oneBodyDensity .+= sampler.oneBodyDensity ./ totalSteps ./ num ./ dims ./ step
+        oneBodyDensity .+= sampler.oneBodyDensity ./ totalSteps ./ n ./ step
     end
     
     return OneBodyResult(oneBodyDensity, [i for i in start:step:stop])
