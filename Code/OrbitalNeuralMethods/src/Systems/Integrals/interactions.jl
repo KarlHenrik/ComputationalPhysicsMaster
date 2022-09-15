@@ -16,7 +16,7 @@ end
 
 struct CalogeroSutherland <: Interaction
     ββ_1::Float64
-    function CalogeroSutherland(beta)
+    function CalogeroSutherland(beta) # 2 is normal
         ββ_1 = beta * (beta - 1)
         return new(ββ_1)
     end

@@ -1,8 +1,6 @@
 function potential(positions, ham::HarmonicOscillator)::Float64
     """
-    V = Σ 0.5 * ω^2 * r_i^2
-    
-    with support for elliptical wells
+    V = Σ 0.5 * ω^2 * x_i^2
     """
     pot = 0.0
     for pos in positions
@@ -14,7 +12,7 @@ end
 
 function potential(positions, ham::HOCoulomb)::Float64
     """
-    V = Σ 0.5 * ω^2 * r_i^2 + ΣΣ 1 / r_{i,j}
+    V = Σ 0.5 * ω^2 * x_i^2 + ΣΣ 1 / r_{i,j}
     """
     (; shielding2, ω2) = ham
     pot = 0.0

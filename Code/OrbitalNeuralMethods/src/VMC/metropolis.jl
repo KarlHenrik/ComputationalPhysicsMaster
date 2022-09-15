@@ -7,27 +7,29 @@ function Metropolis(;equils, samples, step)
     return Metropolis(equils, samples, step)
 end
 
-function metro_step!(walker, wf, metro::Metropolis, ham)
-    (; rng) = walker
+function metro_step!(walker, wf, metro::Metropolis)
+    (; rng, positions) = walker
     (; n) = wf
-    # Choosing particle to move and dimension to move it in
-    new_idx = rand(rng, 1:n)
     
-    # The direction and length to move the chosen particle
-    move = Random.rand(rng, (-1.0, 1.0)) * metro.step_length
+    new_idx = rand(rng, 1:n) # Choosing particle to move and dimension to move it in
+    move = Random.rand(rng, (-1.0, 1.0)) * metro.step_length # The direction and length to move the chosen particle
     
+    walker.old_pos = positions[new_idx]
+    walker.new_idx = new_idx
+    positions[new_idx] += move
+
     # Compute the values needed to consider accepting the move
-    ratio = consider!(walker, wf, new_idx, move)
+    ratio = consider!(wf, walker, new_idx, old_pos)
     
     # Accepting/Denyting new walker
     if (Random.rand(rng) < ratio^2)
         # Update values to be sampled (And saved NN QF values)
-        accept!(walker, wf, new_idx, ham)
-        return walker
+        accept!(wf, new_idx)
+        return true
     else
         # Revert positions (And selected Slater matrix columns)
-        deny!(walker, wf, new_idx)
-        return walker
+        positions[new_idx] = walker.old_pos
+        return false
     end
 end
 
@@ -40,37 +42,34 @@ function Importance(;equils, samples, step)
     return Importance(equils, samples, step)
 end
 
-function metro_step!(walker, wf, metro::Importance, ham)
+function metro_step!(walker, wf, metro::Importance)
     (; rng, positions) = walker
-    (; n) = wf
     
-    # Choosing particle to move
-    new_idx = rand(rng, 1:n)
-    
-    # Computing the quantum force for the given particle
-    oldQF = QF(positions, new_idx, wf)
-    
-    # The direction and length to move the chosen particle
+    # Generating a move
+    new_idx = rand(rng, 1:wf.n) # Choosing particle to move
+    oldQF = QF(positions, new_idx, wf) # Computing the quantum force for the given particle
     move = 0.5 * metro.time_step * oldQF
-    move += Random.randn(rng) * sqrt(metro.time_step)
-    greens = -move
+    move += Random.randn(rng) * sqrt(metro.time_step) # The direction and length to move the chosen particle
 
-    # Compute the values needed to consider accepting the move
-    ratio, newQF = consider!(walker, wf, new_idx, move)
+    # Moving the particle
+    old_pos = positions[new_idx]
+    positions[new_idx] += move
+    ratio, newQF = consider_qf!(wf, walker, new_idx, old_pos) # Compute the values needed to consider accepting the move
 
     # Evaluating the greens function
+    greens = -move
     greens = greens + metro.time_step * (oldQF - newQF)
     greens = greens * (oldQF + newQF)
     greensFuncRatio = exp(0.5 * greens)
     
-    # Accepting/Denyting new walker
+    # Accepting/Denyting new position
     if (Random.rand(rng) < greensFuncRatio * ratio^2)
         # Update values to be sampled (And saved NN QF values)
-        accept!(walker, wf, new_idx, ham)
-        return walker
+        wf = accept!(wf, new_idx)
+        return true
     else
         # Revert positions (And selected Slater matrix columns)
-        deny!(walker, wf, new_idx)
-        return walker
+        positions[new_idx] = old_pos
+        return false
     end
 end

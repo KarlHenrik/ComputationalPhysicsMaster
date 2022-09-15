@@ -1,10 +1,12 @@
 struct NeuralNetwork{T}
     layers::Vector{Layer}
     output::Vector{Float64}
+    old_output::Vector{Float64}
     
     # Parameter and input derivative, backpropogation
     delta_start::Vector{Float64}
     input_der::Vector{Float64}
+    QF_all_old::Vector{Float64}
     
     # Hessian
     hes_grad_result::Vector{Float64}
@@ -43,7 +45,7 @@ function NeuralNetwork(layer_specs...; input, rng)
     hes_jac_config = fd.JacobianConfig(nothing, hes_grad_result, hes_grad_result)
     
     return NeuralNetwork{typeof(hes_jac_config)}(
-        layers, layers[end].output,
+        layers, layers[end].output, zero(layers[end].output),
         delta_start, input_der,
         hes_grad_result, hes_grad_tapes, hes_jac_result, hes_jac_config
     )
@@ -90,16 +92,16 @@ function paramDerHolder(nn)
     return layer_grads
 end
 
-function paramDer(positions, nn)
-    
+# TODO
+function paramDer(positions, wf)
     for (layer, layer_grad) in zip(layers, layer_grads)
         add_gradient!(layer_grad, layer)
     end
 end
 
-function QF(nn)
-    # TODO make this inplace?
-    return 2 .* nn.input_der ./ nn.output[1]
+# Only used for old QF
+function QF(positions, new_idx, wf)
+    return wf.QF_all_old[new_idx]
 end
 
 function diffable_model(layers, x)
@@ -123,5 +125,24 @@ function kinetic(x, nn::NeuralNetwork)
     # Assumes that model!(nn, x) has been called with the same x and nn as this call, since it uses the output of that computation
     fd.jacobian!(nn.hes_jac_result, (y, x) -> hes_grad!(y, x, nn), nn.hes_grad_result, x, nn.hes_jac_config)
     return -0.5 * la.tr(nn.hes_jac_result) / nn.output[1]
+end
+
+# Importance + NeuralNetwork + ParamDer is set up
+function consider_qf!(wf::NeuralNetwork, walker::Walker, new_idx::Int64, old_pos)
+    (; positions) = walker
+    
+    output = model!(wf, positions)
+    gradient!(wf)
+    newQF = 2 * wf.input_der[new_idx] / output[1]
+    
+    ratio = output[1] / wf.old_output[1]
+    return ratio, newQF
+end
+
+function accept!(wf::NeuralNetwork, new_idx)
+    wf.old_output[1] = wf.output[1]
+    wf.QF_all_old .= 2 .* wf.input_der ./ output[1]
+    
+    return wf
 end
 ;

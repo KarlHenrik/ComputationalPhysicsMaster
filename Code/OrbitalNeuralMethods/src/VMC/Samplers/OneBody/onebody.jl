@@ -2,7 +2,7 @@
 function onebody(wf, ham, metro; start, stop, length, nthreads = 1)
     (; n) = wf
     distr_steps = distribute_steps(metro.sample_steps, nthreads)
-    samplers = [OneBodySampler(start, stop, length, dims, n, distr_steps[i]) for i in 1:nthreads]
+    samplers = [OneBodySampler(start, stop, length, n, distr_steps[i]) for i in 1:nthreads]
     
     samplers = steps!(samplers, wf, ham, metro)
     

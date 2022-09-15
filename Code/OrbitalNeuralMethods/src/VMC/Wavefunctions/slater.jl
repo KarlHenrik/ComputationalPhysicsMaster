@@ -5,6 +5,12 @@ struct Slater <: WaveFunction
     C::Matrix{Float64} # l x n/2 matrix from RHF which we use the columns of to produce our determinant
     basis::HOBasis # The basis we will spin double
 
+    # In-place evaluation of the basis
+    basis_tmp::Vector{Float64}
+    basis_amp::Vector{Float64}
+    basis_der::Vector{Float64}
+    basis_kin::Vector{Float64}
+
     # Here we store the candidate values for the matrices below
     new_amp::Vector{Float64} # new row in slater determinant matrix
     new_der::Vector{Float64} # these have length n/2
@@ -18,18 +24,20 @@ struct Slater <: WaveFunction
 end
 
 #* INITIALIZES A USABLE SLATER, since the saved values depend on the positions of the electons 
-function initSlater(wf::Slater, positions)
-    (; n, C, basis) = wf
+function initSlater(n, C, basis::HOBasis, positions)
+    basis_tmp, basis_amp, basis_der, basis_kin = zeros(basis.l), zeros(basis.l), zeros(basis.l), zeros(basis.l)
 
-    amp_up, amp_down, der_mat, kin_mat = setupSlaterMatrix(basis, C, positions)
+    amp_up, amp_down, der_mat, kin_mat = setupSlaterMatrix(basis, C, positions, basis_tmp, basis_amp, basis_der, basis_kin)
 
     new_amp, new_der, new_kin = zeros(n÷2), zeros(n÷2), zeros(n÷2)
     
-    return Slater(n, C, basis, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
+    return Slater(n, C, basis, basis_tmp, basis_amp, basis_der, basis_kin,
+                    new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
 end
 
 function private_wf(wf::Slater, positions)
-    return initSlater(wf, positions)
+    (; n, C, basis) = wf
+    return initSlater(n, C, basis, positions)
 end
 
 #* MAIN CONSTRUCTOR OF AN UNUSABLE SLATER TEMPLATE: Sets up n and the required C columns
@@ -41,10 +49,12 @@ function Slater(n, C, basis::SpinBasis)
     C = C[:, 1:n÷2]
 
     # These are placeholder values, private_wf gives an actual usable Slater
+    basis_tmp, basis_amp, basis_der, basis_kin = zeros(0), zeros(0), zeros(0), zeros(0)
     amp_up, amp_down, der_mat, kin_mat = Fast_Det(zeros(0,0)), Fast_Det(zeros(0,0)), zeros(0, 0), zeros(0, 0)
     new_amp, new_der, new_kin = zeros(0), zeros(0), zeros(0)
 
-    return Slater(n, C, basis.base, new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
+    return Slater(n, C, basis.base, basis_tmp, basis_amp, basis_der, basis_kin,
+                    new_amp, new_der, new_kin, amp_up, amp_down, der_mat, kin_mat)
 end
 
 # Different ways of making a Slater template
@@ -76,7 +86,7 @@ end
 
 
 
-function setupSlaterMatrix(basis::HOBasis, C, positions)
+function setupSlaterMatrix(basis::HOBasis, C, positions, basis_tmp, basis_amp, basis_der, basis_kin)
     l = basis.l
     n = length(positions)
 
@@ -86,15 +96,15 @@ function setupSlaterMatrix(basis::HOBasis, C, positions)
     kin_mat = zeros(n, n÷2)
 
     for r_i in 1:n # loop over the particles in the determiant
-        bs_eval, bs_der, bs_dder = fast_ho_all!(positions[r_i], basis)
+        basis_amp, basis_der, basis_kin = fast_ho_all!(basis_tmp, basis_amp, basis_der, basis_kin, positions[r_i], basis)
         for ϕ_i in 1:n÷2 # loop over the orbitals in the determinant
             amp = 0.0
             der = 0.0
-            dder = 0.0
+            kin = 0.0
             for bs_i in 1:l # loop over the basis used to construct the orbitals 
-                amp += C[bs_i, ϕ_i] * bs_eval[bs_i]
-                der += C[bs_i, ϕ_i] * bs_der[bs_i]
-                dder += C[bs_i, ϕ_i] * bs_dder[bs_i]
+                amp += C[bs_i, ϕ_i] * basis_amp[bs_i]
+                der += C[bs_i, ϕ_i] * basis_der[bs_i]
+                kin += C[bs_i, ϕ_i] * basis_kin[bs_i]
             end
             if r_i <= n÷2 # The spin-up particles
                 amp_up[r_i, ϕ_i] = amp
@@ -102,7 +112,7 @@ function setupSlaterMatrix(basis::HOBasis, C, positions)
                 amp_down[r_i - n÷2, ϕ_i] = amp
             end
             der_mat[r_i, ϕ_i] = der
-            kin_mat[r_i, ϕ_i] = dder
+            kin_mat[r_i, ϕ_i] = kin
         end
     end
     fast_amp_up = Fast_Det(amp_up)
@@ -111,23 +121,22 @@ function setupSlaterMatrix(basis::HOBasis, C, positions)
 end
 
 function computeNewRows!(wf::Slater, x::Float64)
-    (; basis, new_amp, new_der, new_kin, n, C) = wf
+    (; basis, basis_tmp, basis_amp, basis_der, basis_kin, new_amp, new_der, new_kin, n, C) = wf
     l = size(C)[1]
-    bs_eval, bs_der, bs_dder = fast_ho_all!(x, basis)
+    basis_amp, basis_der, basis_kin = fast_ho_all!(basis_tmp, basis_amp, basis_der, basis_kin, x, basis)
 
     for ϕ_i in 1:n÷2 # loop over the orbitals in the determinant
         amp = 0.0
         der = 0.0
-        dder = 0.0
+        kin = 0.0
         for bs_i in 1:l # loop over the basis used to construct the orbitals 
-            amp += C[bs_i, ϕ_i] * bs_eval[bs_i]
-            der += C[bs_i, ϕ_i] * bs_der[bs_i]
-            dder += C[bs_i, ϕ_i] * bs_dder[bs_i]
+            amp += C[bs_i, ϕ_i] * basis_amp[bs_i]
+            der += C[bs_i, ϕ_i] * basis_der[bs_i]
+            kin += C[bs_i, ϕ_i] * basis_kin[bs_i]
         end
-        #! Figure out the shape of the derivatives and amplitues
         new_amp[ϕ_i] = amp
         new_der[ϕ_i] = der
-        new_kin[ϕ_i] = dder
+        new_kin[ϕ_i] = kin
     end
     return wf
 end
@@ -185,4 +194,42 @@ end
 
 function paramDer!(samp_muts, positions, wf::Slater)
     throw("Slater determinants should not be used for gradients")
+end
+
+# ------------------- No first or second derivative ------------------------
+function consider!(wf::Slater, walker::Walker, new_idx::Int64, old_pos)
+    (; positions) = walker
+    
+    wf = computeNewRows!(wf, positions[new_idx])
+    (; amp_up, amp_down, new_amp, n) = wf
+    
+    if new_idx <= n÷2
+        ratio = ratio_new_old_det(amp_up, new_amp, new_idx)
+    else
+        ratio = ratio_new_old_det(amp_down, new_amp, new_idx-n÷2)
+    end
+
+    return ratio
+end
+
+function consider_qf!(wf::Slater, walker::Walker, new_idx::Int64, old_pos)
+    (; positions) = walker
+    
+    wf = computeNewRows!(wf, positions[new_idx])
+    (; amp_up, amp_down, new_amp, new_der, n) = wf
+    
+    if new_idx <= n÷2
+        ratio = ratio_new_old_det(amp_up, new_amp, new_idx)
+        newQF = ratio_new_old_det(amp_up, new_der, new_idx)
+    else
+        ratio = ratio_new_old_det(amp_down, new_amp, new_idx-n÷2)
+        newQF = ratio_new_old_det(amp_down, new_der, new_idx-n÷2)
+    end
+
+    return ratio, newQF
+end
+
+function accept!(wf::Slater, new_idx::Int64)
+    wf = setNewRows!(wf, new_idx)
+    return wf
 end

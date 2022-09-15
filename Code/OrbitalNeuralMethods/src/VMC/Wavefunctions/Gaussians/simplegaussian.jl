@@ -1,4 +1,4 @@
-struct SimpleGaussian <: WaveFunction
+struct SimpleGaussian <: Gaussian
     α::Float64
     n::Int64
 
@@ -31,22 +31,4 @@ end
 function QF(positions, idx, wf::SimpleGaussian)
     qf = -4.0 * wf.α .* positions[idx]
     return qf
-end
-
-function paramDer!(samp_muts, positions, wf::SimpleGaussian)
-    pos_sum = 0.0
-    for pos in positions
-        pos_sum += pos^2
-    end
-    
-    samp_muts.paramDer = -pos_sum / wf.n
-    return samp_muts
-end
-
-function paramDerHolder(wf::SimpleGaussian)
-    return 0.0
-end
-
-function applyGradient(wf::SimpleGaussian, grad)
-    return SimpleGaussian(wf.n, α = wf.α - grad)
 end

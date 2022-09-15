@@ -1,17 +1,14 @@
-struct Correlated <: WaveFunction
+struct Correlated <: Gaussian
     α::Float64
     a::Float64
     n::Int64
     
-    p1_pos::Vector{Float64}
-    p2_pos::Vector{Float64}
-    temp_vec::Vector{Float64}
     function Correlated(n; α, a)
         @assert dims == length(HOshape)
-        return new(α, a, dims, n, HOshape, HOshape.^2, HOshape.*0, HOshape.*0, HOshape.*0)
+        return new(α, a, n)
     end
 end
-private_wf(wf::Correlated, positions) = Correlated(wf.dims, wf.n, α=wf.α, a=wf.a, HOshape=copy(wf.HOshape))
+private_wf(wf::Correlated, positions) = Correlated(wf.n, α=wf.α, a=wf.a)
 
 # Metropolis version
 function ratio_direct(wf::Correlated, positions, p1::Int64, old_pos::Float64)
@@ -39,7 +36,7 @@ function ratio_direct(wf::Correlated, positions, p1::Int64, old_pos::Float64)
 end
 
 function kinetic(positions, wf::Correlated)::Float64
-    (; n, temp_vec, HOshape, HOshape2, α, a, p1_pos) = wf
+    (; n, α, a) = wf
     
     dblDer = 0.0
     
@@ -86,20 +83,6 @@ function QF(positions, p1::Int64, wf::Correlated)
     end
     
     return qf
-end
-
-function paramDer!(samp_muts, positions, wf::Correlated)
-    pos_sum = 0.0
-    for pos in positions
-        pos_sum += pos^2
-    end
-
-    samp_muts.paramDer = -pos_sum / wf.n
-    return samp_muts
-end
-
-function paramDerHolder(wf::Correlated)
-    return 0.0
 end
 
 function applyGradient(wf::Correlated, grad)

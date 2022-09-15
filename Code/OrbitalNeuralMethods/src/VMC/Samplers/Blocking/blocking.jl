@@ -18,8 +18,12 @@ function createResult(samplers::Vector{BlockingSampler})
     savedEnergies = vcat([s.savedEnergies for s in samplers]...)
     
     E = Statistics.mean(savedEnergies)
-    E_err = sqrt(block(savedEnergies))
     std = Statistics.std(savedEnergies, corrected=false) / sqrt(length(savedEnergies))
+    if std < 1e-16
+        E_err = std
+    else
+        E_err = sqrt(block(savedEnergies))
+    end
     
     return BlockingResult(E, E_err, std)
 end

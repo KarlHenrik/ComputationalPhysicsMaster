@@ -1,39 +1,14 @@
-mutable struct Walker{S}
-    const positions::Vector{Float64}
-    accepted::Bool
-    const rng::Random.MersenneTwister
-    new_amp::Float64
-    old_amp::Float64
-    old_pos::Float64
-    
-    const samp_muts::S
+struct Walker
+    positions::Vector{Float64}
+    rng::Random.MersenneTwister
 end
 
-function EquilWalker(wf, metro) # A walker for equilibrium steps
+# TODO set up distance matrix support for coulomb interacting systems
+function Walker(wf)
     rng = Random.MersenneTwister()
     positions = getPositions(rng, wf)
     
-    samp_muts = No_Muts()
-    
-    return Walker{typeof(samp_muts)}(positions, false, rng, 0, 0, samp_muts)
-end
-
-function SampledWalker(wf, metro, sampler, walker) # A walker using the position of a previous walker
-    rng = Random.MersenneTwister()
-    positions = walker.positions
-    
-    samp_muts = Sample_Muts(wf, sampler)
-    
-    return Walker{typeof(samp_muts)}(positions, false, rng, 0, 0, samp_muts)
-end
-
-function SampledWalker(wf, metro, sampler)
-    rng = Random.MersenneTwister()
-    positions = getPositions(rng, wf)
-    
-    samp_muts = Sample_Muts(wf, sampler)
-    
-    return Walker{typeof(samp_muts)}(positions, false, rng, 0, 0, samp_muts)
+    return Walker(positions, rng)
 end
 
 function getPositions(rng, wf)
