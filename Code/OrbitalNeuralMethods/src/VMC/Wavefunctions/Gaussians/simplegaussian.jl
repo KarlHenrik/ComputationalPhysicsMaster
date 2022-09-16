@@ -1,9 +1,9 @@
 struct SimpleGaussian <: Gaussian
-    α::Float64
     n::Int64
+    α::Float64
 
     function SimpleGaussian(n; α)
-        return new(α, n)
+        return new(n, α)
     end
 end
 private_wf(wf::SimpleGaussian, positions) = SimpleGaussian(wf.n, α=wf.α)
@@ -15,7 +15,7 @@ function ratio_direct(wf::SimpleGaussian, positions, new_idx::Int64, old_pos)
     New wavefunc value term: exp(-α * r2)
     All other terms are the same and cancel. Since they are both exponentials, we can subtract the exponents
     """
-    ratio_sum = (old_pos^2 - positions[new_idx]^2)
+    ratio_sum = old_pos^2 - positions[new_idx]^2
     return exp(wf.α * ratio_sum)
 end
 

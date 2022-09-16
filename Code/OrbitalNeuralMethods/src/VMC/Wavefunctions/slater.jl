@@ -197,9 +197,7 @@ function paramDer!(samp_muts, positions, wf::Slater)
 end
 
 # ------------------- No first or second derivative ------------------------
-function consider!(wf::Slater, walker::Walker, new_idx::Int64, old_pos)
-    (; positions) = walker
-    
+function consider!(wf::Slater, positions, new_idx::Int64, old_pos)
     wf = computeNewRows!(wf, positions[new_idx])
     (; amp_up, amp_down, new_amp, n) = wf
     
@@ -212,9 +210,7 @@ function consider!(wf::Slater, walker::Walker, new_idx::Int64, old_pos)
     return ratio
 end
 
-function consider_qf!(wf::Slater, walker::Walker, new_idx::Int64, old_pos)
-    (; positions) = walker
-    
+function consider_qf!(wf::Slater, positions, new_idx::Int64, old_pos)
     wf = computeNewRows!(wf, positions[new_idx])
     (; amp_up, amp_down, new_amp, new_der, n) = wf
     

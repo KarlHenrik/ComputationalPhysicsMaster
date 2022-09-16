@@ -15,15 +15,21 @@ function OneBodySampler(start, stop, length, n, sampled_steps)
 end
 
 function update_sample!(sampler::OneBodySampler, walker::Walker, wf, ham)
-    (; step, length, oneBodyDensity_current) = sampler
+    (; start, stop, step, length, oneBodyDensity_current) = sampler
     (; positions) = walker
-    for pos in positions
-        distance = abs(pos)
-        bin = 1
-        while (distance > bin * step) && (bin <= length - 1)
-            bin += 1
+    oneBodyDensity_current .= 0;
+    @inbounds for pos in positions
+        if pos < start
+            oneBodyDensity_current[1] += 1
+        elseif pos > stop
+            oneBodyDensity_current[length] += 1
+        else
+            bin = 1
+            while (pos > start + bin * step)
+                bin += 1
+            end
+            oneBodyDensity_current[bin] += 1
         end
-        oneBodyDensity_current[bin] += 1
     end
     return sampler
 end

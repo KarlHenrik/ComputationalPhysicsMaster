@@ -2,12 +2,12 @@ abstract type WaveFunction end
 include("Wavefunctions/Gaussians/gaussian_common.jl")
 include("Wavefunctions/Gaussians/simplegaussian.jl")
 include("Wavefunctions/Gaussians/correlated.jl")
-include("walker.jl")
-
 include("Wavefunctions/fastDeterminant.jl")
 include("Wavefunctions/slater.jl")
+include("Wavefunctions/layer.jl")
+include("Wavefunctions/neuralnetwork.jl")
 
-
+include("walker.jl")
 include("hamiltonians.jl")
 include("metropolis.jl")
 include("steps.jl")

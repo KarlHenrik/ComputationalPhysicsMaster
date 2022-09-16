@@ -4,7 +4,6 @@ struct Correlated <: Gaussian
     n::Int64
     
     function Correlated(n; α, a)
-        @assert dims == length(HOshape)
         return new(α, a, n)
     end
 end
@@ -49,12 +48,13 @@ function kinetic(positions, wf::Correlated)::Float64
     # vector sum and final sum
     @inbounds for p1 in 1:n
         p1_pos = positions[p1]
+        vecSum = 0.0
         for p2 in 1:n
             if p1 != p2
                 r = abs(positions[p2] - p1_pos)
                 fac = a / (r^3 - a * r^2)
                 
-                vecSum .+= temp_vec .* fac
+                vecSum += temp_vec .* fac
                 dblDer += (a^2 - 2 * a * r) / (r^2 - a * r)^2 + 2 * fac # the final sum
             end
         end

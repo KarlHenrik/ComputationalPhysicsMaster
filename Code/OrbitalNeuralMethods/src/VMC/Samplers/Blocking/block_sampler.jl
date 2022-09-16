@@ -20,5 +20,3 @@ function sample!(sampler::BlockingSampler)
     sampler.E_index += 1
     return sampler
 end
-
-

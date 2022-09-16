@@ -9,9 +9,10 @@ function steps!(samplers, wf_template, ham, metro)
         # Move particles for a while to end up in a more likely state than the initial random state
         walker = Walker(wf_template)
         wf = private_wf(wf_template, walker.positions) # Creating a wf for this thread and these starting positions
-        sampler = samplers[i]
-
         walker = equil_steps!(walker, wf, metro)
+
+        sampler = samplers[i]
+        update_sample!(sampler, walker, wf, ham)
         sampler, walker = sampled_steps!(sampler, walker, wf, ham, metro)
     end
     

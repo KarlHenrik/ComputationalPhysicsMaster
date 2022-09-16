@@ -3,7 +3,7 @@ module OrbitalNeuralMethods
 # ------------ Exports ---------------
 
 # Orbital systems
-export System, Basis, reference_energy
+export System, Basis, reference_energy, particle_density
 export SpatialSystem, SpatialBasis, HOBasis, SpinBasis
 export PairingSystem, pairing_exact, pairing_MBPT2, Pairing
 export CalogeroSutherland, HOCoulomb, HarmonicOscillator
@@ -18,12 +18,9 @@ export Alpha, DIIS
 
 # VMC
 export SimpleGaussian, Correlated, Slater
+export NeuralNetwork, Dense, Exp, Tanh, Sigmoid
 export Metropolis, Importance
 export blocking, onebody, optimize, GradientDescent
-export private_wf
-
-# Other
-export Fast_Det
 
 # ------------ Imports ---------------
 

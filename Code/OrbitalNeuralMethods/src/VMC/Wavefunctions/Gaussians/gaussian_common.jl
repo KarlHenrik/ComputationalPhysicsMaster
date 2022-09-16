@@ -14,16 +14,12 @@ function paramDer!(samp_muts, positions, wf::Gaussian)
     return samp_muts
 end
 
-function consider!(wf::Gaussian, walker, new_idx, old_pos)
-    (; positions) = walker
-    
+function consider!(wf::Gaussian, positions, new_idx, old_pos)
     ratio = ratio_direct(wf, positions, new_idx, old_pos)
     return ratio
 end
 
-function consider_qf!(wf::Gaussian, walker, new_idx, old_pos)
-    (; positions) = walker
-    
+function consider_qf!(wf::Gaussian, positions, new_idx, old_pos)
     ratio = ratio_direct(wf, positions, new_idx, old_pos)
     newQF = QF(positions, new_idx, wf)
     

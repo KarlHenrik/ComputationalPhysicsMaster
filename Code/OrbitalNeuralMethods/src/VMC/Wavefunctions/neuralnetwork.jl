@@ -15,16 +15,16 @@ struct NeuralNetwork{T}
     hes_jac_config::T
 end
 
-function NeuralNetwork(layer_specs...; input, rng)
+function NeuralNetwork(layer_specs...; n, rng)
     layers = []
-    
-    output = zero(input)
+
+    output = zeros(n)
     for spec in layer_specs
         layer_input = output # the input to the new layer is the output of the previous
         
         if typeof(spec) == DataType # Activation function
             layer, output = spec(layer_input)
-        else # Dense layer
+        else # Dense
             spec, num_outputs = spec
             layer, output = spec(layer_input, num_outputs, rng)
         end
@@ -35,18 +35,18 @@ function NeuralNetwork(layer_specs...; input, rng)
     # Parameter and input derivative setup
     delta_start = zero(layers[end].output)
     input_der = layers[1].delta
+    QF_all_old = zero(input_der)
     
     # Kinetic energy (double derivative of network wrt. inputs)
-    n = length(input)
     hes_grad_result = zeros(n)
-    config = rd.GradientConfig(input)
+    #config = rd.GradientConfig(input)
     hes_grad_tapes = Dict{DataType, Any}()
     hes_jac_result = zeros(n, n)
     hes_jac_config = fd.JacobianConfig(nothing, hes_grad_result, hes_grad_result)
     
     return NeuralNetwork{typeof(hes_jac_config)}(
         layers, layers[end].output, zero(layers[end].output),
-        delta_start, input_der,
+        delta_start, input_der, QF_all_old,
         hes_grad_result, hes_grad_tapes, hes_jac_result, hes_jac_config
     )
 end
@@ -121,16 +121,19 @@ function hes_grad!(y, x::Array{T}, nn::NeuralNetwork) where {T<:Real}
     return rd.gradient!(y, tape, x)
 end
 
-function kinetic(x, nn::NeuralNetwork)
+function kinetic(x::Vector{Float64}, nn::NeuralNetwork)
     # Assumes that model!(nn, x) has been called with the same x and nn as this call, since it uses the output of that computation
     fd.jacobian!(nn.hes_jac_result, (y, x) -> hes_grad!(y, x, nn), nn.hes_grad_result, x, nn.hes_jac_config)
     return -0.5 * la.tr(nn.hes_jac_result) / nn.output[1]
 end
 
+function dder(x, nn::NeuralNetwork)
+    fd.jacobian!(nn.hes_jac_result, (y, x) -> hes_grad!(y, x, nn), nn.hes_grad_result, x, nn.hes_jac_config)
+    return la.diag(nn.hes_jac_result) ./ nn.output[1]
+end
+
 # Importance + NeuralNetwork + ParamDer is set up
-function consider_qf!(wf::NeuralNetwork, walker::Walker, new_idx::Int64, old_pos)
-    (; positions) = walker
-    
+function consider_qf!(wf::NeuralNetwork, positions, new_idx::Int64, old_pos)
     output = model!(wf, positions)
     gradient!(wf)
     newQF = 2 * wf.input_der[new_idx] / output[1]

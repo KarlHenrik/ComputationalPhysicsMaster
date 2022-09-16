@@ -14,12 +14,11 @@ function metro_step!(walker, wf, metro::Metropolis)
     new_idx = rand(rng, 1:n) # Choosing particle to move and dimension to move it in
     move = Random.rand(rng, (-1.0, 1.0)) * metro.step_length # The direction and length to move the chosen particle
     
-    walker.old_pos = positions[new_idx]
-    walker.new_idx = new_idx
+    old_pos = positions[new_idx]
     positions[new_idx] += move
 
     # Compute the values needed to consider accepting the move
-    ratio = consider!(wf, walker, new_idx, old_pos)
+    ratio = consider!(wf, positions, new_idx, old_pos)
     
     # Accepting/Denyting new walker
     if (Random.rand(rng) < ratio^2)
@@ -28,7 +27,7 @@ function metro_step!(walker, wf, metro::Metropolis)
         return true
     else
         # Revert positions (And selected Slater matrix columns)
-        positions[new_idx] = walker.old_pos
+        positions[new_idx] = old_pos
         return false
     end
 end
@@ -54,7 +53,7 @@ function metro_step!(walker, wf, metro::Importance)
     # Moving the particle
     old_pos = positions[new_idx]
     positions[new_idx] += move
-    ratio, newQF = consider_qf!(wf, walker, new_idx, old_pos) # Compute the values needed to consider accepting the move
+    ratio, newQF = consider_qf!(wf, positions, new_idx, old_pos) # Compute the values needed to consider accepting the move
 
     # Evaluating the greens function
     greens = -move

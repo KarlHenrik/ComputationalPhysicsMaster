@@ -118,5 +118,15 @@ function sp_energies(system::PairingSystem)
     return ϵ
 end
 
+function particle_density(system)
+    (;spfs, n) = system
+    
+    p_density = zero(spfs[1])
+    for i in 1:n
+        p_density .+= spfs[i].^2
+    end
+    return p_density
+end
+
 include("Integrals/transform.jl")
 ;
