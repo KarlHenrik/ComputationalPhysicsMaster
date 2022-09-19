@@ -6,6 +6,7 @@ include("Wavefunctions/fastDeterminant.jl")
 include("Wavefunctions/slater.jl")
 include("Wavefunctions/layer.jl")
 include("Wavefunctions/neuralnetwork.jl")
+include("Wavefunctions/slaterNN.jl")
 
 include("walker.jl")
 include("hamiltonians.jl")

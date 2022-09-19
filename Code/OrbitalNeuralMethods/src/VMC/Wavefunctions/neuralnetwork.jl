@@ -51,6 +51,14 @@ function NeuralNetwork(layer_specs...; n, rng)
     )
 end
 
+function private_wf(wf::NeuralNetwork, positions) 
+    model!(wf, positions)
+    gradient!(wf)
+    wf.old_output[1] = wf.output[1]
+    wf.QF_all_old .= 2 .* wf.input_der ./ wf.output[1]
+    return wf
+end
+
 function model!(nn::NeuralNetwork, x::Vector{Float64})
     (; layers) = nn
     layers[1].input .= x
@@ -127,9 +135,13 @@ function kinetic(x::Vector{Float64}, nn::NeuralNetwork)
     return -0.5 * la.tr(nn.hes_jac_result) / nn.output[1]
 end
 
-function dder(x, nn::NeuralNetwork)
+function dder!(nn_dder, x, nn::NeuralNetwork)
     fd.jacobian!(nn.hes_jac_result, (y, x) -> hes_grad!(y, x, nn), nn.hes_grad_result, x, nn.hes_jac_config)
-    return la.diag(nn.hes_jac_result) ./ nn.output[1]
+    for i in eachindex(nn_dder)
+        nn_dder[i] = nn.hes_jac_result[i, i]
+    end
+    nn_dder .= nn_dder ./ nn.output[1]
+    return nn_dder
 end
 
 # Importance + NeuralNetwork + ParamDer is set up
@@ -144,7 +156,7 @@ end
 
 function accept!(wf::NeuralNetwork, new_idx)
     wf.old_output[1] = wf.output[1]
-    wf.QF_all_old .= 2 .* wf.input_der ./ output[1]
+    wf.QF_all_old .= 2 .* wf.input_der ./ wf.output[1]
     
     return wf
 end

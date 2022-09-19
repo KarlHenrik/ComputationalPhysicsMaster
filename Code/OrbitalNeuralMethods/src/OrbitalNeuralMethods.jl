@@ -17,7 +17,7 @@ export CCSDState, setup_CCSD
 export Alpha, DIIS
 
 # VMC
-export SimpleGaussian, Correlated, Slater
+export SimpleGaussian, Correlated, Slater, SlaterNN
 export NeuralNetwork, Dense, Exp, Tanh, Sigmoid
 export Metropolis, Importance
 export blocking, onebody, optimize, GradientDescent

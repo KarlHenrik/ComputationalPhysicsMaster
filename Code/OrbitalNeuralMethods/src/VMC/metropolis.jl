@@ -57,7 +57,8 @@ function metro_step!(walker, wf, metro::Importance)
 
     # Evaluating the greens function
     greens = -move
-    greens = greens + metro.time_step * (oldQF - newQF)
+    greens += metro.time_step * (oldQF - newQF)
+
     greens = greens * (oldQF + newQF)
     greensFuncRatio = exp(0.5 * greens)
     
