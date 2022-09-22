@@ -189,7 +189,7 @@ function QF(positions, new_idx::Int64, wf::Slater)
         @views qf = ratio_new_old_det(amp_down, der_mat[new_idx, :], new_idx-n÷2)
     end
     
-    return qf
+    return 2 * qf
 end
 
 function paramDer!(samp_muts, positions, wf::Slater)

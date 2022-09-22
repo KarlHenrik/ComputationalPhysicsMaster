@@ -192,8 +192,8 @@ function applyGradient(nn::NeuralNetwork, grad::Vector{Dense_Grad})
         if typeof(layer) == Dense
             layer_grad = grad[i]
             i += 1
-            layer.W .+= layer_grad.W_g
-            layer.b .+= layer_grad.b_g
+            layer.W .-= layer_grad.W_g
+            layer.b .-= layer_grad.b_g
         end
         
         push!(layers, layer)
@@ -227,15 +227,16 @@ end
 function kinetic(x::Vector{Float64}, nn::NeuralNetwork)
     # Assumes that model!(nn, x) has been called with the same x and nn as this call, since it uses the output of that computation
     fd.jacobian!(nn.hes_jac_result, (y, x) -> hes_grad!(y, x, nn), nn.hes_grad_result, x, nn.hes_jac_config)
-    return -0.5 * la.tr(nn.hes_jac_result) / nn.output[1]
+    return -0.5 * la.tr(nn.hes_jac_result) / nn.old_output[1]
 end
 
 function dder!(nn_dder, x, nn::NeuralNetwork)
+    # Assumes that model!(nn, x) has been called with the same x and nn as this call, since it uses the output of that computation
     fd.jacobian!(nn.hes_jac_result, (y, x) -> hes_grad!(y, x, nn), nn.hes_grad_result, x, nn.hes_jac_config)
     for i in eachindex(nn_dder)
         nn_dder[i] = nn.hes_jac_result[i, i]
     end
-    nn_dder .= nn_dder ./ nn.output[1]
+    nn_dder .= nn_dder ./ nn.old_output[1]
     return nn_dder
 end
 
