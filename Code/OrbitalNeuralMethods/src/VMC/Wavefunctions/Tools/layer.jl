@@ -13,20 +13,33 @@ struct Dense <: Layer
     b_g::Vector{Float64}
     delta::Vector{Float64}
 end
-function Dense(input, num_outputs, rng)
-    n = length(input)
-    
-    W = rand(rng, Float64, (num_outputs, n))
-    b = rand(rng, Float64, num_outputs)
-    
-    input = input
+
+function Dense(input::Vector{Float64}, W::Matrix{Float64}, b::Vector{Float64})
     output = zero(b)
     
     W_g = zero(W)
     b_g = zero(b)
-    delta = zeros(n)
+    delta = zero(input)
     
     return Dense(W, b, input, output, W_g, b_g, delta), output
+end
+
+# Initial construction
+function Dense(input::Vector{Float64}, num_outputs::Int64, rng)
+    n = length(input)
+    
+    W = randn(rng, Float64, (num_outputs, n)) ./ n
+    #b = randn(rng, Float64, num_outputs) ./ n
+    b = zeros(num_outputs)
+    
+    Dense(input, W, b)
+end
+
+function layerCopy(input::Vector{Float64}, layer::Dense)
+    W = copy(layer.W)
+    b = copy(layer.b)
+    
+    Dense(input, W, b)
 end
 
 Dense(num_outputs::Int) = (Dense, num_outputs)
@@ -44,19 +57,34 @@ function layerEval(x, layer::Dense)
     return W * x + b
 end
 
-function backprop!(layer::Dense, delta_in)
+#* Faster when the dimentions are smaller than about 30
+function vec_inner!(M::Matrix{Float64}, u, vT)
+    @inbounds for (i, ui) in enumerate(u)
+        for (j, vi) in enumerate(vT)
+            M[i, j] = ui * vi
+        end
+    end
+    return M
+end
+
+function backprop!(layer::Dense, delta_in::Vector{Float64})
     (; W, W_g, b_g, input, delta) = layer
     
-    la.mul!(W_g, delta_in, transpose(input))
-    b_g .= delta_in
+    #la.mul!(W_g, delta_in, transpose(input)) # This is faster if we have many nodes in each layer
+    vec_inner!(W_g, delta_in, input) # Weight gradient
+    b_g .= delta_in # Bias gradient
     
-    la.mul!(delta, transpose(W), delta_in)
+    la.mul!(delta, transpose(W), delta_in) # Propagating gradient
     return delta
 end
 
 
 # --------------------- Activation Functions -----------------------
 abstract type Activation <: Layer end
+
+function layerCopy(input::Vector{Float64}, layer::Activation)
+    return typeof(layer)(input)
+end
 
 #Exp
 struct Exp <: Activation

@@ -1,35 +1,44 @@
-struct SlaterNN{T} <: WaveFunction
+struct SlaterNN{N} <: WaveFunction
     n::Int64
 
     slater::Slater
-    nn::NeuralNetwork{T}
+    nn::NeuralNetwork{N}
 
-    p::Vector{Int64}
-    p_back::Vector{Int64}
+    minisort::MiniSort
     nn_dder::Vector{Float64}
     nn_der::Vector{Float64}
-    sorttemp::Vector{Float64}
+    permtemp::Vector{Float64}
 end
 function SlaterNN(slater::Slater, nn::NeuralNetwork)
     n = slater.n
-    p, p_back, nn_dder, nn_der, sorttemp = zeros(Int, n), zeros(Int, n), zeros(n), zeros(n), zeros(n)
+    nn_dder, nn_der, permtemp = zeros(n), zeros(n), zeros(n)
+    minisort = MiniSort(zeros(n))
 
-    return SlaterNN{typeof(nn.hes_jac_config)}(n, slater, nn, p, p_back, nn_dder, nn_der, sorttemp)
+    return SlaterNN{n}(n, slater, nn, minisort, nn_dder, nn_der, permtemp)
 end
 
 function private_wf(wf::SlaterNN, positions)
-    (; slater, nn) = wf
+    (; n, slater, nn) = wf
     slater = private_wf(slater, positions)
-    nn = private_wf(nn, positions)
+    minisort = MiniSort(positions)
+    nn = private_wf(nn, minisort.x_sort)
+    
+    nn_dder, nn_der, permtemp = zeros(n), zeros(n), zeros(n)
 
-    return SlaterNN(slater, nn)
+    return SlaterNN{n}(n, slater, nn, minisort, nn_dder, nn_der, permtemp)
 end
 
+
+#* Do I keep two copies of sorted positions and reverse sorting indexes, or just one which I update?
+#* I need the reverse sorting only for kinetic. I need the old sorting for not accepting.
+#* Idea: Keep an old and new sorted. Only update reverse sorting when accepting. Yeah seems smart.
+
 function consider_qf!(wf::SlaterNN, positions, new_idx::Int64, old_pos)
-    (; slater, nn) = wf
-    
-    p = sortperm(positions)
-    nn_ratio, nn_newQF = consider_qf!(nn, positions[p], p[new_idx], old_pos)
+    (; slater, nn, minisort) = wf
+    new_pos = positions[new_idx]
+    sorted_pos, sort_idx = try_sort!(minisort, new_idx, new_pos)
+
+    nn_ratio, nn_newQF = consider_qf!(nn, sorted_pos, sort_idx, old_pos)
     slater_ratio, slater_newQF = consider_qf!(slater, positions, new_idx, old_pos)
     
     newQF = slater_newQF + nn_newQF
@@ -38,23 +47,21 @@ function consider_qf!(wf::SlaterNN, positions, new_idx::Int64, old_pos)
     return ratio, newQF
 end
 
-function accept!(wf::SlaterNN, new_idx)
-    (; slater, nn) = wf
-    accept!(slater, new_idx)
-    accept!(nn, new_idx) # This is the wrong index for the nn, but it does not matter, as it's not used
+function accept!(wf::SlaterNN, new_idx, new_pos)
+    (; slater, nn, minisort) = wf
+    accept!(slater, new_idx, new_pos)
+    accept!(nn, new_idx, new_pos) # This is the wrong index for the nn, but it does not matter, as it's not used
+    update_sort!(minisort, new_idx, new_pos) # Updating the sorted positions
     return wf
 end
 
 #* Only used for the old qf
 function QF(positions, new_idx::Int64, wf::SlaterNN)
-    (; slater, nn, sorttemp) = wf
-    p = sortperm(positions)
-
-    @inbounds for (i, idx) in enumerate(p)
-        sorttemp[i] = positions[idx]
-    end
+    (; slater, nn, minisort) = wf
     
-    return QF(positions, new_idx, slater) + QF(sorttemp, p[new_idx], nn)
+    (; x_sort, p) = minisort
+
+    return QF(positions, new_idx, slater) + QF(x_sort, p[new_idx], nn)
 end
 
 function permute_noalloc!(v, p, temp)
@@ -66,21 +73,14 @@ function permute_noalloc!(v, p, temp)
 end
 
 function kinetic(positions, wf::SlaterNN)::Float64
-    (; slater, nn, p, p_back, nn_dder, nn_der, sorttemp) = wf
-    p = sortperm!(p, positions)
-    p_back = sortperm!(p_back, p)
+    (; slater, nn, minisort, nn_dder, nn_der, permtemp) = wf
+    (; x_sort, p_rev) = minisort
     
-    for (i, idx) in enumerate(p)
-        sorttemp[i] = positions[idx]
-    end
-    nn_dder = dder!(nn_dder, sorttemp, nn)
-
-    #@inbounds nn_dder .= nn_dder[p_back]
-    permute_noalloc!(nn_dder, p_back, sorttemp)
+    nn_dder = dder!(nn_dder, x_sort, nn) # Double derivative with sorted positions
+    permute_noalloc!(nn_dder, p_rev, permtemp) # Permuting double derivatives to unsored indexes
     
-    nn_der .= 0.5 .* nn.QF_all_old
-    #@inbounds nn_der .= nn_der[p_back]
-    permute_noalloc!(nn_der, p_back, sorttemp)
+    nn_der .= 0.5 .* nn.QF_all_old # Derivative with sorted positions
+    permute_noalloc!(nn_der, p_rev, permtemp) # Permuting derivatives to unsored indexes
     
     (; amp_up, amp_down, der_mat, kin_mat, n) = slater
     kin = 0.0
@@ -97,4 +97,19 @@ function kinetic(positions, wf::SlaterNN)::Float64
     end
 
     return -0.5 * kin
+end
+
+function applyGradient(wf::SlaterNN, grad)
+    nn = applyGradient(wf.nn, grad)
+
+    wf = SlaterNN(wf.slater, nn)
+    return wf
+end
+
+function paramDerHolder(wf::SlaterNN)
+    return paramDerHolder(wf.nn)
+end
+
+function paramDer!(layer_grads::Vector{Dense_Grad}, positions, wf::SlaterNN)
+    return paramDer!(layer_grads, positions, wf.nn)
 end

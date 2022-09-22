@@ -225,7 +225,7 @@ function consider_qf!(wf::Slater, positions, new_idx::Int64, old_pos)
     return ratio, newQF
 end
 
-function accept!(wf::Slater, new_idx::Int64)
+function accept!(wf::Slater, new_idx::Int64, new_pos)
     wf = setNewRows!(wf, new_idx)
     return wf
 end

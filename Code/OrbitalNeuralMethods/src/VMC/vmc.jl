@@ -1,10 +1,13 @@
+include("Wavefunctions/Tools/fastDeterminant.jl")
+include("Wavefunctions/Tools/layer.jl")
+include("Wavefunctions/Tools/minisort.jl")
+
 abstract type WaveFunction end
 include("Wavefunctions/Gaussians/gaussian_common.jl")
 include("Wavefunctions/Gaussians/simplegaussian.jl")
 include("Wavefunctions/Gaussians/correlated.jl")
-include("Wavefunctions/fastDeterminant.jl")
+
 include("Wavefunctions/slater.jl")
-include("Wavefunctions/layer.jl")
 include("Wavefunctions/neuralnetwork.jl")
 include("Wavefunctions/slaterNN.jl")
 

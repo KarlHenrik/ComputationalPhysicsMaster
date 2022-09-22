@@ -25,18 +25,19 @@ function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
         grad = update_gradient(grad_result.gradient, optimizer)
         
         grad_norm = la.norm(grad)
-        if grad_norm < tol
+        if grad_norm < tol || isnan(grad_result.E)
             grad_results = grad_results[1:i]
+            println("\nConvergence reached, final norm of gradient was $(grad_norm)")
             return wf, grad_results
         end
         
         wf = applyGradient(wf, grad)
         if verbose
-            print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter) alpha = $(wf.α)          ")
+            print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter)                                      ")
         end
     end
     if verbose
-        println("No convergence reached, final norm of gradient was $(grad_norm)")
+        println("\nNo convergence reached, final norm of gradient was $(grad_norm)")
     end
     
     return wf, grad_results

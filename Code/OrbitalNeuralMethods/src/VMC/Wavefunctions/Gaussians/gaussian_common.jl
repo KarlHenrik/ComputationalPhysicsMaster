@@ -26,6 +26,6 @@ function consider_qf!(wf::Gaussian, positions, new_idx, old_pos)
     return ratio, newQF
 end
 
-function accept!(wf::Gaussian, new_idx)
+function accept!(wf::Gaussian, new_idx, new_pos)
     return wf
 end

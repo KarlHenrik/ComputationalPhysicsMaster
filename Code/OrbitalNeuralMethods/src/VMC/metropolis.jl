@@ -23,7 +23,7 @@ function metro_step!(walker, wf, metro::Metropolis)
     # Accepting/Denyting new walker
     if (Random.rand(rng) < ratio^2)
         # Update values to be sampled (And saved NN QF values)
-        accept!(wf, new_idx)
+        accept!(wf, new_idx, positions[new_idx])
         return true
     else
         # Revert positions (And selected Slater matrix columns)
@@ -65,7 +65,7 @@ function metro_step!(walker, wf, metro::Importance)
     # Accepting/Denyting new position
     if (Random.rand(rng) < greensFuncRatio * ratio^2)
         # Update values to be sampled (And saved NN QF values)
-        wf = accept!(wf, new_idx)
+        wf = accept!(wf, new_idx, positions[new_idx])
         return true
     else
         # Revert positions (And selected Slater matrix columns)

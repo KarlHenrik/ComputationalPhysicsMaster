@@ -1,5 +1,12 @@
 function blocking(wf, ham, metro; nthreads=1)
-    distr_steps = distribute_steps(metro.sample_steps, nthreads)
+    block_steps = metro.sample_steps
+    d = log2(block_steps)
+    if d%1 != 0
+        d = Int(floor(d))
+        #println("Length of data = $(block_steps) is not a power of 2, reducing to $(Int(round((2^d),digits=0))) steps")
+        block_steps = 2^d
+    end
+    distr_steps = distribute_steps(block_steps, nthreads)
     samplers = [BlockingSampler(distr_steps[i]) for i in 1:nthreads]
     
     samplers = steps!(samplers, wf, ham, metro)

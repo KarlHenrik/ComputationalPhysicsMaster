@@ -1,4 +1,5 @@
-struct NeuralNetwork{T}
+struct NeuralNetwork{N}
+    n::Int64
     layers::Vector{Layer}
     output::Vector{Float64}
     old_output::Vector{Float64}
@@ -12,10 +13,29 @@ struct NeuralNetwork{T}
     hes_grad_result::Vector{Float64}
     hes_grad_tapes::Dict{DataType, Any}
     hes_jac_result::Matrix{Float64}
-    hes_jac_config::T
+    hes_jac_config::fd.JacobianConfig{Nothing, Float64, N, Tuple{Vector{fd.Dual{Nothing, Float64, N}}, Vector{fd.Dual{Nothing, Float64, N}}}}
 end
 
-function NeuralNetwork(layer_specs...; n, rng)
+function NeuralNetwork(layers::Vector{Layer}, n::Int64)
+    # Parameter and input derivative setup
+    delta_start = zero(layers[end].output)
+    input_der = layers[1].delta
+    QF_all_old = zero(input_der)
+    
+    # Kinetic energy (double derivative of network wrt. inputs)
+    hes_grad_result = zeros(n)
+    hes_grad_tapes = Dict{DataType, Any}()
+    hes_jac_result = zeros(n, n)
+    hes_jac_config = fd.JacobianConfig(nothing, hes_grad_result, hes_grad_result)
+    
+    return NeuralNetwork{n}(
+        n, layers, layers[end].output, zero(layers[end].output),
+        delta_start, input_der, QF_all_old,
+        hes_grad_result, hes_grad_tapes, hes_jac_result, hes_jac_config
+    )
+end
+
+function NeuralNetwork(layer_specs; n::Int64, rng)
     layers = []
 
     output = zeros(n)
@@ -31,27 +51,24 @@ function NeuralNetwork(layer_specs...; n, rng)
         
         push!(layers, layer)
     end
-    
-    # Parameter and input derivative setup
-    delta_start = zero(layers[end].output)
-    input_der = layers[1].delta
-    QF_all_old = zero(input_der)
-    
-    # Kinetic energy (double derivative of network wrt. inputs)
-    hes_grad_result = zeros(n)
-    #config = rd.GradientConfig(input)
-    hes_grad_tapes = Dict{DataType, Any}()
-    hes_jac_result = zeros(n, n)
-    hes_jac_config = fd.JacobianConfig(nothing, hes_grad_result, hes_grad_result)
-    
-    return NeuralNetwork{typeof(hes_jac_config)}(
-        layers, layers[end].output, zero(layers[end].output),
-        delta_start, input_der, QF_all_old,
-        hes_grad_result, hes_grad_tapes, hes_jac_result, hes_jac_config
-    )
+    layers = Vector{Layer}(layers)
+    return NeuralNetwork(layers, n)
 end
 
-function private_wf(wf::NeuralNetwork, positions) 
+function private_wf(nn::NeuralNetwork, positions)
+    n = nn.n
+    layers = []
+    output = zeros(n)
+    for layer in nn.layers
+        layer_input = output # the input to the new layer is the output of the previous
+        
+        layer, output = layerCopy(layer_input, layer)
+        
+        push!(layers, layer)
+    end
+    layers = Vector{Layer}(layers)
+    
+    wf = NeuralNetwork(layers, n)
     model!(wf, positions)
     gradient!(wf)
     wf.old_output[1] = wf.output[1]
@@ -59,9 +76,9 @@ function private_wf(wf::NeuralNetwork, positions)
     return wf
 end
 
-function model!(nn::NeuralNetwork, x::Vector{Float64})
+function model!(nn::NeuralNetwork, x::Vector{Float64})::Vector{Float64}
     (; layers) = nn
-    layers[1].input .= x
+    layers[1].input::Vector{Float64} .= x
     
     for layer in layers
         layerEval!(layer)
@@ -69,42 +86,120 @@ function model!(nn::NeuralNetwork, x::Vector{Float64})
     return layers[end].output
 end
 
-function gradient!(nn::NeuralNetwork)
+function gradient!(nn::NeuralNetwork{T}) where T
     # Computes the derivative of the network output wrt. the parameters and input
     delta = nn.delta_start
     delta .= 1
     
-    for layer in reverse(nn.layers)
-        delta = backprop!(layer, delta)
+    for layer in Iterators.reverse(nn.layers)
+        delta = backprop!(layer, delta)::Vector{Float64}
     end
     
-    return nn
+    return nn::NeuralNetwork{T}
 end
 
-struct Layer_Grad
+struct Dense_Grad
+    layer_idx::Int64
     W_g::Matrix{Float64}
     b_g::Vector{Float64}
-    function Layer_Grad(layer::Dense)
-        return new(zero(layer.W_g), zero(layer.b_g))
-    end
+end
+function Layer_Grad(layer::Dense, i)
+    return Dense_Grad(i, zero(layer.W_g), zero(layer.b_g))
 end
 
-struct Layer_Grad_Skip end
-Layer_Grad(layer) = Layer_Grad_Skip()
+function getGrad!(layer_grad::Dense_Grad, layer::Dense)
+    layer_grad.W_g .= layer.W_g
+    layer_grad.b_g .= layer.b_g
 
-function paramDerHolder(nn)
+    return layer_grad
+end
+
+function add!(d1::Dense_Grad, d2::Dense_Grad)
+    d1.W_g .+= d2.W_g
+    d1.b_g .+= d2.b_g
+    return d1
+end
+function add!(grads1::Vector{Dense_Grad}, grads2::Vector{Dense_Grad})
+    for (d1, d2) in zip(grads1, grads2)
+        add!(d1, d2)
+    end
+    return grads1
+end
+
+import Base.*
+function *(d::Dense_Grad, f::Number)
+    d.W_g .*= f
+    d.b_g .*= f
+    return d
+end
+import Base./
+function /(d::Dense_Grad, f::Number)
+    d.W_g ./= f
+    d.b_g ./= f
+    return d
+end
+function setmul!(d1::Dense_Grad, d2::Dense_Grad, f::Float64)
+    d1.W_g .= d2.W_g .* f
+    d1.b_g .= d2.b_g .* f
+
+    return d1
+end
+function setmul!(grads1::Vector{Dense_Grad}, grads2::Vector{Dense_Grad}, f::Float64)
+    for (d1, d2) in zip(grads1, grads2)
+        setmul!(d1, d2, f)
+    end
+    return grads1
+end
+
+function paramDerHolder(nn::NeuralNetwork)
     layer_grads = []
-    for layer in layers
-        push!(layer_grads, Layer_Grad(layer))
+    for (i, layer) in enumerate(nn.layers)
+        if typeof(layer) == Dense
+            push!(layer_grads, Layer_Grad(layer, i))
+        end
+    end
+    layer_grads = Vector{Dense_Grad}(layer_grads)
+    return layer_grads
+end
+function la.norm(layer_grads::Vector{Dense_Grad})
+    sq_sum = 0.0
+    for layer_grad in layer_grads
+        sq_sum += sum(layer_grad.W_g.^2)
+        sq_sum += sum(layer_grad.b_g.^2)
+    end
+    return √sq_sum
+end
+
+function paramDer!(layer_grads::Vector{Dense_Grad}, positions, wf::NeuralNetwork)
+    amp = wf.output[1]
+    layers = wf.layers
+    for layer_grad in layer_grads
+        layer_grad = getGrad!(layer_grad, layers[layer_grad.layer_idx]::Dense)
+        layer_grad = layer_grad / amp
     end
     return layer_grads
 end
 
-# TODO
-function paramDer(positions, wf)
-    for (layer, layer_grad) in zip(layers, layer_grads)
-        add_gradient!(layer_grad, layer)
+function applyGradient(nn::NeuralNetwork, grad::Vector{Dense_Grad})
+    n = nn.n
+    layers = []
+    output = zeros(n)
+    i = 1
+    for layer in nn.layers
+        layer_input = output # the input to the new layer is the output of the previous
+        
+        layer, output = layerCopy(layer_input, layer)
+        if typeof(layer) == Dense
+            layer_grad = grad[i]
+            i += 1
+            layer.W .+= layer_grad.W_g
+            layer.b .+= layer_grad.b_g
+        end
+        
+        push!(layers, layer)
     end
+    layers = Vector{Layer}(layers)
+    return NeuralNetwork(layers, n)
 end
 
 # Only used for old QF
@@ -154,7 +249,7 @@ function consider_qf!(wf::NeuralNetwork, positions, new_idx::Int64, old_pos)
     return ratio, newQF
 end
 
-function accept!(wf::NeuralNetwork, new_idx)
+function accept!(wf::NeuralNetwork, new_idx, new_pos)
     wf.old_output[1] = wf.output[1]
     wf.QF_all_old .= 2 .* wf.input_der ./ wf.output[1]
     
