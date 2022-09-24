@@ -9,15 +9,15 @@ struct SlaterNN{N} <: WaveFunction
     nn_der::Vector{Float64}
     permtemp::Vector{Float64}
 end
-function SlaterNN(slater::Slater, nn::NeuralNetwork)
+function SlaterNN(slater::Slater, nn::NeuralNetwork{N}) where N
     n = slater.n
     nn_dder, nn_der, permtemp = zeros(n), zeros(n), zeros(n)
     minisort = MiniSort(zeros(n))
 
-    return SlaterNN{n}(n, slater, nn, minisort, nn_dder, nn_der, permtemp)
+    return SlaterNN{N}(n, slater, nn, minisort, nn_dder, nn_der, permtemp)
 end
 
-function private_wf(wf::SlaterNN, positions)
+function private_wf(wf::SlaterNN{N}, positions) where N
     (; n, slater, nn) = wf
     slater = private_wf(slater, positions)
     minisort = MiniSort(positions)
@@ -25,7 +25,7 @@ function private_wf(wf::SlaterNN, positions)
     
     nn_dder, nn_der, permtemp = zeros(n), zeros(n), zeros(n)
 
-    return SlaterNN{n}(n, slater, nn, minisort, nn_dder, nn_der, permtemp)
+    return SlaterNN{N}(n, slater, nn, minisort, nn_dder, nn_der, permtemp)
 end
 
 

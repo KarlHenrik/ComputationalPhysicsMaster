@@ -58,7 +58,7 @@ function layerEval(x, layer::Dense)
 end
 
 #* Faster when the dimentions are smaller than about 30
-function vec_inner!(M::Matrix{Float64}, u, vT)
+function vec_outer!(M::Matrix{Float64}, u, vT)
     @inbounds for (i, ui) in enumerate(u)
         for (j, vi) in enumerate(vT)
             M[i, j] = ui * vi
@@ -71,7 +71,8 @@ function backprop!(layer::Dense, delta_in::Vector{Float64})
     (; W, W_g, b_g, input, delta) = layer
     
     #la.mul!(W_g, delta_in, transpose(input)) # This is faster if we have many nodes in each layer
-    vec_inner!(W_g, delta_in, input) # Weight gradient
+    vec_outer!(W_g, delta_in, input) # Weight gradient
+    #la.BLAS.gemm!('N', 'T', 1.0, delta_in, input, 1.0, W_g)
     b_g .= delta_in # Bias gradient
     
     la.mul!(delta, transpose(W), delta_in) # Propagating gradient

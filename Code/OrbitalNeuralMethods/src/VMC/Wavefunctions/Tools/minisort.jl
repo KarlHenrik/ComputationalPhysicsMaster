@@ -55,13 +55,13 @@ end
 function update_sort!(minisort, new_idx, new_pos)
     (; n, x_sort, p, p_rev) = minisort
     
-    @inbounds new_idx = p_rev[new_idx]
-    @inbounds old_pos = x_sort[new_idx]
-    @inbounds x_sort[new_idx] = new_pos
+    @inbounds sort_idx = p_rev[new_idx]
+    @inbounds old_pos = x_sort[sort_idx]
+    @inbounds x_sort[sort_idx] = new_pos
 
     if new_pos > old_pos
-        if new_idx != n
-            r = new_idx + 1
+        if sort_idx != n
+            r = sort_idx + 1
             @inbounds while new_pos > x_sort[r]
                 x_sort[r], x_sort[r - 1] = x_sort[r - 1], x_sort[r]
                 p[r], p[r - 1] = p[r - 1], p[r]
@@ -74,8 +74,8 @@ function update_sort!(minisort, new_idx, new_pos)
             end
         end
     elseif new_pos < old_pos
-        if new_idx != 1
-            l = new_idx - 1
+        if sort_idx != 1
+            l = sort_idx - 1
             @inbounds while new_pos < x_sort[l]
                 x_sort[l], x_sort[l + 1] = x_sort[l + 1], x_sort[l]
                 p[l], p[l + 1] = p[l + 1], p[l]

@@ -28,11 +28,15 @@ function NeuralNetwork(layers::Vector{Layer}, n::Int64)
     hes_jac_result = zeros(n, n)
     hes_jac_config = fd.JacobianConfig(nothing, hes_grad_result, hes_grad_result)
     
-    return NeuralNetwork{n}(
+    return NeuralNetwork{chunksize(fd.Chunk(hes_grad_result))}(
         n, layers, layers[end].output, zero(layers[end].output),
         delta_start, input_der, QF_all_old,
         hes_grad_result, hes_grad_tapes, hes_jac_result, hes_jac_config
     )
+end
+
+function chunksize(chunk::fd.Chunk{N}) where N
+    return N
 end
 
 function NeuralNetwork(layer_specs; n::Int64, rng)
