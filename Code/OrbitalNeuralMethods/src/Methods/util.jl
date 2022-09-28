@@ -17,6 +17,9 @@ function compute_ground_state!(state; max_iter = 1000, tol = 1e-10, verbose = 0)
         if verbose == 1 || (verbose == 2 && (i <= 3 || i >= max_iter - 3))
             println("Iteration $i: E = $new_E")
         end
+        if verbose == 3
+            print("\rIteration $i: E = $new_E                           ")
+        end
         old_E = new_E
     end
     println("Did not converge after $(max_iter) iterations. Final energy change was $(delta_E)")

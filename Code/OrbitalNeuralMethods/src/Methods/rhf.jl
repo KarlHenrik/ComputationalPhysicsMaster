@@ -17,12 +17,12 @@ struct RHFState{T}
     error::Matrix{Float64}
 end
 
-function setup_RHF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
+function RHF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
     mixer = DIIS( system.basis.base.l^2 )
-    return setup_RHF(system, mixer)
+    return RHF(system, mixer)
 end
 
-function setup_RHF(system::SpatialSystem{SpinBasis{T}}, mixer) where T <: SpatialBasis
+function RHF(system::SpatialSystem{SpinBasis{T}}, mixer) where T <: SpatialBasis
     (; transform, basis, h, grid, V) = system
     
     @assert system.n % 2 == 0 "Closed shell restricted systems only accept an even number of electrons"

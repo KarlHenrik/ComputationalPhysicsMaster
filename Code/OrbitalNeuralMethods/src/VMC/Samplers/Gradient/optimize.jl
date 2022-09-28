@@ -13,6 +13,49 @@ function update_gradient(gradient, optimizer::GradientDescent)
     return gradient .* optimizer.lr
 end
 
+struct ADAM{T} <: Optimizer
+    lr::Float64
+    β_1::Float64
+    m_t::T
+    β_2::Float64
+    v_t::T
+    β_t::Vector{Float64}
+    max_iter::Int64
+    tol::Float64
+    eps::Float64
+end
+
+function ADAM(wf; lr, max_iter, tol, β_1=0.9, β_2=0.999)
+    m_t = paramDerHolder(wf)
+    v_t = paramDerHolder(wf)
+    β_t = [β_1, β_2]
+    return ADAM(lr, β_1, m_t, β_2, v_t, β_t, max_iter, tol, 1e-8)
+end
+
+function update_gradient(gradient, optimizer::ADAM)
+    (; lr, β_1, m_t, β_2, v_t, β_t, eps) = optimizer
+    β_1t, β_2t = β_t
+
+    for (layer_grad, m_i, v_i) in zip(gradient, m_t, v_t)
+        m_i.W_g .*= β_1
+        m_i.W_g .+= (1 .- β_1) .* layer_grad.W_g
+        m_i.b_g .*= β_1
+        m_i.b_g .+= (1 .- β_1) .* layer_grad.b_g
+
+        v_i.W_g .*= β_2
+        v_i.W_g .+= (1 .- β_2) .* layer_grad.W_g.^2
+        v_i.b_g .*= β_2
+        v_i.b_g .+= (1 .- β_2) .* layer_grad.b_g.^2
+
+        layer_grad.W_g .= m_i.W_g ./ (1 .- β_1t) ./ (.√(v_i.W_g ./ (1 .- β_2t)) .+ eps ) .* lr
+        layer_grad.b_g .= m_i.b_g ./ (1 .- β_1t) ./ (.√(v_i.b_g ./ (1 .- β_2t)) .+ eps ) .* lr
+    end
+    β_t[1] *= β_1
+    β_t[2] *= β_2
+
+    return gradient
+end
+
 function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
     (;max_iter, tol) = optimizer
     
@@ -33,7 +76,7 @@ function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
         
         wf = applyGradient(wf, grad)
         if verbose
-            print("\rE = $(round(grad_result.E, digits = 3)) iter = $i/$(max_iter)                                      ")
+            print("\rE = $(round(grad_result.E, digits = 6)) iter = $i/$(max_iter)                                      ")
         end
     end
     if verbose

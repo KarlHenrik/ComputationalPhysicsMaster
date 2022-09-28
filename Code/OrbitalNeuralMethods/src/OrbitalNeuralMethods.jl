@@ -10,17 +10,17 @@ export CalogeroSutherland, HOCoulomb, HarmonicOscillator
 
 # Orbital system solvers
 export energy, corr_energy, update!, compute_ground_state!
-export HFState, setup_HF
-export RHFState, setup_RHF
-export CCDState, setup_CCD
-export CCSDState, setup_CCSD
+export HFState, HF
+export RHFState, RHF
+export CCDState, CCD
+export CCSDState, CCSD
 export Alpha, DIIS
 
 # VMC
 export SimpleGaussian, Correlated, Slater, SlaterNN
 export NeuralNetwork, Dense, Exp, Tanh, Sigmoid
 export Metropolis, Importance
-export blocking, onebody, optimize, GradientDescent
+export blocking, onebody, optimize, GradientDescent, ADAM
 
 # ------------ Imports ---------------
 
@@ -30,7 +30,6 @@ import Statistics
 using TensorOperations: @tensor
 import ForwardDiff as fd
 import ReverseDiff as rd
-import LinearAlgebra as la
 
 # ------------ Source Files ---------------
 

@@ -5,7 +5,9 @@ abstract type Interaction <: Hamiltonian end
 struct HOCoulomb <: Interaction
     ω2::Float64
     shielding2::Float64
-    HOCoulomb(ω, shielding) = new(ω^2, shielding^2)
+    function HOCoulomb(ω, shielding)
+        new(ω^2, shielding^2)
+    end
 end
 HOCoulomb(ω; shielding) = HOCoulomb(ω, shielding)
 

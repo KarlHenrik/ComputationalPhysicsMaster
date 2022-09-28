@@ -10,13 +10,13 @@ struct CCDState{T, M}
     err::Array{Float64, 4}
 end
 
-function setup_CCD(system)
+function CCD(system)
     (; l, n) = system
     mixer = DIIS((l, l, n, n))
-    setup_CCD(system, mixer)
+    CCD(system, mixer)
 end
 
-function setup_CCD(system, mixer)
+function CCD(system, mixer)
     (; l, u, n) = system
     
     ϵ = sp_energies(system)

@@ -6,7 +6,7 @@ struct HFState{T}
     F::Matrix{Float64}
 end
 
-function setup_HF(system)
+function HF(system)
     (; l) = system
     
     C = la.I(l)

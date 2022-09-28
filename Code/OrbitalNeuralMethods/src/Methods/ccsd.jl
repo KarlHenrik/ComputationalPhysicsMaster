@@ -14,13 +14,13 @@ struct CCSDState{T, M}
     err_2::Array{Float64, 4}
 end
 
-function setup_CCSD(system)
+function CCSD(system)
     (; l, n) = system
     mixer = DIIS(l*l*n*n + l*n)
-    setup_CCSD(system, mixer)
+    CCSD(system, mixer)
 end
 
-function setup_CCSD(system, mixer)
+function CCSD(system, mixer)
     (; l, h, u, n) = system
     
     ϵ = sp_energies(system)

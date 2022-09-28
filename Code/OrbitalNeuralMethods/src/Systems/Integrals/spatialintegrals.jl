@@ -42,8 +42,8 @@ function inner_ints(spfs, grid, V::Interaction)
     
     @inbounds Threads.@threads for xi in eachindex(grid)
         x1 = grid[xi]
-        f_vals = fs[Threads.threadid()]
-        interaction = interactions[Threads.threadid()]
+        f_vals = fs[Threads.threadid()] # Pre-allocated vector for this thread
+        interaction = interactions[Threads.threadid()] # ^^^
         
         interaction = interaction_over_grid!(interaction, x1, grid, V)
         for κ in 1:l
