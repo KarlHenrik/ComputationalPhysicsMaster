@@ -254,6 +254,15 @@ function consider_qf!(wf::NeuralNetwork, positions, new_idx::Int64, old_pos)
     return ratio, newQF
 end
 
+# Importance + NeuralNetwork + ParamDer is set up
+function consider!(wf::NeuralNetwork, positions, new_idx::Int64, old_pos)
+    output = model!(wf, positions)
+    gradient!(wf)
+    
+    ratio = output[1] / wf.old_output[1]
+    return ratio
+end
+
 function accept!(wf::NeuralNetwork, new_idx, new_pos)
     wf.old_output[1] = wf.output[1]
     wf.QF_all_old .= 2 .* wf.input_der ./ wf.output[1]

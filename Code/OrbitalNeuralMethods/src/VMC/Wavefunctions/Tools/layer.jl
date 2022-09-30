@@ -131,8 +131,6 @@ function backprop!(layer::Tanh, delta)
 end
 
 
-
-
 # Sigmoid
 function sig(x)
     return 1.0 ./ (1.0 .+ exp.(-x)) # TODO do i need two definitions? with a "where"?

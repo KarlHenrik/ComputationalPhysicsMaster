@@ -18,7 +18,7 @@ function GradientSampler(wf::SlaterNN, sampled_steps)
     ∇ΨE = paramDerHolder(wf.nn)
     tot_∇Ψ = paramDerHolder(wf.nn)
     tot_∇ΨE = paramDerHolder(wf.nn)
-    GradientSampler(0.0, 0.0, ∇Ψ, ∇ΨE, 0.0, 0.0, tot_∇Ψ, tot_∇ΨE,sampled_steps)
+    GradientSampler(0.0, 0.0, ∇Ψ, ∇ΨE, 0.0, 0.0, tot_∇Ψ, tot_∇ΨE, sampled_steps)
 end
 
 function update_sample!(sampler::GradientSampler, walker, wf, ham)
@@ -28,7 +28,7 @@ function update_sample!(sampler::GradientSampler, walker, wf, ham)
     
     sampler.∇Ψ = paramDer!(sampler.∇Ψ, positions, wf)
     sampler.∇ΨE = setmul!(sampler.∇ΨE, sampler.∇Ψ, sampler.E)
-    
+
     return sampler
 end
 setmul!(a, b, c) = b * c

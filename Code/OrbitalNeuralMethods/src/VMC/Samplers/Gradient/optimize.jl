@@ -58,13 +58,19 @@ end
 
 function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
     (;max_iter, tol) = optimizer
-    
+    E_opt = typemax(Float64)
+    wf_opt = wf
+
     grad_results = Vector{GradientResult}(undef, max_iter) # The sampled values and wavefunctions from each step
     grad_norm = 0
     for i in 1:max_iter
         grad_result = compute_gradient(wf, ham, metro, nthreads) # Running the vmc calculation the get the gradient for this wavefunction
+        if grad_result.E < E_opt && grad_result.E > 0
+            E_opt = grad_result.E
+            wf_opt = wf
+        end
+
         grad_results[i] = grad_result
-        
         grad = update_gradient(grad_result.gradient, optimizer)
         
         grad_norm = la.norm(grad)
@@ -79,11 +85,10 @@ function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
             print("\rE = $(round(grad_result.E, digits = 6)) iter = $i/$(max_iter)                                      ")
         end
     end
-    if verbose
-        println("\nNo convergence reached, final norm of gradient was $(grad_norm)")
-    end
-    
-    return wf, grad_results
+    #if verbose
+    #    println("\nNo convergence reached, final norm of gradient was $(grad_norm)")
+    #end
+    return wf_opt, grad_results
 end
 
 function compute_gradient(wf, ham, metro, nthreads)

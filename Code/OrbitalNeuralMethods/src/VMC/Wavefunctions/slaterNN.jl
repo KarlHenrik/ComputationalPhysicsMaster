@@ -47,6 +47,19 @@ function consider_qf!(wf::SlaterNN, positions, new_idx::Int64, old_pos)
     return ratio, newQF
 end
 
+function consider!(wf::Slater, positions, new_idx::Int64, old_pos)
+    (; slater, nn, minisort) = wf
+    new_pos = positions[new_idx]
+    sorted_pos, sort_idx = try_sort!(minisort, new_idx, new_pos)
+
+    nn_ratio = consider!(nn, sorted_pos, sort_idx, old_pos)
+    slater_ratio = consider!(slater, positions, new_idx, old_pos)
+    
+    ratio = slater_ratio * nn_ratio
+
+    return ratio
+end
+
 function accept!(wf::SlaterNN, new_idx, new_pos)
     (; slater, nn, minisort) = wf
     accept!(slater, new_idx, new_pos)

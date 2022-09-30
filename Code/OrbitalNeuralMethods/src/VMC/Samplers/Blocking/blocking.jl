@@ -19,6 +19,7 @@ struct BlockingResult <: Result
     E::Float64
     E_err::Float64
     std::Float64
+    accept::Float64
 end
 
 function createResult(samplers::Vector{BlockingSampler})
@@ -31,12 +32,14 @@ function createResult(samplers::Vector{BlockingSampler})
     else
         E_err = sqrt(block(savedEnergies))
     end
+
+    accept = sum([s.accepted_steps for s in samplers]) / sum([s.sampled_steps for s in samplers])
     
-    return BlockingResult(E, E_err, std)
+    return BlockingResult(E, E_err, std, accept)
 end
 
 function createResult(sampler::BlockingSampler)
     E, E_err, std = block(sampler.savedEnergies)
-    
-    return BlockingResult(E, E_err, std)
+    accept = sampler.accepted_steps / sampler.sampled_steps
+    return BlockingResult(E, E_err, std, accept)
 end

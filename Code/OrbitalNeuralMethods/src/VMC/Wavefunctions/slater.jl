@@ -222,7 +222,7 @@ function consider_qf!(wf::Slater, positions, new_idx::Int64, old_pos)
         newQF = ratio_new_old_det(amp_down, new_der, new_idx-n÷2)
     end
 
-    return ratio, newQF
+    return ratio, 2 * newQF
 end
 
 function accept!(wf::Slater, new_idx::Int64, new_pos)
