@@ -1,9 +1,2 @@
-courses/FYS-STK4155/FYS-STK-Gruppe/
-courses/FYS-STK4155/MachineLearning/
-courses/FYS4150/ComputationalPhysics/
-courses/FYS4150/LearningCpp/classes_in_cpp/
-courses/FYS4411/FYS4411-Gruppe/
-courses/FYS4411/tdhf-project-fys4411/
-courses/IN5400/Oblig2
 .ipynb_checkpoints
-Code/OrbitalNeuralMethods/Results/Performance/VMC/Hovden
+Results\Performance\Autodiff\Hovden_VMC
