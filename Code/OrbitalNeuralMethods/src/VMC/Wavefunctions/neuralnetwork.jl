@@ -39,7 +39,16 @@ function chunksize(chunk::fd.Chunk{N}) where N
     return N
 end
 
+function NeuralNetwork(layer_specs, n::Int64)
+    rng = Random.MersenneTwister()
+    return NeuralNetwork(layer_specs, n, rng)
+end
+
 function NeuralNetwork(layer_specs; n::Int64, rng)
+    return NeuralNetwork(layer_specs, n, rng)
+end
+
+function NeuralNetwork(layer_specs, n::Int64, rng)
     layers = []
 
     output = zeros(n)

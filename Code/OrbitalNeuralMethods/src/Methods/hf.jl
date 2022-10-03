@@ -4,16 +4,26 @@ struct HFState{T}
     C::Matrix{Float64}
     P::Matrix{Float64}
     F::Matrix{Float64}
+
+    mixer::Mixer
+    trial::Matrix{Float64}
+    direction::Matrix{Float64}
+    error::Matrix{Float64}
 end
 
-function HF(system)
+function HF(system::SpatialSystem{SpinBasis{T}}) where T <: SpatialBasis
+    mixer = Alpha(1.0)
+    return HF(system, mixer)
+end
+
+function HF(system, mixer)
     (; l) = system
     
     C = la.I(l)
     P = zeros((l, l))
     F = zeros((l, l))
     
-    state = HFState{typeof(system)}(system, C, P, F)
+    state = HFState{typeof(system)}(system, C, P, F, mixer, zeros((l, l)), zeros((l, l)), zeros((l, l)))
     P_update!(state)
     F_update!(state)
     return state
@@ -60,20 +70,24 @@ function P_update!(state::HFState)
 end
 
 function F_update!(state::HFState)
-    (; P, F) = state
+    (; P, F, mixer, trial, error, direction) = state
     (; l, h, u) = state.system
-    
-    F .= h
+    trial .= F
+    error .= F * P - P * F
+    direction .= -trial
+
+    direction .+= h
     for c in 1:l
         for d in 1:l
             @inbounds P_dc = P[d, c]
             for a in 1:l
                 for b in 1:l
-                    @inbounds F[a, b] += P_dc * u[a, c, b, d]
+                    @inbounds direction[a, b] += P_dc * u[a, c, b, d]
                 end
             end
         end
     end
+    F .= compute_new_vector(mixer, trial, direction, error)
     return F
 end
 

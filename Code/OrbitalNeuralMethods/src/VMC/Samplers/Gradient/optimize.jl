@@ -77,7 +77,7 @@ function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
         if grad_norm < tol || isnan(grad_result.E)
             grad_results = grad_results[1:i]
             println("\nConvergence reached, final norm of gradient was $(grad_norm)")
-            return wf, grad_results
+            return wf, wf_opt, grad_results
         end
         
         wf = applyGradient(wf, grad)
@@ -88,7 +88,7 @@ function optimize(wf, ham, metro, optimizer; nthreads=1, verbose = true)
     #if verbose
     #    println("\nNo convergence reached, final norm of gradient was $(grad_norm)")
     #end
-    return wf_opt, grad_results
+    return wf, wf_opt, grad_results
 end
 
 function compute_gradient(wf, ham, metro, nthreads)
